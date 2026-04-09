@@ -1,0 +1,37 @@
+{
+  "_comment": "هذا ملف template — انسخه إلى google-services.json واملأ القيم من Firebase Console",
+  "_instructions": [
+    "1. اذهب إلى https://console.firebase.google.com",
+    "2. أنشئ مشروعاً جديداً أو افتح مشروعاً موجوداً",
+    "3. أضف تطبيق Android بـ package name: com.elab.sports",
+    "4. حمّل ملف google-services.json وضعه في artifacts/mobile/",
+    "5. أضف google-services.json إلى .gitignore لحماية البيانات الحساسة"
+  ],
+  "project_info": {
+    "project_number": "YOUR_PROJECT_NUMBER",
+    "project_id": "YOUR_PROJECT_ID",
+    "storage_bucket": "YOUR_PROJECT_ID.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "YOUR_MOBILESDK_APP_ID",
+        "android_client_info": {
+          "package_name": "com.elab.sports"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "YOUR_API_KEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

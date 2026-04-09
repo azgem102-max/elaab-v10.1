@@ -1,0 +1,91 @@
+
+#15 - تحسين تعديل الملف الشخصي
+What & Why
+صفحة الملف الشخصي والإعدادات تفتقر لإمكانية تعديل المعلومات الرياضية بعد التسجيل الأولي. حاليا المستخدم لا يستطيع إضافة أو حذف رياضة، تغيير مركزه، أو تعديل مستواه لكل رياضة على حدة. كذلك لا يوجد API في السيرفر لحفظ هذه التعديلات — كل البيانات محفوظة محليا فقط. هذا التاسك يضيف تعديل شامل للملف الشخصي مع حفظ في قاعدة البيانات.
+Done looks like
+•	المستخدم يستطيع من صفحة الإعدادات تعديل: الاسم المستعار، الرياضات (إضافة/حذف)، المركز لكل رياضة، والمستوى لكل رياضة بشكل مستقل
+•	صفحة الملف الشخصي فيها زر تعديل سريع يفتح شاشة التعديل مباشرة
+•	التعديلات تُحفظ في السيرفر وقاعدة البيانات وليس محليا فقط
+•	قاعدة البيانات فيها جدول جديد user_sport_profiles لحفظ الرياضات والمراكز والمستويات لكل مستخدم
+•	الـ API فيها endpoint جديد PUT /users/{id} لتحديث بيانات المستخدم
+Out of scope
+•	تغيير رقم الجوال (يحتاج تكامل OTP منفصل)
+•	رفع صورة شخصية
+•	حذف الحساب
+Tasks
+1.	إضافة جدول user_sport_profiles في قاعدة البيانات (sport, skill_level, position, user_id) مع migration
+2.	إضافة endpoint PUT /users/{id} في API لتحديث الاسم والرياضات والمراكز والمستويات، مع تحديث OpenAPI spec
+3.	إعادة بناء modal تعديل الملف الشخصي في شاشة الإعدادات ليشمل: تعديل الرياضات، المركز لكل رياضة، والمستوى لكل رياضة بشكل مستقل
+4.	إضافة زر تعديل سريع في صفحة الملف الشخصي (profile.tsx) يوجه المستخدم لشاشة التعديل
+5.	ربط الواجهة مع API الجديد عبر services/api.ts و AppContext لحفظ واسترجاع البيانات من السيرفر
+6.	تحميل بيانات sport profiles من السيرفر عند تسجيل الدخول بدلا من الاعتماد على AsyncStorage فقط
+Relevant files
+•	artifacts/mobile/app/settings.tsx
+•	artifacts/mobile/app/(tabs)/profile.tsx
+•	artifacts/mobile/context/AppContext.tsx:14-31,229-247,255-269
+•	artifacts/mobile/app/profile-setup.tsx
+•	artifacts/mobile/app/position-selector.tsx
+•	artifacts/mobile/services/api.ts
+•	lib/db/src/schema/users.ts
+•	lib/api-spec/openapi.yaml:365-396,441-741
+•	artifacts/api-server/src/routes/matches.ts
+
+
+
+#16 - إكمال إدارة المباريات
+What & Why
+حاليا المنظم يستطيع إنشاء مباراة لكن لا يستطيع تعديل بياناتها بعد الإنشاء (مثل تغيير الموعد أو المكان أو عدد اللاعبين)، ولا يستطيع إلغاء المباراة أو إزالة لاعب منها. هذه ميزات أساسية لأي منظم مباريات.
+Done looks like
+•	المنظم يستطيع تعديل بيانات المباراة (العنوان، الموعد، المكان، التكلفة، عدد اللاعبين) من شاشة تفاصيل المباراة
+•	المنظم يستطيع إلغاء المباراة مع إرسال إشعار لجميع اللاعبين المسجلين
+•	المنظم يستطيع إزالة لاعب من المباراة
+•	الـ API فيها endpoints جديدة: PUT /matches/{id} للتعديل، DELETE /matches/{id} للإلغاء، DELETE /matches/{id}/players/{userId} لإزالة لاعب
+Out of scope
+•	نقل ملكية تنظيم المباراة لشخص آخر
+•	تكرار المباريات (recurring matches)
+Tasks
+1.	إضافة endpoints جديدة في API: تعديل المباراة، إلغاء المباراة، إزالة لاعب — مع تحديث OpenAPI spec
+2.	إضافة أزرار التعديل والإلغاء وإزالة اللاعب في شاشة تفاصيل المباراة (تظهر للمنظم فقط)
+3.	بناء شاشة/modal تعديل المباراة مع تعبئة البيانات الحالية
+4.	إضافة تأكيد قبل الإلغاء وإزالة اللاعب مع إرسال إشعارات للمتأثرين
+5.	تحديث AppContext و api.ts بالدوال الجديدة
+Relevant files
+•	artifacts/mobile/app/match-details.tsx
+•	artifacts/mobile/app/create-match.tsx
+•	artifacts/mobile/context/AppContext.tsx:38-57,234-238
+•	artifacts/mobile/services/api.ts
+•	artifacts/api-server/src/routes/matches.ts
+•	lib/api-spec/openapi.yaml:35-256
+•	lib/db/src/schema/matches.ts
+
+
+
+
+
+
+#17 - إكمال إدارة المجموعات
+What & Why
+حاليا مسؤول المجموعة يستطيع إنشاء مجموعة ودعوة أعضاء لكن لا يستطيع تعديل بيانات المجموعة (الاسم، الوصف، الخصوصية) ولا إزالة عضو ولا حذف المجموعة. هذه أدوات أساسية لإدارة أي مجموعة رياضية.
+Done looks like
+•	مسؤول المجموعة يستطيع تعديل اسم المجموعة ووصفها وإعداد الخصوصية
+•	مسؤول المجموعة يستطيع إزالة عضو من المجموعة
+•	مسؤول المجموعة يستطيع حذف المجموعة بالكامل (مع تأكيد)
+•	الـ API فيها endpoints جديدة: PUT /groups/{id} للتعديل، DELETE /groups/{id} للحذف، DELETE /groups/{id}/members/{userId} لإزالة عضو
+Out of scope
+•	نقل صلاحية المسؤول لعضو آخر
+•	أدوار متعددة داخل المجموعة (مثل مشرف)
+Tasks
+1.	إضافة endpoints جديدة في API: تعديل المجموعة، حذف المجموعة، إزالة عضو — مع تحديث OpenAPI spec
+2.	إضافة أزرار التعديل والحذف وإزالة العضو في شاشة تفاصيل المجموعة (تظهر للمسؤول فقط)
+3.	بناء modal تعديل المجموعة مع تعبئة البيانات الحالية
+4.	إضافة تأكيد قبل حذف المجموعة وإزالة العضو
+5.	تحديث AppContext و api.ts بالدوال الجديدة
+Relevant files
+•	artifacts/mobile/app/group-detail.tsx
+•	artifacts/mobile/app/create-group.tsx
+•	artifacts/mobile/context/AppContext.tsx:59-71,239-246
+•	artifacts/mobile/services/api.ts
+•	artifacts/api-server/src/routes/matches.ts
+•	lib/api-spec/openapi.yaml:257-364
+•	lib/db/src/schema/groups.ts
+

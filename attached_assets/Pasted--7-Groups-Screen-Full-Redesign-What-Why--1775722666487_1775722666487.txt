@@ -1,0 +1,63 @@
+#7 - Groups Screen Full Redesign
+What & Why
+شاشة المجموعات تضم حالياً نمطين بصريين متعارضين: بطاقات "مجموعاتي" بلون أزرق سادة بلا عمق، وبطاقات "اكتشف مجموعات" تعتمد على SurfaceCard بشريط جانبي رفيع يبدو قديماً. الهدف هو إعادة تصميم الشاشة كاملة لتعكس نفس الهوية المرئية المحددة للتطبيق التي تستخدمها شاشة الاستكشاف (explore) وتفاصيل المباراة (match-details).
+
+نظام الهوية البصرية المرجعي — قواعد الإلزامية
+يجب أن يعمل المنفذ حصراً داخل هذه القواعد. أي عنصر جديد يُبنى يجب أن يتبع ما يلي:
+
+الألوان (من constants/colors.ts)
+اللون الأساسي: #2C54E8 — للأزرار الرئيسية، الـ badges، والعناصر النشطة
+لون التمييز: #C1F422 — للـ CTA الأهم فقط (مثل "انضم" أو "أنشئ")
+الخلفيات: #FFFFFF (surface)، #F4F6FF (surfaceVariant)، #EEF2FF (surfaceContainer)
+الحدود: #E5E7EB (خفيف)، #C7D2FE (أزرق فاتح للعناصر المميزة)
+الظلال: زرقاء دائماً rgba(44, 84, 232, 0.08) أو rgba(44, 84, 232, 0.12) — ممنوع استخدام #000000 للظلال
+النصوص: #111827 (رئيسي)، #6B7280 (ثانوي/muted)
+المكونات المتاحة — استخدمها ولا تعيد اختراعها
+GlassCard — البطاقة الأساسية. استخدم variant="light" (بيضاء) للمحتوى العادي، variant="dark" (EEF2FF) للبطاقات المميزة
+GlassBadge — للشارات الصغيرة (رياضة، عدد أعضاء، حالة)
+GlassButton — للأزرار: variant="primary" (أزرق) أو variant="accent" (أصفر ليموني)
+GlassScreenHeader — ثابت في رأس الشاشة
+GlassInput — لحقل البحث
+ممنوع استخدام SurfaceCard في بطاقات الاكتشاف — هذا المكون مخصص فقط لشاشات الإدارة
+التدرجات اللونية (gradients)
+أي بطاقة بطابع "بطولي/Hero" تستخدم: LinearGradient من #2C54E8 إلى #1A3AB8 (أزرق داكن)
+يمكن إضافة طبقة overlay شفافة بلون الرياضة فوق التدرج (مثلاً rgba(193,244,34, 0.12) لتلمسة الـ accent)
+لا تدرجات عشوائية — الألوان تأتي فقط من colors.ts
+الحروف والخط
+الخط الوحيد: Cairo — Cairo_400Regular، Cairo_600SemiBold، Cairo_700Bold، Cairo_900Black
+التوجيه: RTL عربي، النصوص تنتهي من اليمين دائماً
+textAlign: "right" لأي نص وصفي
+الزوايا والتباعد
+Border radius الكروت الكبيرة: 24px
+Border radius الكروت العادية: 16px
+Border radius الشارات/chips: 24px كاملة
+الـ padding الداخلي للكروت: 16px أو 18px
+Done looks like
+بطاقات "مجموعاتي" تستخدم تدرجاً أزرق غامقاً (#2C54E8 → #1A3AB8) مع طبقة texture شفافة فوقه تضيف عمقاً، واسم المجموعة بارز بخط عريض، وشارة الرياضة، وعدد الأعضاء، وأزرار الإجراءات — كلها في هرمية بصرية واضحة
+بطاقات "اكتشف مجموعات" تعتمد GlassCard بدلاً من SurfaceCard: شريط علوي قصير (≈60px) بتدرج لون الرياضة يحمل إيموجي الرياضة في المنتصف، ثم جسم الكارت أبيض يعرض الاسم وشارة الرياضة وعدد الأعضاء وزر "انضم" / "عرض"
+شارات الرياضة (Football/Padel/Tennis) تستخدم GlassBadge بلون الرياضة مع نقطة ملونة قبلها
+أزرار "انضم" تستخدم GlassButton بـ variant="accent" (أصفر ليموني) أو variant="primary" (أزرق) حسب الأولوية
+فلاتر الرياضة (chips) لها حالة نشطة واضحة (خلفية أزرق، نص أبيض) وحالة غير نشطة هادئة (#F4F6FF بحد #E5E7EB)
+الشاشة تبدو كأنها جزء واحد متماسك من التطبيق — نفس الظلال، نفس الزوايا، نفس الألوان التي تراها في شاشة Explore وMatch Details
+Out of scope
+تغييرات على شاشة تفاصيل المجموعة أو إدارة المجموعة أو إنشاء المجموعة
+أي تغييرات في API أو قاعدة البيانات
+إعادة تصميم شاشات أخرى خارج groups.tsx
+Tasks
+إعادة تصميم MyGroupCard — استبدل خلفية الأزرق السادة بتدرج #2C54E8 → #1A3AB8 مع طبقة overlay شبه شفافة (نمط هندسي خفيف أو striped gradient بزاوية 135°). حسّن التسلسل البصري: شارة الرياضة بـ pill أبيض شفاف في الأعلى، اسم المجموعة بـ Cairo_900Black في المنتصف، chip عدد الأعضاء، ثم أزرار الإجراءات في الأسفل بـ rgba(255,255,255,0.25) وrgba(0,0,0,0.2).
+
+إعادة تصميم DiscoverGroupCard — احذف SurfaceCard واستبدله بـ GlassCard variant="light". أضف شريطاً علوياً (banner) بارتفاع ~64px يستخدم LinearGradient من لون الرياضة إلى الأزرق الأساسي، مع إيموجي الرياضة في الوسط داخل دائرة شفافة. جسم الكارت يحتوي: اسم المجموعة (Cairo_700Bold)، GlassBadge للرياضة مع نقطة ملونة، chip عدد الأعضاء، ثم زر "انضم" بـ GlassButton variant="accent" أو زر "عرض" بـ GlassButton variant="primary".
+
+تلميع الـ shell العام للشاشة — حدّث رؤوس الأقسام لتستخدم countBadge بلون أزرق (primary+"18") لـ "مجموعاتي"، ونيوترال (surfaceContainerHigh) لـ "اكتشف". تأكد من أن فلاتر الرياضة تستخدم نفس نمط chip المستخدم في شاشة Explore. احذف أي ظل أسود متبقٍّ واستبدله بظل أزرق.
+
+Relevant files
+artifacts/mobile/app/(tabs)/groups.tsx
+artifacts/mobile/app/(tabs)/explore.tsx
+artifacts/mobile/constants/colors.ts
+artifacts/mobile/constants/glassTheme.ts
+artifacts/mobile/constants/sportTheme.ts
+artifacts/mobile/components/glass/GlassCard.tsx
+artifacts/mobile/components/glass/GlassBadge.tsx
+artifacts/mobile/components/glass/GlassButton.tsx
+artifacts/mobile/components/SportGradientButton.tsx
+artifacts/mobile/components/SurfaceCard.tsx
