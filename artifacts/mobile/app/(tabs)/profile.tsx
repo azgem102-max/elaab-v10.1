@@ -2,6 +2,7 @@ import { useApp, sportLabel, reliabilityColor, reliabilityLabel, formatReliabili
 import { getLevelLabel } from "@/components/LevelPickerSheet";
 import { useColors } from "@/hooks/useColors";
 import { SkeletonLoader } from "@/components/SkeletonLoader";
+import { getSportTheme } from "@/constants/sportTheme";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useFocusEffect } from "expo-router";
@@ -9,14 +10,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Animated, Image, Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Stop } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-const ACCENT_LIME = "#C1F422";
-
-const SPORT_THEMES: Record<string, { main: string; light: string; container: string; emoji: string }> = {
-  football: { main: "#2C54E8", light: "#5B7FFF", container: "#EEF2FF", emoji: "⚽" },
-  padel:    { main: "#0E9B6E", light: "#2EC795", container: "#DCFCE7", emoji: "🎾" },
-  tennis:   { main: "#C97B18", light: "#F5A623", container: "#FEF3C7", emoji: "🎾" },
-};
+import { LinearGradient } from "expo-linear-gradient";
 
 const BADGE_CONFIG: Record<string, { label: string; icon: "color-palette-outline" | "tennisball-outline" | "flash-outline"; color: string; bg: string }> = {
   artist: { label: "فنان", icon: "color-palette-outline", color: "#8B5CF6", bg: "#F3E8FF" },
@@ -58,6 +52,7 @@ function CircularProgress({ size, strokeWidth, progress, color, bg }: {
 function ReliabilityGaugeCard({ relValue, relColor, relLabel, formatted }: {
   relValue: number; relColor: string; relLabel: string; formatted: string;
 }) {
+  const colors = useColors();
   const GAUGE_SIZE = 120;
   const STROKE = 8;
   return (
@@ -67,12 +62,12 @@ function ReliabilityGaugeCard({ relValue, relColor, relLabel, formatted }: {
           size={GAUGE_SIZE}
           strokeWidth={STROKE}
           progress={relValue}
-          color={ACCENT_LIME}
-          bg="rgba(193,244,34,0.15)"
+          color={relColor}
+          bg={relColor + "20"}
         />
         <View style={gaugeStyles.inner}>
-          <Text style={[gaugeStyles.score, { color: ACCENT_LIME }]}>{formatted}</Text>
-          <Text style={[gaugeStyles.scoreLabel, { color: "#fff" }]}>موثوقية</Text>
+          <Text style={[gaugeStyles.score, { color: relColor }]}>{formatted}</Text>
+          <Text style={[gaugeStyles.scoreLabel, { color: colors.onSurface }]}>موثوقية</Text>
         </View>
       </View>
       <View style={gaugeStyles.labelRow}>
@@ -104,43 +99,43 @@ function ReliabilityTutorialCard() {
     { icon: "star-outline" as const, label: "احصل على تقييم", desc: "يقيّمك زملاؤك بعد كل مباراة تكتمل" },
   ];
   return (
-    <View style={[styles.tutorialCard, { backgroundColor: "#1A1F35", overflow: "hidden", borderWidth: 1, borderColor: ACCENT_LIME + "30" }]}>
+    <View style={[styles.tutorialCard, { backgroundColor: colors.surfaceContainerLow, overflow: "hidden", borderWidth: 1, borderColor: colors.primary + "30" }]}>
       <View style={styles.tutorialHeader}>
-        <View style={[styles.tutorialIconWrap, { backgroundColor: ACCENT_LIME + "20" }]}>
-          <Ionicons name="shield-outline" size={22} color={ACCENT_LIME} />
+        <View style={[styles.tutorialIconWrap, { backgroundColor: colors.primary + "20" }]}>
+          <Ionicons name="shield-outline" size={22} color={colors.primary} />
         </View>
         <View style={{ flex: 1, alignItems: "flex-end", gap: 2 }}>
-          <Text style={[styles.tutorialTitle, { color: "#fff" }]}>مؤشر الموثوقية™</Text>
-          <Text style={[styles.tutorialSubtitle, { color: "rgba(255,255,255,0.5)" }]}>
+          <Text style={[styles.tutorialTitle, { color: colors.onSurface }]}>مؤشر الموثوقية™</Text>
+          <Text style={[styles.tutorialSubtitle, { color: colors.mutedForeground }]}>
             يظهر مؤشرك بعد أول مباراة مكتملة
           </Text>
         </View>
       </View>
-      <Text style={[styles.tutorialBody, { color: "rgba(255,255,255,0.7)" }]}>
+      <Text style={[styles.tutorialBody, { color: colors.mutedForeground }]}>
         مؤشر الموثوقية يعكس كيف يراك زملاؤك — هل تحضر مبارياتك؟ وهل تلتزم بمواعيدك؟ كلما التزمت أكثر، ارتفع مؤشرك وأصبحت مرجعاً موثوقاً في المجتمع.
       </Text>
       <View style={styles.tutorialSteps}>
         {STEPS.map((step, i) => (
           <View key={i} style={styles.tutorialStep}>
-            <View style={[styles.tutorialStepNumWrap, { backgroundColor: ACCENT_LIME + "25" }]}>
-              <Text style={[styles.tutorialStepNum, { color: ACCENT_LIME }]}>{i + 1}</Text>
+            <View style={[styles.tutorialStepNumWrap, { backgroundColor: colors.primary + "25" }]}>
+              <Text style={[styles.tutorialStepNum, { color: colors.primary }]}>{i + 1}</Text>
             </View>
-            <View style={[styles.tutorialStepIcon, { backgroundColor: ACCENT_LIME + "15" }]}>
-              <Ionicons name={step.icon} size={15} color={ACCENT_LIME} />
+            <View style={[styles.tutorialStepIcon, { backgroundColor: colors.primary + "15" }]}>
+              <Ionicons name={step.icon} size={15} color={colors.primary} />
             </View>
             <View style={{ flex: 1, alignItems: "flex-end", gap: 1 }}>
-              <Text style={[styles.tutorialStepLabel, { color: "#fff" }]}>{step.label}</Text>
-              <Text style={[styles.tutorialStepDesc, { color: "rgba(255,255,255,0.5)" }]}>{step.desc}</Text>
+              <Text style={[styles.tutorialStepLabel, { color: colors.onSurface }]}>{step.label}</Text>
+              <Text style={[styles.tutorialStepDesc, { color: colors.mutedForeground }]}>{step.desc}</Text>
             </View>
           </View>
         ))}
       </View>
       <Pressable
-        style={[styles.tutorialCta, { backgroundColor: ACCENT_LIME }]}
+        style={[styles.tutorialCta, { backgroundColor: colors.primary }]}
         onPress={() => router.push("/(tabs)/explore")}
       >
-        <Ionicons name="compass-outline" size={16} color="#111" />
-        <Text style={[styles.tutorialCtaText, { color: "#111" }]}>اكتشف المباريات</Text>
+        <Ionicons name="compass-outline" size={16} color="#fff" />
+        <Text style={[styles.tutorialCtaText, { color: "#fff" }]}>اكتشف المباريات</Text>
       </Pressable>
     </View>
   );
@@ -179,13 +174,13 @@ export default function ProfileScreen() {
         contentContainerStyle={{ paddingTop: topPad + 12, paddingBottom: botPad, paddingHorizontal: 16, gap: 16 }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[{ borderRadius: 24, padding: 20, gap: 16, backgroundColor: "#1A1F35" }]}>
+        <View style={[{ borderRadius: 24, padding: 20, gap: 16, backgroundColor: colors.surfaceContainerLow }]}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-            <View style={{ width: 108, height: 108, borderRadius: 54, backgroundColor: "rgba(255,255,255,0.08)" }} />
+            <View style={{ width: 108, height: 108, borderRadius: 54, backgroundColor: colors.surfaceContainerHigh }} />
             <View style={{ flex: 1, gap: 8 }}>
-              <View style={{ height: 20, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.08)" }} />
-              <View style={{ height: 14, borderRadius: 7, width: "60%", backgroundColor: "rgba(255,255,255,0.08)" }} />
-              <View style={{ height: 14, borderRadius: 7, width: "40%", backgroundColor: "rgba(255,255,255,0.08)" }} />
+              <View style={{ height: 20, borderRadius: 10, backgroundColor: colors.surfaceContainerHigh }} />
+              <View style={{ height: 14, borderRadius: 7, width: "60%", backgroundColor: colors.surfaceContainerHigh }} />
+              <View style={{ height: 14, borderRadius: 7, width: "40%", backgroundColor: colors.surfaceContainerHigh }} />
             </View>
           </View>
         </View>
@@ -273,8 +268,8 @@ export default function ProfileScreen() {
     } catch { }
   }
 
-  const primarySport = user.sports[0];
-  const sportTheme = primarySport ? (SPORT_THEMES[primarySport] ?? SPORT_THEMES.football) : SPORT_THEMES.football;
+  const primarySport = (user.sports[0] ?? "football") as SportType;
+  const sportTheme = getSportTheme(primarySport);
 
   return (
     <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
@@ -283,8 +278,13 @@ export default function ProfileScreen() {
       contentContainerStyle={[styles.scroll, { paddingTop: topPad + 12, paddingBottom: botPad }]}
       showsVerticalScrollIndicator={false}
     >
-      {/* === HERO CARD (dark branded) === */}
-      <View style={styles.heroCard}>
+      {/* === HERO CARD === */}
+      <LinearGradient
+        colors={[sportTheme.primaryContainer, colors.surface]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.heroCard, { borderWidth: 1, borderColor: sportTheme.primary + "30" }]}
+      >
         {/* Top row: avatar + name + reliability gauge */}
         <View style={styles.heroTop}>
           {/* Reliability Gauge */}
@@ -297,22 +297,22 @@ export default function ProfileScreen() {
 
           {/* Name & Info */}
           <View style={styles.heroInfo}>
-            <Text style={styles.heroBadgeLabel}>ملفي الرياضي</Text>
-            <Text style={styles.heroNickname} numberOfLines={1}>{user.nickname}</Text>
+            <Text style={[styles.heroBadgeLabel, { color: colors.mutedForeground }]}>ملفي الرياضي</Text>
+            <Text style={[styles.heroNickname, { color: colors.onSurface }]} numberOfLines={1}>{user.nickname}</Text>
             {user.phone ? (
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
-                <Text style={styles.heroPhone}>{user.phone}</Text>
-                <Ionicons name="call-outline" size={12} color="rgba(255,255,255,0.4)" />
+                <Text style={[styles.heroPhone, { color: colors.mutedForeground }]}>{user.phone}</Text>
+                <Ionicons name="call-outline" size={12} color={colors.mutedForeground} />
               </View>
             ) : null}
           </View>
 
           {/* Avatar */}
-          <View style={[styles.avatarWrap, { width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2 }]}>
+          <View style={[styles.avatarWrap, { width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2, backgroundColor: sportTheme.primaryContainer, borderColor: sportTheme.primary + "60" }]}>
             {user.avatarUri ? (
               <Image source={{ uri: user.avatarUri }} style={{ width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2 }} />
             ) : (
-              <Text style={styles.avatarInitial}>{user.nickname.charAt(0)}</Text>
+              <Text style={[styles.avatarInitial, { color: sportTheme.primary }]}>{user.nickname.charAt(0)}</Text>
             )}
           </View>
         </View>
@@ -321,7 +321,7 @@ export default function ProfileScreen() {
         {user.sports.length > 0 && (
           <View style={styles.sportsRow}>
             {user.sports.map((sport) => {
-              const st = SPORT_THEMES[sport] ?? SPORT_THEMES.football;
+              const st = getSportTheme(sport as SportType);
               const profile = user.sportProfiles[sport];
               const numericLevel = profile?.skillLevelNumeric ?? null;
               const levelText = numericLevel
@@ -329,14 +329,14 @@ export default function ProfileScreen() {
                 : profile?.skillLevel ?? null;
               const isRacket = sport === "padel" || sport === "tennis";
               return (
-                <View key={sport} style={[styles.sportPill, { backgroundColor: "rgba(255,255,255,0.1)", borderColor: st.main + "40", borderWidth: 1 }]}>
+                <View key={sport} style={[styles.sportPill, { backgroundColor: st.pillBackground, borderColor: st.primary + "40", borderWidth: 1 }]}>
                   <Text style={styles.sportPillEmoji}>{st.emoji}</Text>
                   <View style={styles.sportPillContent}>
-                    <Text style={[styles.sportPillName, { color: st.light }]}>{sportLabel(sport)}</Text>
+                    <Text style={[styles.sportPillName, { color: st.primary }]}>{sportLabel(sport)}</Text>
                     {isRacket && levelText ? (
-                      <Text style={[styles.sportPillPos, { color: "rgba(255,255,255,0.5)" }]}>{levelText}</Text>
+                      <Text style={[styles.sportPillPos, { color: colors.mutedForeground }]}>{levelText}</Text>
                     ) : !isRacket && profile?.skillLevel ? (
-                      <Text style={[styles.sportPillPos, { color: "rgba(255,255,255,0.5)" }]}>{profile.skillLevel}</Text>
+                      <Text style={[styles.sportPillPos, { color: colors.mutedForeground }]}>{profile.skillLevel}</Text>
                     ) : null}
                   </View>
                 </View>
@@ -348,21 +348,21 @@ export default function ProfileScreen() {
         {/* Quick Actions */}
         <View style={styles.quickActionsRow}>
           <Pressable
-            style={styles.quickActionLime}
+            style={[styles.quickActionLime, { backgroundColor: colors.primary }]}
             onPress={() => router.push({ pathname: "/settings", params: { openEdit: "1" } })}
           >
-            <Ionicons name="create-outline" size={15} color="#111" />
-            <Text style={styles.quickActionLimeText}>عدّل الملف</Text>
+            <Ionicons name="create-outline" size={15} color={colors.primaryForeground} />
+            <Text style={[styles.quickActionLimeText, { color: colors.primaryForeground }]}>عدّل الملف</Text>
           </Pressable>
           <Pressable
-            style={styles.quickActionGhost}
+            style={[styles.quickActionGhost, { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.outline }]}
             onPress={handleShareProfile}
           >
-            <Ionicons name="share-social-outline" size={15} color="rgba(255,255,255,0.8)" />
-            <Text style={styles.quickActionGhostText}>شارك ملفي</Text>
+            <Ionicons name="share-social-outline" size={15} color={colors.onSurface} />
+            <Text style={[styles.quickActionGhostText, { color: colors.onSurface }]}>شارك ملفي</Text>
           </Pressable>
         </View>
-      </View>
+      </LinearGradient>
 
       {/* === RELIABILITY TUTORIAL (new users) === */}
       {user.reliability === null && <ReliabilityTutorialCard />}
@@ -396,14 +396,14 @@ export default function ProfileScreen() {
       <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}>
         <View style={styles.cardHeaderRow}>
           <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>إحصائياتي</Text>
-          <View style={[styles.cardHeaderIconWrap, { backgroundColor: sportTheme.main + "12" }]}>
-            <Ionicons name="stats-chart-outline" size={18} color={sportTheme.main} />
+          <View style={[styles.cardHeaderIconWrap, { backgroundColor: sportTheme.primary + "12" }]}>
+            <Ionicons name="stats-chart-outline" size={18} color={sportTheme.primary} />
           </View>
         </View>
         <View style={styles.statsGrid}>
-          <View style={[styles.statItem, { backgroundColor: sportTheme.main + "10", borderColor: sportTheme.main + "20", borderWidth: 1 }]}>
-            <View style={[styles.statIconWrap, { backgroundColor: sportTheme.main + "20" }]}>
-              <Ionicons name="football-outline" size={20} color={sportTheme.main} />
+          <View style={[styles.statItem, { backgroundColor: sportTheme.primary + "10", borderColor: sportTheme.primary + "20", borderWidth: 1 }]}>
+            <View style={[styles.statIconWrap, { backgroundColor: sportTheme.primary + "20" }]}>
+              <Ionicons name="football-outline" size={20} color={sportTheme.primary} />
             </View>
             <Text style={[styles.statNum, { color: colors.onSurface }]}>{user.matchesPlayed}</Text>
             <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>مباراة</Text>
@@ -510,16 +510,15 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     padding: 20,
     gap: 18,
-    backgroundColor: "#111827",
     overflow: "hidden",
   },
   heroTop: { flexDirection: "row", gap: 12, alignItems: "center", justifyContent: "space-between" },
   heroInfo: { flex: 1, gap: 4, alignItems: "flex-end" },
-  heroBadgeLabel: { fontSize: 11, fontFamily: "Cairo_400Regular", color: "rgba(255,255,255,0.4)", textAlign: "right" },
-  heroNickname: { fontSize: 22, fontFamily: "Cairo_700Bold", color: "#fff", textAlign: "right", lineHeight: 32 },
-  heroPhone: { fontSize: 12, fontFamily: "Cairo_400Regular", color: "rgba(255,255,255,0.4)" },
-  avatarWrap: { alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.1)", borderWidth: 2, borderColor: ACCENT_LIME + "50" },
-  avatarInitial: { fontSize: 32, fontFamily: "Cairo_700Bold", color: ACCENT_LIME },
+  heroBadgeLabel: { fontSize: 11, fontFamily: "Cairo_400Regular", textAlign: "right" },
+  heroNickname: { fontSize: 22, fontFamily: "Cairo_700Bold", textAlign: "right", lineHeight: 32 },
+  heroPhone: { fontSize: 12, fontFamily: "Cairo_400Regular" },
+  avatarWrap: { alignItems: "center", justifyContent: "center", borderWidth: 2 },
+  avatarInitial: { fontSize: 32, fontFamily: "Cairo_700Bold" },
 
   sportsRow: { flexDirection: "row", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" },
   sportPill: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 },
@@ -537,9 +536,8 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 12,
     borderRadius: 22,
-    backgroundColor: ACCENT_LIME,
   },
-  quickActionLimeText: { fontSize: 13, fontFamily: "Cairo_700Bold", color: "#111" },
+  quickActionLimeText: { fontSize: 13, fontFamily: "Cairo_700Bold" },
   quickActionGhost: {
     flex: 1,
     flexDirection: "row",
@@ -548,11 +546,9 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 12,
     borderRadius: 22,
-    backgroundColor: "rgba(255,255,255,0.1)",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.15)",
   },
-  quickActionGhostText: { fontSize: 13, fontFamily: "Cairo_700Bold", color: "rgba(255,255,255,0.85)" },
+  quickActionGhostText: { fontSize: 13, fontFamily: "Cairo_700Bold" },
 
   card: { borderRadius: 24, padding: 20, gap: 16 },
   cardHeaderRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
