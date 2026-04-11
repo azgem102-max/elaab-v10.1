@@ -48,7 +48,7 @@ A fully-featured Arabic RTL mobile sports community app built with Expo (React N
 ### Onboarding
 - `app/index.tsx` — Welcome (sport cards, app logo)
 - `app/phone.tsx` — Saudi phone input (+966) with regex validation (05XXXXXXXX format, E.164 formatting)
-- `app/otp.tsx` — 4-digit OTP with 60s countdown timer, handles new vs returning users (isNewUser flag)
+- `app/otp.tsx` — 6-digit OTP with 60s countdown timer, handles new vs returning users (isNewUser flag)
 - `app/profile-setup.tsx` — Nickname + sport/skill selection (first-time only)
 - `app/position-selector.tsx` — Position per sport (step-by-step)
 

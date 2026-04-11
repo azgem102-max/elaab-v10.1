@@ -46,6 +46,7 @@ export default function GroupChatScreen() {
   const [toast, setToast] = useState<{ visible: boolean; text: string }>({ visible: false, text: "" });
   const [inputText, setInputText] = useState("");
   const lastTimestampRef = useRef<string | null>(null);
+  const initialLoadDoneRef = useRef(false);
   const flatListRef = useRef<FlatList<ChatMessage>>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const currentUserId = user?.id ?? "";
@@ -59,6 +60,7 @@ export default function GroupChatScreen() {
     if (!groupId) return;
     setLoading(true);
     setLoadError(false);
+    initialLoadDoneRef.current = false;
     try {
       const res = await api.getGroupMessages(groupId);
       if (res.messages) {
@@ -78,11 +80,12 @@ export default function GroupChatScreen() {
       setLoadError(true);
     } finally {
       setLoading(false);
+      initialLoadDoneRef.current = true;
     }
   }, [groupId]);
 
   const pollNewMessages = useCallback(async () => {
-    if (!groupId) return;
+    if (!groupId || !initialLoadDoneRef.current) return;
     try {
       const after = lastTimestampRef.current ?? undefined;
       const res = await api.getGroupMessages(groupId, after);
@@ -95,7 +98,7 @@ export default function GroupChatScreen() {
           time: new Date(m.createdAt),
         }));
         setMessages((prev) => {
-          const existingIds = new Set(prev.map((m) => m.id));
+          const existingIds = new Set(prev.filter((m) => !m.pending).map((m) => m.id));
           const fresh = incoming.filter((m) => !existingIds.has(m.id));
           if (fresh.length === 0) return prev;
           setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 80);

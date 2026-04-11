@@ -73,6 +73,7 @@ export default function GroupDetailScreen() {
   const [chatRefreshing, setChatRefreshing] = useState(false);
   const chatScrollRef = useRef<ScrollView>(null);
   const lastMessageTimestampRef = useRef<string | null>(null);
+  const chatInitialLoadDoneRef = useRef(false);
 
   useEffect(() => {
     Animated.timing(fadeAnim, { toValue: 1, duration: 320, useNativeDriver: true }).start();
@@ -111,8 +112,11 @@ export default function GroupDetailScreen() {
       if (isInitial) {
         setChatLoading(true);
         lastMessageTimestampRef.current = null;
+        chatInitialLoadDoneRef.current = false;
+      } else if (!chatInitialLoadDoneRef.current) {
+        return;
       }
-      const after = !isInitial && lastMessageTimestampRef.current ? lastMessageTimestampRef.current : undefined;
+      const after = lastMessageTimestampRef.current ?? undefined;
       const res = await api.getGroupMessages(groupId, after);
       if (res.messages && res.messages.length > 0) {
         const newMsgs: ChatMessage[] = res.messages.map((m) => ({
@@ -140,7 +144,10 @@ export default function GroupDetailScreen() {
       }
     } catch {
     } finally {
-      if (isInitial) setChatLoading(false);
+      if (isInitial) {
+        setChatLoading(false);
+        chatInitialLoadDoneRef.current = true;
+      }
     }
   }
 
