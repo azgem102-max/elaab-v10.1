@@ -99,7 +99,6 @@ function AnimatedMatchCard({
 }: {
   item: ApiMatch;
   index: number;
-  colors: ReturnType<typeof useColors>;
   onPress: (item: ApiMatch) => void;
   onJoin: (item: { id: string; title: string; isPublic?: boolean; sport: SportType }) => void;
   onViewGroup?: (groupId: string) => void;
@@ -275,10 +274,6 @@ export default function ExploreScreen() {
       setApiLoading(false);
     }
   }, [sportFilter, dateFilter, openOnly, advancedFilters, userLocation, requestUserLocation]);
-
-  useEffect(() => {
-    fetchMatches();
-  }, [fetchMatches]);
 
   useFocusEffect(
     useCallback(() => {
@@ -745,7 +740,6 @@ export default function ExploreScreen() {
             <AnimatedMatchCard
               item={item}
               index={index}
-              colors={colors}
               onPress={handleMatchPress}
               onJoin={handleJoin}
               onViewGroup={(groupId) => router.push({ pathname: "/group-detail", params: { id: groupId } })}
