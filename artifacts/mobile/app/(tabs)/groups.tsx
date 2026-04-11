@@ -337,13 +337,13 @@ export default function GroupsScreen() {
                     onPress={() => router.push("/create-group")}
                   >
                     <LinearGradient
-                      colors={["#2C54E8", "#5B7FFF"]}
+                      colors={[colors.accent, colors.accent + "CC"]}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
                       style={styles.discoverEmptyCTAInner}
                     >
-                      <Ionicons name="add" size={16} color="#fff" />
-                      <Text style={styles.discoverEmptyCTAText}>أنشئ مجموعة</Text>
+                      <Ionicons name="add" size={16} color={colors.accentForeground} />
+                      <Text style={[styles.discoverEmptyCTAText, { color: colors.accentForeground }]}>أنشئ مجموعة</Text>
                     </LinearGradient>
                   </Pressable>
                 )}
@@ -370,12 +370,12 @@ export default function GroupsScreen() {
         onPress={() => router.push("/create-group")}
       >
         <LinearGradient
-          colors={[colors.primary, colors.primary + "CC"]}
+          colors={[colors.accent, colors.accent + "CC"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.fabGradient}
         >
-          <Ionicons name="add" size={28} color="rgba(255,255,255,1)" />
+          <Ionicons name="add" size={28} color={colors.accentForeground} />
         </LinearGradient>
       </Pressable>
 
@@ -403,13 +403,13 @@ function MyGroupsEmpty({ colors }: { colors: ReturnType<typeof useColors> }) {
         onPress={() => router.push("/create-group")}
       >
         <LinearGradient
-          colors={[colors.primary, colors.primary + "CC"]}
+          colors={[colors.accent, colors.accent + "CC"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.emptyCreateBtnInner}
         >
-          <Ionicons name="add" size={16} color="rgba(255,255,255,1)" />
-          <Text style={styles.emptyCreateBtnText}>أنشئ مجموعة</Text>
+          <Ionicons name="add" size={16} color={colors.accentForeground} />
+          <Text style={[styles.emptyCreateBtnText, { color: colors.accentForeground }]}>أنشئ مجموعة</Text>
         </LinearGradient>
       </Pressable>
     </View>
