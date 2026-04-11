@@ -14,7 +14,7 @@ import React, {
   useCallback, useEffect, useRef, useState,
 } from "react";
 import {
-  ActivityIndicator, Alert, Animated, FlatList, I18nManager, PanResponder,
+  ActivityIndicator, Animated, FlatList, I18nManager, Modal, PanResponder,
   Platform, Pressable, ScrollView, StyleSheet, Text,
   TextInput, View, KeyboardAvoidingView,
 } from "react-native";
@@ -22,6 +22,106 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { Match } from "@/context/AppContext";
 
 type Tab = "players" | "gatta" | "settings";
+
+type ConfirmDialogConfig = {
+  title: string;
+  message: string;
+  confirmText: string;
+  destructive?: boolean;
+  onConfirm: () => void | Promise<void>;
+};
+
+function ConfirmDialog({
+  config,
+  visible,
+  onCancel,
+  colors,
+}: {
+  config: ConfirmDialogConfig | null;
+  visible: boolean;
+  onCancel: () => void;
+  colors: ReturnType<typeof useColors>;
+}) {
+  const [confirming, setConfirming] = useState(false);
+
+  useEffect(() => {
+    if (!visible) setConfirming(false);
+  }, [visible]);
+
+  if (!config) return null;
+
+  async function handleConfirm() {
+    if (confirming) return;
+    setConfirming(true);
+    try {
+      await config!.onConfirm();
+    } finally {
+      setConfirming(false);
+    }
+  }
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
+      <View style={dlgStyles.overlay}>
+        <View style={[dlgStyles.dialog, { backgroundColor: colors.background }]}>
+          <Text style={[dlgStyles.title, { color: colors.onSurface }]}>{config.title}</Text>
+          <Text style={[dlgStyles.message, { color: colors.mutedForeground }]}>{config.message}</Text>
+          <View style={dlgStyles.buttons}>
+            <Pressable
+              style={[dlgStyles.btn, dlgStyles.cancelBtn, { borderColor: colors.border, opacity: confirming ? 0.5 : 1 }]}
+              onPress={onCancel}
+              disabled={confirming}
+            >
+              <Text style={[dlgStyles.btnText, { color: colors.mutedForeground }]}>تراجع</Text>
+            </Pressable>
+            <Pressable
+              style={[
+                dlgStyles.btn,
+                dlgStyles.confirmBtn,
+                { backgroundColor: config.destructive ? "#DC2626" : colors.primary, opacity: confirming ? 0.7 : 1 },
+              ]}
+              onPress={handleConfirm}
+              disabled={confirming}
+            >
+              {confirming ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={[dlgStyles.btnText, { color: "#fff" }]}>{config.confirmText}</Text>
+              )}
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const dlgStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 32,
+  },
+  dialog: {
+    width: "100%",
+    borderRadius: 20,
+    padding: 24,
+    gap: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  title: { fontSize: 17, fontFamily: "Cairo_700Bold", textAlign: "right" },
+  message: { fontSize: 14, fontFamily: "Cairo_400Regular", textAlign: "right", lineHeight: 22 },
+  buttons: { flexDirection: "row", gap: 10, marginTop: 4 },
+  btn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  cancelBtn: { borderWidth: 1 },
+  confirmBtn: {},
+  btnText: { fontSize: 14, fontFamily: "Cairo_700Bold" },
+});
 
 type ToastType = "success" | "error" | "warning";
 interface ToastState { visible: boolean; message: string; type: ToastType }
@@ -249,6 +349,8 @@ export default function ManageMatchScreen() {
   const [saving, setSaving] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogConfig | null>(null);
+  const [confirmVisible, setConfirmVisible] = useState(false);
   const [showVenueSuggestions, setShowVenueSuggestions] = useState(false);
 
   const days = getNext14Days();
@@ -376,6 +478,16 @@ export default function ManageMatchScreen() {
     toastTimer.current = setTimeout(() => setToast((t) => ({ ...t, visible: false })), 2800);
   }
 
+  function showConfirm(config: ConfirmDialogConfig) {
+    setConfirmDialog(config);
+    setConfirmVisible(true);
+  }
+
+  function hideConfirm() {
+    setConfirmVisible(false);
+    setConfirmDialog(null);
+  }
+
   async function handleSendPaymentReminder() {
     if (sendingReminder || !match) return;
     const unpaidCount = match.players.filter((p) => p.paymentStatus !== "paid" && p.id !== match.organizerId).length;
@@ -383,28 +495,25 @@ export default function ManageMatchScreen() {
       showToast("جميع اللاعبين دفعوا بالفعل", "warning");
       return;
     }
-    Alert.alert(
-      "إرسال تذكير بالدفع",
-      `سيتلقى ${unpaidCount} لاعب/لاعبين إشعاراً بتذكيرهم بدفع حصتهم (${match.cost} ر.س). هل تريد المتابعة؟`,
-      [
-        { text: "إلغاء", style: "cancel" },
-        {
-          text: "إرسال", onPress: async () => {
-            setSendingReminder(true);
-            try {
-              const res = await api.sendPaymentReminder(match.id);
-              if (res.success) {
-                showToast(res.notified > 0 ? `تم إرسال التذكير لـ ${res.notified} لاعب` : "لا يوجد لاعبون غير دافعين", "success");
-              }
-            } catch {
-              showToast("تعذّر إرسال التذكير", "error");
-            } finally {
-              setSendingReminder(false);
-            }
-          },
-        },
-      ]
-    );
+    showConfirm({
+      title: "إرسال تذكير بالدفع",
+      message: `سيتلقى ${unpaidCount} لاعب/لاعبين إشعاراً بتذكيرهم بدفع حصتهم (${match.cost} ر.س). هل تريد المتابعة؟`,
+      confirmText: "إرسال",
+      onConfirm: async () => {
+        hideConfirm();
+        setSendingReminder(true);
+        try {
+          const res = await api.sendPaymentReminder(match.id);
+          if (res.success) {
+            showToast(res.notified > 0 ? `تم إرسال التذكير لـ ${res.notified} لاعب` : "لا يوجد لاعبون غير دافعين", "success");
+          }
+        } catch {
+          showToast("تعذّر إرسال التذكير", "error");
+        } finally {
+          setSendingReminder(false);
+        }
+      },
+    });
   }
 
   async function handleMarkAttendeesPaid() {
@@ -416,29 +525,26 @@ export default function ManageMatchScreen() {
       showToast("لا يوجد حاضرون غير دافعين", "warning");
       return;
     }
-    Alert.alert(
-      "تسديد الحاضرين",
-      `هل تريد تسجيل دفع جميع الحاضرين (${eligibleCount} لاعب)؟`,
-      [
-        { text: "إلغاء", style: "cancel" },
-        {
-          text: "تأكيد", onPress: async () => {
-            setMarkingPaid(true);
-            try {
-              const res = await api.markAttendeesPaid(match.id);
-              if (res.success) {
-                showToast(`تم تسجيل دفع ${res.marked} لاعب`, "success");
-                refetchMatch();
-              }
-            } catch {
-              showToast("تعذّر تحديث المدفوعات", "error");
-            } finally {
-              setMarkingPaid(false);
-            }
-          },
-        },
-      ]
-    );
+    showConfirm({
+      title: "تسديد الحاضرين",
+      message: `هل تريد تسجيل دفع جميع الحاضرين (${eligibleCount} لاعب)؟`,
+      confirmText: "تأكيد",
+      onConfirm: async () => {
+        hideConfirm();
+        setMarkingPaid(true);
+        try {
+          const res = await api.markAttendeesPaid(match.id);
+          if (res.success) {
+            showToast(`تم تسجيل دفع ${res.marked} لاعب`, "success");
+            refetchMatch();
+          }
+        } catch {
+          showToast("تعذّر تحديث المدفوعات", "error");
+        } finally {
+          setMarkingPaid(false);
+        }
+      },
+    });
   }
 
   function validate(): boolean {
@@ -473,56 +579,52 @@ export default function ManageMatchScreen() {
       showToast("تم حفظ التعديلات بنجاح", "success");
       refetchMatch();
     } else {
-      Alert.alert("خطأ", "تعذّر تحديث التفاصيل");
+      showToast("تعذّر تحديث التفاصيل", "error");
     }
   }
 
-  async function handleCancel() {
-    Alert.alert(
-      `إلغاء المباراة`,
-      `هل أنت متأكد من إلغاء هذه المباراة؟ سيتلقى جميع اللاعبين إشعاراً بالإلغاء.`,
-      [
-        { text: "تراجع", style: "cancel" },
-        {
-          text: "إلغاء المباراة", style: "destructive", onPress: async () => {
-            const matchId = match!.id;
-            const ok = await cancelMatch(matchId);
-            if (ok) {
-              showToast("تم إلغاء المباراة بنجاح", "success");
-              router.dismissAll();
-            } else {
-              showToast("تعذّر إلغاء المباراة", "error");
-            }
-          },
-        },
-      ]
-    );
+  function handleCancel() {
+    showConfirm({
+      title: "إلغاء المباراة",
+      message: "هل أنت متأكد من إلغاء هذه المباراة؟ سيتلقى جميع اللاعبين إشعاراً بالإلغاء.",
+      confirmText: "إلغاء المباراة",
+      destructive: true,
+      onConfirm: async () => {
+        hideConfirm();
+        const matchId = match!.id;
+        const ok = await cancelMatch(matchId);
+        if (ok) {
+          showToast("تم إلغاء المباراة بنجاح", "success");
+          router.dismissAll();
+        } else {
+          showToast("تعذّر إلغاء المباراة", "error");
+        }
+      },
+    });
   }
 
-  async function handleCompleteMatch() {
-    Alert.alert(
-      `إنهاء المباراة`,
-      `هل أنت متأكد من إنهاء هذه المباراة؟ سيتم تغيير حالته إلى "مكتمل".`,
-      [
-        { text: "تراجع", style: "cancel" },
-        {
-          text: "إنهاء", style: "destructive", onPress: async () => {
-            if (completing) return;
-            setCompleting(true);
-            try {
-              await api.completeMatch(match!.id);
-              showToast("تم إنهاء المباراة بنجاح", "success");
-              router.back();
-              refreshMatches().catch(() => {});
-            } catch {
-              showToast("تعذّر إنهاء المباراة", "error");
-            } finally {
-              setCompleting(false);
-            }
-          },
-        },
-      ]
-    );
+  function handleCompleteMatch() {
+    showConfirm({
+      title: "إنهاء المباراة",
+      message: 'هل أنت متأكد من إنهاء هذه المباراة؟ سيتم تغيير حالته إلى "مكتمل".',
+      confirmText: "إنهاء",
+      destructive: true,
+      onConfirm: async () => {
+        hideConfirm();
+        if (completing) return;
+        setCompleting(true);
+        try {
+          await api.completeMatch(match!.id);
+          showToast("تم إنهاء المباراة بنجاح", "success");
+          router.back();
+          refreshMatches().catch(() => {});
+        } catch {
+          showToast("تعذّر إنهاء المباراة", "error");
+        } finally {
+          setCompleting(false);
+        }
+      },
+    });
   }
 
   const TABS: { key: Tab; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
@@ -670,22 +772,20 @@ export default function ManageMatchScreen() {
                     }}
                     onRemovePlayer={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                      Alert.alert(
-                        "إزالة لاعب",
-                        `هل أنت متأكد من إزالة "${player.nickname}" من المباراة؟`,
-                        [
-                          { text: "تراجع", style: "cancel" },
-                          {
-                            text: "إزالة", style: "destructive", onPress: async () => {
-                              const prev = apiMatch;
-                              setApiMatch((p) => p ? { ...p, players: p.players.filter((pl) => pl.id !== player.id) } : p);
-                              const ok = await removeMatchPlayer(match.id, player.id);
-                              if (ok) { showToast(`تم إزالة ${player.nickname}`, "success"); refetchMatch(); }
-                              else { setApiMatch(prev); showToast("تعذّر إزالة اللاعب", "error"); }
-                            },
-                          },
-                        ]
-                      );
+                      showConfirm({
+                        title: "إزالة لاعب",
+                        message: `هل أنت متأكد من إزالة "${player.nickname}" من المباراة؟`,
+                        confirmText: "إزالة",
+                        destructive: true,
+                        onConfirm: async () => {
+                          hideConfirm();
+                          const prev = apiMatch;
+                          setApiMatch((p) => p ? { ...p, players: p.players.filter((pl) => pl.id !== player.id) } : p);
+                          const ok = await removeMatchPlayer(match.id, player.id);
+                          if (ok) { showToast(`تم إزالة ${player.nickname}`, "success"); refetchMatch(); }
+                          else { setApiMatch(prev); showToast("تعذّر إزالة اللاعب", "error"); }
+                        },
+                      });
                     }}
                   />
                 )}
@@ -787,19 +887,19 @@ export default function ManageMatchScreen() {
                           const actionMsg = newStatus === "paid"
                             ? `هل تريد تسجيل دفع "${player.nickname}"؟`
                             : `هل تريد إلغاء دفع "${player.nickname}"؟`;
-                          Alert.alert(actionLabel, actionMsg, [
-                            { text: "تراجع", style: "cancel" },
-                            {
-                              text: "تأكيد",
-                              style: newStatus === "pending" ? "destructive" : "default",
-                              onPress: () => {
-                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                                const prev = apiMatch;
-                                setApiMatch((p) => p ? { ...p, players: p.players.map((pl) => pl.id === player.id ? { ...pl, paymentStatus: newStatus } : pl) } : p);
-                                updatePayment(match.id, player.id, newStatus).then((ok) => { if (ok) refetchMatch(); else setApiMatch(prev); });
-                              },
+                          showConfirm({
+                            title: actionLabel,
+                            message: actionMsg,
+                            confirmText: "تأكيد",
+                            destructive: newStatus === "pending",
+                            onConfirm: () => {
+                              hideConfirm();
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                              const prev = apiMatch;
+                              setApiMatch((p) => p ? { ...p, players: p.players.map((pl) => pl.id === player.id ? { ...pl, paymentStatus: newStatus } : pl) } : p);
+                              updatePayment(match.id, player.id, newStatus).then((ok) => { if (ok) refetchMatch(); else setApiMatch(prev); });
                             },
-                          ]);
+                          });
                         }}
                       >
                         <Ionicons
@@ -1061,6 +1161,12 @@ export default function ManageMatchScreen() {
       </ScrollView>
 
       <Toast toast={toast} />
+      <ConfirmDialog
+        config={confirmDialog}
+        visible={confirmVisible}
+        onCancel={hideConfirm}
+        colors={colors}
+      />
     </KeyboardAvoidingView>
   );
 }
