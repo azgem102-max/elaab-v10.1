@@ -1,6 +1,6 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { db } from "@workspace/db";
-import { matchesTable, matchPlayersTable, usersTable, ratingsTable, groupMembersTable, inviteLinksTable } from "@workspace/db/schema";
+import { matchesTable, matchPlayersTable, usersTable, groupMembersTable, inviteLinksTable } from "@workspace/db/schema";
 import { eq, and, sql, inArray, lt, or } from "drizzle-orm";
 import { requireAuth, verifyToken } from "../lib/auth";
 import { generateId } from "../lib/id";
@@ -69,17 +69,6 @@ async function buildMatchSummary(match: typeof matchesTable.$inferSelect, curren
     ? playerRows.some((p) => p.userId === currentUserId)
     : false;
 
-  let hasRated = false;
-  if (currentUserId) {
-    const existingRating = await db.query.ratingsTable.findFirst({
-      where: and(
-        eq(ratingsTable.matchId, match.id),
-        eq(ratingsTable.raterId, currentUserId),
-      ),
-    });
-    hasRated = !!existingRating;
-  }
-
   return {
     id: match.id,
     title: match.title,
@@ -104,7 +93,6 @@ async function buildMatchSummary(match: typeof matchesTable.$inferSelect, curren
     description: match.description ?? undefined,
     joinedByCurrentUser,
     invitedGroupId: match.invitedGroupId ?? undefined,
-    hasRated,
   };
 }
 
@@ -134,34 +122,15 @@ async function buildMatchDetails(match: typeof matchesTable.$inferSelect, req?: 
           sql`${matchesTable.organizerId} != ${row.userId}`,
         ));
 
-      const ratingRows = await db
-        .select()
-        .from(ratingsTable)
-        .where(eq(ratingsTable.ratedUserId, row.userId));
-
-      const VALID_TYPES = ["artist", "rock", "bolt"] as const;
-      const BADGE_THRESHOLD = 3;
-
       const totalMatches = Number(allPlayerRows[0]?.count ?? 0);
       const externalJ = externalPlayerRows.length;
       const externalA = externalPlayerRows.filter((r) => r.attended).length;
-
-      const ratingCounts = { artist: 0, rock: 0, bolt: 0 };
-      for (const r of ratingRows) {
-        if (r.ratingType === "artist") ratingCounts.artist++;
-        else if (r.ratingType === "rock") ratingCounts.rock++;
-        else if (r.ratingType === "bolt") ratingCounts.bolt++;
-      }
-      const totalRatingCount = ratingCounts.artist + ratingCounts.rock + ratingCounts.bolt;
-
-      const badges = VALID_TYPES.filter((t) => ratingCounts[t] >= BADGE_THRESHOLD);
 
       const RELIABILITY_MIN_MATCHES = 3;
       let rel: number | null = null;
       if (externalJ >= RELIABILITY_MIN_MATCHES) {
         const attendanceScore = Math.round((externalA / externalJ) * 100);
-        const ratingBonus = Math.min(10, Math.round(totalRatingCount * 0.5));
-        rel = Math.min(100, attendanceScore + ratingBonus);
+        rel = Math.min(100, attendanceScore);
       }
 
       let skillLevelNumeric: number | null = null;
@@ -180,7 +149,6 @@ async function buildMatchDetails(match: typeof matchesTable.$inferSelect, req?: 
         nickname: u?.name ?? "مستخدم",
         reliability: rel,
         matchesPlayed: totalMatches,
-        badges,
         position: row.position ?? "لاعب",
         attendance: row.attendanceStatus ?? (row.attended ? "present" : "pending"),
         paymentStatus: row.paid ? "paid" : "pending",
@@ -911,302 +879,6 @@ router.patch("/matches/:id/players/:userId/payment", requireAuth, async (req: Au
       eq(matchPlayersTable.matchId, matchId),
       eq(matchPlayersTable.userId, targetUserId),
     ));
-
-  res.json({ success: true });
-});
-
-router.post("/matches/:id/rate", requireAuth, async (req: AuthRequest, res: Response) => {
-  const matchId = getParam(req.params["id"] as string);
-  const raterId = req.user.userId;
-  const body = (req.body ?? {}) as { userId?: string; score?: number; ratings?: Record<string, string>; levelAccuracyVotes?: Record<string, string> };
-
-  const match = await db.query.matchesTable.findFirst({
-    where: eq(matchesTable.id, matchId),
-  });
-
-  if (!match) {
-    res.status(404).json({ success: false, error: "المباراة غير موجودة" });
-    return;
-  }
-
-  if (body.ratings && typeof body.ratings === "object") {
-    const matchDateTime = new Date(`${match.date}T${match.time}:00`);
-    const isCompleted = match.status === "completed" || matchDateTime <= new Date();
-    if (!isCompleted) {
-      res.status(403).json({ success: false, error: "لا يمكن التقييم قبل انتهاء المباراة" });
-      return;
-    }
-
-    const raterParticipant = await db.query.matchPlayersTable.findFirst({
-      where: and(
-        eq(matchPlayersTable.matchId, matchId),
-        eq(matchPlayersTable.userId, raterId),
-      ),
-    });
-    if (!raterParticipant) {
-      res.status(403).json({ success: false, error: "يجب أن تكون مشاركاً في المباراة لتقييم اللاعبين" });
-      return;
-    }
-
-    const VALID_TYPES = ["artist", "rock", "bolt"] as const;
-    const VALID_LEVEL_VOTES = ["matching", "lower", "higher"] as const;
-    const BADGE_LABELS: Record<string, string> = { artist: "فنان 🎨", rock: "صخرة 💪", bolt: "صاعقة ⚡" };
-
-    const raterUser = await db.query.usersTable.findFirst({ where: eq(usersTable.id, raterId) });
-    const raterName = raterUser?.name ?? "لاعب";
-
-    const isFreeMatch = match.cost === 0;
-    const notifiedUsers = new Set<string>();
-    let newRatingsCount = 0;
-    let skippedDuplicates = 0;
-
-    const levelVotes = (body.levelAccuracyVotes && typeof body.levelAccuracyVotes === "object")
-      ? body.levelAccuracyVotes
-      : {};
-
-    for (const [ratedId, type] of Object.entries(body.ratings)) {
-      if (!VALID_TYPES.includes(type as typeof VALID_TYPES[number])) continue;
-      if (ratedId === raterId) continue;
-
-      const ratedParticipant = await db.query.matchPlayersTable.findFirst({
-        where: and(
-          eq(matchPlayersTable.matchId, matchId),
-          eq(matchPlayersTable.userId, ratedId),
-        ),
-      });
-      if (!ratedParticipant) continue;
-
-      const ratedAttended = ratedParticipant.attendanceStatus === "present" || ratedParticipant.attended === true;
-      if (!ratedAttended || (!isFreeMatch && !ratedParticipant.paid)) continue;
-
-      const alreadyRated = await db.query.ratingsTable.findFirst({
-        where: and(
-          eq(ratingsTable.matchId, matchId),
-          eq(ratingsTable.raterId, raterId),
-          eq(ratingsTable.ratedUserId, ratedId),
-        ),
-      });
-
-      if (alreadyRated) {
-        skippedDuplicates++;
-        continue;
-      }
-
-      const rawLevelVote = levelVotes[ratedId];
-      const sportSupportsLevelVote = match.sport === "padel" || match.sport === "tennis";
-      const levelAccuracyVote = (sportSupportsLevelVote && rawLevelVote && VALID_LEVEL_VOTES.includes(rawLevelVote as typeof VALID_LEVEL_VOTES[number]))
-        ? rawLevelVote
-        : null;
-
-      try {
-        await db.insert(ratingsTable).values({
-          id: generateId("r_"),
-          matchId,
-          raterId,
-          ratedUserId: ratedId,
-          score: 5,
-          ratingType: type,
-          levelAccuracyVote,
-        });
-        newRatingsCount++;
-
-        if (!notifiedUsers.has(ratedId)) {
-          notifiedUsers.add(ratedId);
-          const badgeLabel = BADGE_LABELS[type] ?? type;
-          await sendNotification(
-            ratedId,
-            "rating",
-            "حصلت على تقييم جديد! ⭐",
-            `${raterName} منحك شارة "${badgeLabel}" في مباراة "${match.title}"`,
-            matchId,
-          );
-        }
-
-        if (levelAccuracyVote && levelAccuracyVote !== "matching") {
-          const previousVotesForSport = await db
-            .select({ levelAccuracyVote: ratingsTable.levelAccuracyVote })
-            .from(ratingsTable)
-            .innerJoin(matchesTable, eq(ratingsTable.matchId, matchesTable.id))
-            .where(and(
-              eq(ratingsTable.ratedUserId, ratedId),
-              eq(matchesTable.sport, match.sport),
-              eq(ratingsTable.levelAccuracyVote, levelAccuracyVote),
-            ));
-
-          const previousCount = previousVotesForSport.length - 1;
-
-          if (previousCount === 0) {
-            if (levelAccuracyVote === "lower") {
-              await sendNotification(
-                ratedId,
-                "rating",
-                "ملاحظة حول مستواك 💪",
-                "لاحظ أحد اللاعبين أن مستواك الفعلي قد يكون أقل مما هو مسجل 💪 الجميع بدأ من الصفر — استمر في التحسن!",
-                matchId,
-              );
-            } else if (levelAccuracyVote === "higher") {
-              await sendNotification(
-                ratedId,
-                "rating",
-                "مستواك أعلى مما هو مسجل! 🌟",
-                "أحد اللاعبين يشعر أن مستواك أعلى مما هو مسجل 🌟 ربما حان وقت تحديث ملفك!",
-                matchId,
-              );
-            }
-          } else if (previousCount === 2) {
-            if (levelAccuracyVote === "lower") {
-              await sendNotification(
-                ratedId,
-                "rating",
-                "اقتراح لمراجعة مستواك",
-                "لاحظ عدة لاعبين أن مستواك المسجل قد يكون أعلى من أدائك الفعلي. فكّر في مراجعة مستواك للأسفل.",
-                matchId,
-              );
-            } else if (levelAccuracyVote === "higher") {
-              await sendNotification(
-                ratedId,
-                "rating",
-                "حان وقت رفع مستواك! 🚀",
-                "لاحظ عدة لاعبين أن أداءك يفوق مستواك المسجل. فكّر في تحديث ملفك برفع مستواك!",
-                matchId,
-              );
-            }
-          }
-        }
-      } catch (insertErr: unknown) {
-        const isUniqueViolation =
-          typeof insertErr === "object" &&
-          insertErr !== null &&
-          "code" in insertErr &&
-          (insertErr as { code: string }).code === "23505";
-        if (isUniqueViolation) {
-          skippedDuplicates++;
-        } else {
-          throw insertErr;
-        }
-      }
-    }
-
-    if (newRatingsCount === 0 && skippedDuplicates > 0) {
-      res.status(409).json({ success: false, error: "لقد قيّمت هؤلاء اللاعبين بالفعل في هذه المباراة" });
-      return;
-    }
-
-    for (const ratedId of notifiedUsers) {
-      recomputeAndPersistReliability(ratedId).catch((err) => {
-        logger.error({ err, userId: ratedId }, "Failed to recompute reliability after rating");
-      });
-    }
-
-    res.json({ success: true });
-    return;
-  }
-
-  if (!body.userId || body.score === undefined) {
-    res.status(400).json({ success: false, error: "بيانات غير مكتملة" });
-    return;
-  }
-
-  const score = Number(body.score);
-  if (!Number.isFinite(score) || !Number.isInteger(score) || score < 1 || score > 5) {
-    res.status(400).json({ success: false, error: "التقييم يجب أن يكون عدداً صحيحاً بين 1 و 5" });
-    return;
-  }
-
-  const matchDateTimeLegacy = new Date(`${match.date}T${match.time}:00`);
-  const isCompletedLegacy = match.status === "completed" || matchDateTimeLegacy <= new Date();
-  if (!isCompletedLegacy) {
-    res.status(403).json({ success: false, error: "لا يمكن التقييم قبل انتهاء المباراة" });
-    return;
-  }
-
-  const raterParticipant = await db.query.matchPlayersTable.findFirst({
-    where: and(
-      eq(matchPlayersTable.matchId, matchId),
-      eq(matchPlayersTable.userId, raterId),
-    ),
-  });
-
-  if (!raterParticipant) {
-    res.status(403).json({ success: false, error: "يجب أن تكون مشاركاً في المباراة لتقييم اللاعبين" });
-    return;
-  }
-
-  if (body.userId === raterId) {
-    res.status(403).json({ success: false, error: "لا يمكنك تقييم نفسك" });
-    return;
-  }
-
-  const ratedParticipant = await db.query.matchPlayersTable.findFirst({
-    where: and(
-      eq(matchPlayersTable.matchId, matchId),
-      eq(matchPlayersTable.userId, body.userId),
-    ),
-  });
-
-  if (!ratedParticipant) {
-    res.status(403).json({ success: false, error: "اللاعب المراد تقييمه لم يكن مشاركاً في المباراة" });
-    return;
-  }
-
-  const ratedAttendedLegacy = ratedParticipant.attendanceStatus === "present" || ratedParticipant.attended === true;
-  const isFreeMatchLegacy = match.cost === 0;
-  if (!ratedAttendedLegacy || (!isFreeMatchLegacy && !ratedParticipant.paid)) {
-    res.status(403).json({ success: false, error: "لا يمكن تقييم لاعب لم يحضر المباراة أو لم يدفع الرسوم" });
-    return;
-  }
-
-  const existingRating = await db.query.ratingsTable.findFirst({
-    where: and(
-      eq(ratingsTable.matchId, matchId),
-      eq(ratingsTable.raterId, raterId),
-      eq(ratingsTable.ratedUserId, body.userId),
-    ),
-  });
-
-  if (existingRating) {
-    res.status(409).json({ success: false, error: "لقد قيّمت هذا اللاعب بالفعل في هذه المباراة" });
-    return;
-  }
-
-  try {
-    await db.insert(ratingsTable).values({
-      id: generateId("r_"),
-      matchId,
-      raterId,
-      ratedUserId: body.userId,
-      score,
-    });
-  } catch (insertErr: unknown) {
-    const isUniqueViolation =
-      typeof insertErr === "object" &&
-      insertErr !== null &&
-      "code" in insertErr &&
-      (insertErr as { code: string }).code === "23505";
-    if (isUniqueViolation) {
-      res.status(409).json({ success: false, error: "لقد قيّمت هذا اللاعب بالفعل في هذه المباراة" });
-      return;
-    }
-    throw insertErr;
-  }
-
-  const rater = await db.query.usersTable.findFirst({
-    where: eq(usersTable.id, raterId),
-  });
-  const raterName = rater?.name ?? "لاعب";
-
-  const stars = "⭐".repeat(Math.min(score, 5));
-  await sendNotification(
-    body.userId,
-    "rating",
-    "تقييم جديد! " + stars,
-    `${raterName} قيّمك بـ ${score}/5 في مباراة "${match.title}"`,
-    matchId,
-  );
-
-  recomputeAndPersistReliability(body.userId).catch((err) => {
-    logger.error({ err, userId: body.userId }, "Failed to recompute reliability after legacy rating");
-  });
 
   res.json({ success: true });
 });

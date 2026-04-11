@@ -1,7 +1,7 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import multer from "multer";
 import { db } from "@workspace/db";
-import { usersTable, matchPlayersTable, matchesTable, ratingsTable } from "@workspace/db/schema";
+import { usersTable, matchPlayersTable, matchesTable } from "@workspace/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { requireAuth } from "../lib/auth";
 import type { JwtPayload } from "../lib/auth";
@@ -37,28 +37,14 @@ export async function recomputeAndPersistReliability(userId: string): Promise<nu
       sql`${matchesTable.organizerId} != ${userId}`,
     ));
 
-  const ratingRows = await db
-    .select({ ratingType: ratingsTable.ratingType })
-    .from(ratingsTable)
-    .where(eq(ratingsTable.ratedUserId, userId));
-
-  const ratingCounts = { artist: 0, rock: 0, bolt: 0 };
-  for (const r of ratingRows) {
-    if (r.ratingType === "artist") ratingCounts.artist++;
-    else if (r.ratingType === "rock") ratingCounts.rock++;
-    else if (r.ratingType === "bolt") ratingCounts.bolt++;
-  }
-
   const RELIABILITY_MIN_MATCHES = 3;
   const externalJ = externalPlayerRows.length;
   const externalA = externalPlayerRows.filter((r) => r.attended).length;
-  const totalRatingCount = ratingCounts.artist + ratingCounts.rock + ratingCounts.bolt;
 
   let reliability: number | null = null;
   if (externalJ >= RELIABILITY_MIN_MATCHES) {
     const attendanceScore = Math.round((externalA / externalJ) * 100);
-    const ratingBonus = Math.min(10, Math.round(totalRatingCount * 0.5));
-    reliability = Math.min(100, attendanceScore + ratingBonus);
+    reliability = Math.min(100, attendanceScore);
   }
 
   await db
@@ -88,34 +74,15 @@ async function computeUserProfile(userId: string) {
       sql`${matchesTable.organizerId} != ${userId}`,
     ));
 
-  const ratingRows = await db
-    .select()
-    .from(ratingsTable)
-    .where(eq(ratingsTable.ratedUserId, userId));
-
-  const VALID_TYPES = ["artist", "rock", "bolt"] as const;
-  const BADGE_THRESHOLD = 3;
-
-  const ratingCounts = { artist: 0, rock: 0, bolt: 0 };
-  for (const r of ratingRows) {
-    if (r.ratingType === "artist") ratingCounts.artist++;
-    else if (r.ratingType === "rock") ratingCounts.rock++;
-    else if (r.ratingType === "bolt") ratingCounts.bolt++;
-  }
-
-  const badges = VALID_TYPES.filter((t) => ratingCounts[t] >= BADGE_THRESHOLD);
-
   const matchesPlayed = Number(allPlayerRows[0]?.count ?? 0);
   const externalJ = externalPlayerRows.length;
   const externalA = externalPlayerRows.filter((r) => r.attended).length;
-  const totalRatingCount = ratingCounts.artist + ratingCounts.rock + ratingCounts.bolt;
 
   const RELIABILITY_MIN_MATCHES = 3;
   let reliability: number | null = null;
   if (externalJ >= RELIABILITY_MIN_MATCHES) {
     const attendanceScore = Math.round((externalA / externalJ) * 100);
-    const ratingBonus = Math.min(10, Math.round(totalRatingCount * 0.5));
-    reliability = Math.min(100, attendanceScore + ratingBonus);
+    reliability = Math.min(100, attendanceScore);
   }
 
   let sports: string[] = [];
@@ -138,8 +105,6 @@ async function computeUserProfile(userId: string) {
     sportProfiles,
     reliability,
     matchesPlayed,
-    badges,
-    rating: ratingCounts,
   };
 }
 
@@ -253,13 +218,12 @@ router.get("/users/me/notification-settings", requireAuth, async (req: AuthReque
     success: true,
     matchNotifs: user.notifMatch,
     groupNotifs: user.notifGroup,
-    ratingNotifs: user.notifRating,
   });
 });
 
 router.patch("/users/me/notification-settings", requireAuth, async (req: AuthRequest, res: Response) => {
   const userId = req.user.userId;
-  const body = req.body as { matchNotifs?: boolean; groupNotifs?: boolean; ratingNotifs?: boolean };
+  const body = req.body as { matchNotifs?: boolean; groupNotifs?: boolean };
 
   const updates: Record<string, unknown> = {};
 
@@ -279,14 +243,6 @@ router.patch("/users/me/notification-settings", requireAuth, async (req: AuthReq
     updates.notifGroup = body.groupNotifs;
   }
 
-  if (body.ratingNotifs !== undefined) {
-    if (typeof body.ratingNotifs !== "boolean") {
-      res.status(400).json({ success: false, error: "قيمة ratingNotifs يجب أن تكون boolean" });
-      return;
-    }
-    updates.notifRating = body.ratingNotifs;
-  }
-
   if (Object.keys(updates).length === 0) {
     res.status(400).json({ success: false, error: "لا توجد بيانات للتحديث" });
     return;
@@ -301,7 +257,6 @@ router.patch("/users/me/notification-settings", requireAuth, async (req: AuthReq
     success: true,
     matchNotifs: user?.notifMatch ?? true,
     groupNotifs: user?.notifGroup ?? true,
-    ratingNotifs: user?.notifRating ?? false,
   });
 });
 
@@ -374,8 +329,6 @@ router.get("/users/:id", requireAuth, async (req: AuthRequest, res: Response) =>
       matchCount,
       attendedCount,
       matchesPlayed: profile.matchesPlayed,
-      badges: profile.badges,
-      rating: profile.rating,
     },
   });
 });

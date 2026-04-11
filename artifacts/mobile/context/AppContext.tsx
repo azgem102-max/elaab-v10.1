@@ -11,7 +11,6 @@ export type NumericSkillLevel = number;
 export type AttendanceStatus = "pending" | "present" | "absent";
 export type PaymentStatus = "pending" | "paid";
 export type MatchStatus = "upcoming" | "today" | "completed" | "cancelled";
-export type RatingType = "artist" | "rock" | "bolt";
 export type SessionType = "match" | "training";
 
 export interface SportProfile {
@@ -30,8 +29,6 @@ export interface Player {
   sportProfiles: Partial<Record<SportType, SportProfile>>;
   matchesPlayed: number;
   reliability: number | null;
-  badges: RatingType[];
-  rating: Record<RatingType, number>;
   role?: "owner" | "admin" | "member";
 }
 
@@ -66,7 +63,6 @@ export interface Match {
   invitedGroupId?: string;
   organizerPhone?: string | null;
   organizerPhoneFull?: string | null;
-  hasRated?: boolean;
 }
 
 export interface GroupNextMatch {
@@ -99,7 +95,7 @@ export interface Notification {
   body: string;
   time: Date;
   isRead: boolean;
-  type: "match" | "group" | "rating" | "system";
+  type: "match" | "group" | "system";
   linkedId?: string;
 }
 
@@ -120,8 +116,6 @@ function apiMatchToLocal(m: ApiMatch, existingMatch?: Match): Match {
       sportProfiles: {},
       matchesPlayed: p.matchesPlayed ?? 0,
       reliability: p.reliability,
-      badges: p.badges ?? [],
-      rating: { artist: 0, rock: 0, bolt: 0 },
       attendance: p.attendance as AttendanceStatus,
       paymentStatus: p.paymentStatus as PaymentStatus,
       position: p.position,
@@ -153,7 +147,6 @@ function apiMatchToLocal(m: ApiMatch, existingMatch?: Match): Match {
     invitedGroupId: m.invitedGroupId ?? existing?.invitedGroupId,
     organizerPhone: m.organizerPhone ?? existing?.organizerPhone,
     organizerPhoneFull: m.organizerPhoneFull ?? existing?.organizerPhoneFull,
-    hasRated: m.hasRated ?? existing?.hasRated ?? false,
   };
 }
 
@@ -166,8 +159,6 @@ function apiGroupToLocal(g: ApiGroup, existingGroup?: Group): Group {
         sportProfiles: {},
         matchesPlayed: m.matchesPlayed,
         reliability: m.reliability,
-        badges: m.badges as RatingType[],
-        rating: m.rating,
         role: m.role ?? "member",
       }))
     : existingGroup?.members ?? [];
@@ -230,8 +221,6 @@ interface AppContextType {
   markNotificationRead: (notificationId: string) => void;
   markAllNotificationsRead: () => void;
   clearAllNotifications: () => void;
-  ratePlayer: (matchId: string, playerId: string, ratingType: RatingType) => Promise<void>;
-  submitRatings: (matchId: string, ratings: Record<string, RatingType>, levelAccuracyVotes?: Record<string, string>) => Promise<void>;
   addNotification: (notif: Omit<Notification, "id" | "time" | "isRead">) => void;
 }
 
@@ -315,10 +304,6 @@ function hydrateUserFromProfile(prev: Player, profile: ApiUserProfile): Player {
     sportProfiles,
     reliability: profile.reliability,
     matchesPlayed: profile.matchesPlayed,
-    badges: profile.badges.filter(
-      (b): b is RatingType => ["artist", "rock", "bolt"].includes(b)
-    ),
-    rating: profile.rating ?? prev.rating,
   };
 }
 
@@ -560,11 +545,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const refreshNotifications = useCallback(async () => {
     try {
       const { notifications: apiNotifs } = await api.listNotifications();
+      const VALID_NOTIF_TYPES = ["match", "group", "system"] as const;
       const mapped: Notification[] = apiNotifs.map((n) => ({
         id: n.id,
         title: n.title,
         body: n.body,
-        type: n.type,
+        type: VALID_NOTIF_TYPES.includes(n.type as typeof VALID_NOTIF_TYPES[number]) ? n.type as Notification["type"] : "system",
         linkedId: n.linkedId,
         isRead: n.isRead,
         time: new Date(n.time),
@@ -1135,77 +1121,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     api.clearAllNotifications().catch(() => {});
   }, [persist]);
 
-  const ratePlayer = useCallback(async (matchId: string, playerId: string, ratingType: RatingType) => {
-    setMatches((prev) => {
-      const updated = prev.map((m) => {
-        if (m.id !== matchId) return m;
-        const updatedPlayers = m.players.map((p) => {
-          if (p.id !== playerId) return p;
-          const newRating = { ...p.rating, [ratingType]: (p.rating[ratingType] ?? 0) + 1 };
-          const newReliability = p.reliability !== null ? Math.min(100, Math.round(p.reliability + 1)) : 70;
-          const newBadges = [...new Set([...p.badges, ratingType])];
-          return { ...p, rating: newRating, reliability: newReliability, badges: newBadges };
-        });
-        return { ...m, players: updatedPlayers };
-      });
-      persist({ matches: updated });
-      return updated;
-    });
-
-    try {
-      await api.rateMatch(matchId, { [playerId]: ratingType });
-    } catch {
-      /* rating is best-effort */
-    }
-
-    const match = matches.find((m) => m.id === matchId);
-    const ratingLabel = ratingType === "artist" ? "الفنان" : ratingType === "rock" ? "الصخرة" : "البرق";
-    addNotification({
-      title: "تقييم جديد",
-      body: `أعطيت تقييم "${ratingLabel}" لاعب في مباراة ${match?.title ?? ""}`,
-      type: "rating",
-      linkedId: matchId,
-    });
-  }, [matches, persist, addNotification]);
-
-  const submitRatings = useCallback(async (matchId: string, ratingsMap: Record<string, RatingType>, levelAccuracyVotes?: Record<string, string>) => {
-    let previousMatches: Match[] = [];
-
-    setMatches((prev) => {
-      previousMatches = prev;
-      const updated = prev.map((m) => {
-        if (m.id !== matchId) return m;
-        const updatedPlayers = m.players.map((p) => {
-          const ratingType = ratingsMap[p.id];
-          if (!ratingType) return p;
-          const newRating = { ...p.rating, [ratingType]: (p.rating[ratingType] ?? 0) + 1 };
-          return { ...p, rating: newRating };
-        });
-        return { ...m, players: updatedPlayers };
-      });
-      persist({ matches: updated });
-      return updated;
-    });
-
-    try {
-      await api.rateMatch(matchId, ratingsMap as Record<string, string>, levelAccuracyVotes);
-    } catch (err) {
-      setMatches(() => {
-        persist({ matches: previousMatches });
-        return previousMatches;
-      });
-      throw err;
-    }
-
-    setMatches((prev) => {
-      const updated = prev.map((m) => m.id === matchId ? { ...m, hasRated: true } : m);
-      persist({ matches: updated });
-      return updated;
-    });
-
-    refreshProfile().catch(() => {});
-  }, [persist, refreshProfile]);
-
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const allPlayers: Player[] = React.useMemo(() => {
@@ -1243,7 +1158,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         updateGroup, updateGroupMemberRole, deleteGroup,
         createGroupInviteLink, createMatchInviteLink, acceptInvite,
         refreshNotifications, markNotificationRead, markAllNotificationsRead, clearAllNotifications,
-        ratePlayer, submitRatings, addNotification,
+        addNotification,
       }}
     >
       {children}

@@ -1,4 +1,4 @@
-import { useApp, RatingType } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
 import { api, saveToken } from "@/services/api";
 import { useColors } from "@/hooks/useColors";
 import { router, useLocalSearchParams } from "expo-router";
@@ -240,10 +240,6 @@ export default function OtpScreen() {
               (s): s is "football" | "padel" | "tennis" =>
                 ["football", "padel", "tennis"].includes(s)
             );
-            const validBadges = (u.badges ?? []).filter(
-              (b): b is RatingType =>
-                ["artist", "rock", "bolt"].includes(b)
-            );
             await completeOnboarding({
               id: u.id,
               nickname: u.name ?? "مستخدم",
@@ -253,8 +249,6 @@ export default function OtpScreen() {
               sportProfiles: {},
               matchesPlayed: u.matchesPlayed,
               reliability: u.reliability,
-              badges: validBadges,
-              rating: u.rating ?? { artist: 0, rock: 0, bolt: 0 },
             });
             refreshProfile().catch(() => {});
           } catch {
@@ -265,8 +259,6 @@ export default function OtpScreen() {
               sportProfiles: {},
               matchesPlayed: 0,
               reliability: null,
-              badges: [],
-              rating: { artist: 0, rock: 0, bolt: 0 },
             });
           }
           const pendingInviteToken = await AsyncStorage.getItem(

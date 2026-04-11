@@ -12,11 +12,6 @@ import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Stop } from "re
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 
-const BADGE_CONFIG: Record<string, { label: string; icon: "color-palette-outline" | "tennisball-outline" | "flash-outline"; color: string; bg: string }> = {
-  artist: { label: "فنان", icon: "color-palette-outline", color: "#8B5CF6", bg: "#F3E8FF" },
-  rock:   { label: "صخرة", icon: "tennisball-outline",    color: "#EF4444", bg: "#FEE2E2" },
-  bolt:   { label: "برق",  icon: "flash-outline",         color: "#F59E0B", bg: "#FEF3C7" },
-};
 
 function CircularProgress({ size, strokeWidth, progress, color, bg }: {
   size: number; strokeWidth: number; progress: number; color: string; bg: string;
@@ -251,12 +246,6 @@ export default function ProfileScreen() {
   const relValue = user.reliability ?? 0;
   const relFormatted = formatReliability(user.reliability, user.matchesPlayed);
 
-  const totalRatings = user.rating.artist + user.rating.rock + user.rating.bolt;
-  const organizerRating = totalRatings > 0
-    ? (Math.min(5, totalRatings / Math.max(1, user.matchesPlayed) * 2 + 2.5)).toFixed(1)
-    : null;
-  const avgRating = totalRatings > 0 ? (totalRatings / 3).toFixed(1) : "—";
-
   const AVATAR_SIZE = 88;
 
   async function handleShareProfile() {
@@ -367,31 +356,6 @@ export default function ProfileScreen() {
       {/* === RELIABILITY TUTORIAL (new users) === */}
       {user.reliability === null && <ReliabilityTutorialCard />}
 
-      {/* === BADGES CARD === */}
-      <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}>
-        <View style={styles.cardHeaderRow}>
-          <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>شاراتي</Text>
-          <View style={[styles.cardHeaderIconWrap, { backgroundColor: colors.primary + "12" }]}>
-            <Ionicons name="ribbon-outline" size={18} color={colors.primary} />
-          </View>
-        </View>
-        <View style={styles.badgesRow}>
-          {(["artist", "rock", "bolt"] as const).map((key) => {
-            const cfg = BADGE_CONFIG[key];
-            const count = user.rating[key] ?? 0;
-            return (
-              <View key={key} style={[styles.badgeItem, { backgroundColor: count > 0 ? cfg.bg : colors.surfaceContainerHigh, borderWidth: 1, borderColor: count > 0 ? cfg.color + "30" : colors.outline + "20" }]}>
-                <View style={[styles.badgeIconWrap, { backgroundColor: count > 0 ? cfg.color + "20" : colors.outline + "15" }]}>
-                  <Ionicons name={cfg.icon} size={22} color={count > 0 ? cfg.color : colors.mutedForeground} />
-                </View>
-                <Text style={[styles.badgeCount, { color: count > 0 ? cfg.color : colors.mutedForeground }]}>{count}</Text>
-                <Text style={[styles.badgeLabel, { color: count > 0 ? cfg.color : colors.mutedForeground }]}>{cfg.label}</Text>
-              </View>
-            );
-          })}
-        </View>
-      </View>
-
       {/* === STATS CARD === */}
       <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}>
         <View style={styles.cardHeaderRow}>
@@ -414,13 +378,6 @@ export default function ProfileScreen() {
             </View>
             <Text style={[styles.statNum, { color: colors.onSurface }]}>{relFormatted}</Text>
             <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>الحضور</Text>
-          </View>
-          <View style={[styles.statItem, { backgroundColor: "#F59E0B" + "10", borderColor: "#F59E0B" + "20", borderWidth: 1 }]}>
-            <View style={[styles.statIconWrap, { backgroundColor: "#F59E0B" + "20" }]}>
-              <Ionicons name="star-outline" size={20} color="#F59E0B" />
-            </View>
-            <Text style={[styles.statNum, { color: colors.onSurface }]}>{avgRating}</Text>
-            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>التقييم</Text>
           </View>
         </View>
       </View>
@@ -445,11 +402,6 @@ export default function ProfileScreen() {
               <Ionicons name="people-outline" size={22} color={colors.secondary} />
               <Text style={[styles.statNum, { color: colors.onSurface }]}>{avgAttendance > 0 ? `${avgAttendance}%` : "—"}</Text>
               <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>الحضور</Text>
-            </View>
-            <View style={[styles.statItem, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <Ionicons name="star-outline" size={22} color="#F59E0B" />
-              <Text style={[styles.statNum, { color: colors.onSurface }]}>{organizerRating ?? "—"}</Text>
-              <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>التقييم</Text>
             </View>
           </View>
           {organizedMatches.length > 0 && (
@@ -555,12 +507,6 @@ const styles = StyleSheet.create({
   cardHeaderIconWrap: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
 
   sectionTitle: { fontSize: 17, fontFamily: "Cairo_700Bold", textAlign: "right", lineHeight: 26 },
-
-  badgesRow: { flexDirection: "row", gap: 10 },
-  badgeItem: { flex: 1, alignItems: "center", gap: 8, paddingVertical: 16, borderRadius: 20 },
-  badgeIconWrap: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
-  badgeCount: { fontSize: 20, fontFamily: "Cairo_700Bold", lineHeight: 26 },
-  badgeLabel: { fontSize: 12, fontFamily: "Cairo_600SemiBold" },
 
   statsGrid: { flexDirection: "row", gap: 10 },
   statItem: { flex: 1, alignItems: "center", gap: 6, paddingVertical: 16, borderRadius: 18 },

@@ -214,22 +214,6 @@ export default function MyMatchesScreen() {
                         </Text>
                       </View>
                     )}
-                    {item.status === "completed" && (
-                      item.hasRated ? (
-                        <View style={[styles.ratingBtn, { backgroundColor: colors.surfaceContainerHigh, marginLeft: "auto", opacity: 0.65 }]}>
-                          <Ionicons name="checkmark-circle" size={15} color={colors.success} />
-                          <Text style={[styles.ratingBtnText, { color: colors.success }]}>تم التقييم ✓</Text>
-                        </View>
-                      ) : (
-                        <Pressable
-                          style={[styles.ratingBtn, { backgroundColor: ACCENT_LIME, marginLeft: "auto" }]}
-                          onPress={() => router.push({ pathname: "/post-match-rating", params: { id: item.id } })}
-                        >
-                          <Ionicons name="star-outline" size={15} color="#111" />
-                          <Text style={[styles.ratingBtnText, { color: "#111" }]}>قيّم اللاعبين</Text>
-                        </Pressable>
-                      )
-                    )}
                   </View>
                 )}
 
@@ -404,16 +388,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   attendanceBadgeText: { fontSize: 12, fontFamily: "Cairo_700Bold" },
-
-  ratingBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 14,
-  },
-  ratingBtnText: { fontSize: 13, fontFamily: "Cairo_600SemiBold" },
 
   statusRow: { paddingHorizontal: 12, paddingBottom: 10, paddingTop: 2 },
   statusPill: {

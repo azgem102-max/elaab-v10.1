@@ -100,16 +100,6 @@ async function autoCompleteMatches(): Promise<void> {
           .set({ status: "completed", updatedAt: new Date() })
           .where(eq(matchesTable.id, match.id));
 
-        for (const player of players) {
-          await sendNotification(
-            player.userId,
-            "rating",
-            "قيّم لاعبي المباراة ⭐",
-            `انتهت مباراة "${match.title}" — شاركنا رأيك في اللاعبين`,
-            match.id,
-          );
-        }
-
         const absentPlayers = players.filter(
           (p) => p.attendanceStatus === "absent"
         );

@@ -103,13 +103,12 @@ export default function SettingsScreen() {
 
   const [matchNotifs, setMatchNotifs] = useState(true);
   const [groupNotifs, setGroupNotifs] = useState(true);
-  const [ratingNotifs, setRatingNotifs] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [reminderMinutes, setReminderMinutes] = useState(60);
   const [loaded, setLoaded] = useState(false);
   const [notifPermissionStatus, setNotifPermissionStatus] = useState<string | null>(null);
   const notifDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingNotifPatchRef = useRef<Partial<{ matchNotifs: boolean; groupNotifs: boolean; ratingNotifs: boolean }>>({});
+  const pendingNotifPatchRef = useRef<Partial<{ matchNotifs: boolean; groupNotifs: boolean }>>({});
   const [legalVisible, setLegalVisible] = useState(false);
   const [legalType, setLegalType] = useState<"terms" | "privacy">("terms");
 
@@ -159,7 +158,6 @@ export default function SettingsScreen() {
           const saved = JSON.parse(raw);
           if (typeof saved.matchNotifs === "boolean") setMatchNotifs(saved.matchNotifs);
           if (typeof saved.groupNotifs === "boolean") setGroupNotifs(saved.groupNotifs);
-          if (typeof saved.ratingNotifs === "boolean") setRatingNotifs(saved.ratingNotifs);
           if (typeof saved.soundEnabled === "boolean") setSoundEnabled(saved.soundEnabled);
           if (typeof saved.reminderMinutes === "number") setReminderMinutes(saved.reminderMinutes);
         } catch { }
@@ -169,7 +167,6 @@ export default function SettingsScreen() {
         const serverPrefs = await api.getNotificationSettings();
         setMatchNotifs(serverPrefs.matchNotifs);
         setGroupNotifs(serverPrefs.groupNotifs);
-        setRatingNotifs(serverPrefs.ratingNotifs);
         const prevRaw = await AsyncStorage.getItem(NOTIF_KEY);
         let prev: Record<string, unknown> = {};
         try { if (prevRaw) prev = JSON.parse(prevRaw); } catch { }
@@ -177,18 +174,17 @@ export default function SettingsScreen() {
           ...prev,
           matchNotifs: serverPrefs.matchNotifs,
           groupNotifs: serverPrefs.groupNotifs,
-          ratingNotifs: serverPrefs.ratingNotifs,
         }));
       } catch { }
     });
   }, []);
 
-  function saveNotifSettings(patch: Partial<{ matchNotifs: boolean; groupNotifs: boolean; ratingNotifs: boolean; soundEnabled: boolean; reminderMinutes: number }>) {
-    const next = { matchNotifs, groupNotifs, ratingNotifs, soundEnabled, reminderMinutes, ...patch };
+  function saveNotifSettings(patch: Partial<{ matchNotifs: boolean; groupNotifs: boolean; soundEnabled: boolean; reminderMinutes: number }>) {
+    const next = { matchNotifs, groupNotifs, soundEnabled, reminderMinutes, ...patch };
     AsyncStorage.setItem(NOTIF_KEY, JSON.stringify(next));
   }
 
-  function syncNotifSettingsToServer(patch: Partial<{ matchNotifs: boolean; groupNotifs: boolean; ratingNotifs: boolean }>) {
+  function syncNotifSettingsToServer(patch: Partial<{ matchNotifs: boolean; groupNotifs: boolean }>) {
     pendingNotifPatchRef.current = { ...pendingNotifPatchRef.current, ...patch };
     if (notifDebounceRef.current) clearTimeout(notifDebounceRef.current);
     notifDebounceRef.current = setTimeout(() => {
@@ -198,18 +194,17 @@ export default function SettingsScreen() {
     }, 800);
   }
 
-  function handleToggle(key: "matchNotifs" | "groupNotifs" | "ratingNotifs" | "soundEnabled") {
+  function handleToggle(key: "matchNotifs" | "groupNotifs" | "soundEnabled") {
     const map = {
       matchNotifs: { state: matchNotifs, setter: setMatchNotifs },
       groupNotifs: { state: groupNotifs, setter: setGroupNotifs },
-      ratingNotifs: { state: ratingNotifs, setter: setRatingNotifs },
       soundEnabled: { state: soundEnabled, setter: setSoundEnabled },
     };
     const { state, setter } = map[key];
     const next = !state;
     setter(next);
     saveNotifSettings({ [key]: next });
-    if (key === "matchNotifs" || key === "groupNotifs" || key === "ratingNotifs") {
+    if (key === "matchNotifs" || key === "groupNotifs") {
       syncNotifSettingsToServer({ [key]: next });
     }
   }
@@ -364,8 +359,6 @@ export default function SettingsScreen() {
           avatarUri: editAvatarUri,
           reliability: res.user.reliability,
           matchesPlayed: res.user.matchesPlayed,
-          badges: (res.user.badges ?? []).filter((b) => ["artist", "rock", "bolt"].includes(b)) as import("@/context/AppContext").RatingType[],
-          rating: res.user.rating ?? user.rating,
         });
       } else {
         setUser({ ...user, nickname: editNickname.trim(), sports: editSports, sportProfiles: updatedProfiles, avatarUri: editAvatarUri });
@@ -418,7 +411,6 @@ export default function SettingsScreen() {
   const notifItems = [
     { key: "matchNotifs" as const, label: "إشعارات المباريات", sub: "تذكيرات قبل المباراة", value: matchNotifs, color: colors.primary },
     { key: "groupNotifs" as const, label: "إشعارات المجموعات", sub: "طلبات انضمام وتحديثات", value: groupNotifs, color: colors.secondary },
-    { key: "ratingNotifs" as const, label: "إشعارات التقييمات", sub: "عند تقييم أحد اللاعبين", value: ratingNotifs, color: colors.warning },
     { key: "soundEnabled" as const, label: "الصوت والاهتزاز", sub: "أصوات الإشعارات", value: soundEnabled, color: colors.tertiary },
   ];
 
@@ -479,10 +471,9 @@ export default function SettingsScreen() {
               </View>
             )}
             {loaded && notifItems.map((item, i) => {
-              const notifIcons: Record<string, "football-outline" | "people-outline" | "star-outline" | "volume-high-outline"> = {
+              const notifIcons: Record<string, "football-outline" | "people-outline" | "volume-high-outline"> = {
                 matchNotifs: "football-outline",
                 groupNotifs: "people-outline",
-                ratingNotifs: "star-outline",
                 soundEnabled: "volume-high-outline",
               };
               return (

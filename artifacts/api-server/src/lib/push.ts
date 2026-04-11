@@ -3,7 +3,7 @@ import { pushTokensTable, notificationsTable, usersTable } from "@workspace/db/s
 import { eq } from "drizzle-orm";
 import { generateId } from "./id";
 
-export type NotificationType = "match" | "rating" | "group" | "system";
+export type NotificationType = "match" | "group" | "system";
 
 export interface PushPayload {
   title: string;
@@ -46,7 +46,6 @@ export async function sendNotification(
     const prefs = await db.query.usersTable.findFirst({ where: eq(usersTable.id, userId) });
     if (type === "match" && !prefs?.notifMatch) return;
     if (type === "group" && !prefs?.notifGroup) return;
-    if (type === "rating" && !prefs?.notifRating) return;
   }
 
   await db.insert(notificationsTable).values({

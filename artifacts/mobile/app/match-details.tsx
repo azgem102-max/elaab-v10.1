@@ -7,7 +7,6 @@ import { useColors } from "@/hooks/useColors";
 import { GlassCard } from "@/components/glass/GlassCard";
 import { GlassBadge } from "@/components/glass/GlassBadge";
 import { GlassButton } from "@/components/glass/GlassButton";
-import { SportGradientButton } from "@/components/SportGradientButton";
 import { PositionPickerModal } from "@/components/PositionPickerModal";
 import { LiquidProgressBar } from "@/components/glass/LiquidProgressBar";
 import { getSportIcon } from "@/components/icons/SportIcons";
@@ -125,8 +124,6 @@ export default function MatchDetailsScreen() {
         sportProfiles: {},
         matchesPlayed: p.matchesPlayed ?? 0,
         reliability: p.reliability,
-        badges: p.badges ?? [],
-        rating: { artist: 0, rock: 0, bolt: 0 },
         attendance: p.attendance as AttendanceStatus,
         paymentStatus: p.paymentStatus as PaymentStatus,
         position: p.position,
@@ -172,8 +169,6 @@ export default function MatchDetailsScreen() {
         sportProfiles: {},
         matchesPlayed: p.matchesPlayed ?? 0,
         reliability: p.reliability,
-        badges: p.badges ?? [],
-        rating: { artist: 0, rock: 0, bolt: 0 },
         attendance: p.attendance as AttendanceStatus,
         paymentStatus: p.paymentStatus as PaymentStatus,
         position: p.position,
@@ -824,13 +819,12 @@ export default function MatchDetailsScreen() {
             </View>
           </Pressable>
         ) : match.status === "completed" ? (
-          <SportGradientButton
-            label="تقييم اللاعبين"
-            gradientStart={colors.primary}
-            gradientEnd={colors.primaryContainer}
-            onPress={() => router.push({ pathname: "/post-match-rating", params: { id: match.id } })}
-            style={styles.footerBtnFull}
-          />
+          <View style={[styles.footerBtn, { overflow: "hidden" }]}>
+            <View style={[styles.footerBtnGradient, { backgroundColor: colors.success + "15" }]}>
+              <Ionicons name="checkmark-circle-outline" size={20} color={colors.success} />
+              <Text style={[styles.footerBtnText, { color: colors.success }]}>انتهت المباراة</Text>
+            </View>
+          </View>
         ) : match.joinedByCurrentUser && !isOrganizer ? (
           <Pressable
             style={[styles.footerBtn, styles.footerBtnLeave, { backgroundColor: colors.surfaceContainerLow }]}

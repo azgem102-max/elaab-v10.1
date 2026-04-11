@@ -75,8 +75,6 @@ async function buildGroupDetail(group: typeof groupsTable.$inferSelect, userId?:
         sports: [] as string[],
         sportProfiles: {},
         matchesPlayed: 0,
-        badges: [] as string[],
-        rating: { artist: 0, rock: 0, bolt: 0 },
         role,
       };
     });

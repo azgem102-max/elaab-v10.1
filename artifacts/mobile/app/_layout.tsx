@@ -237,7 +237,6 @@ function RootLayoutNav() {
         <Stack.Screen name="match-details" />
         <Stack.Screen name="manage-match" />
         <Stack.Screen name="edit-match" />
-        <Stack.Screen name="post-match-rating" />
         <Stack.Screen name="group-detail" />
         <Stack.Screen name="group-management" />
         <Stack.Screen name="group-chat" />

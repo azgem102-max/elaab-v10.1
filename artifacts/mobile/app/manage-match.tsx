@@ -270,7 +270,6 @@ export default function ManageMatchScreen() {
       const players: MatchPlayer[] = (m.players ?? []).map((p) => ({
         id: p.id, nickname: p.nickname, sports: [], sportProfiles: {},
         matchesPlayed: p.matchesPlayed ?? 0, reliability: p.reliability,
-        badges: p.badges ?? [], rating: { artist: 0, rock: 0, bolt: 0 },
         attendance: p.attendance as AttendanceStatus,
         paymentStatus: p.paymentStatus as PaymentStatus,
         position: p.position,
@@ -308,7 +307,6 @@ export default function ManageMatchScreen() {
       const players: MatchPlayer[] = (m.players ?? []).map((p) => ({
         id: p.id, nickname: p.nickname, sports: [], sportProfiles: {},
         matchesPlayed: p.matchesPlayed ?? 0, reliability: p.reliability,
-        badges: p.badges ?? [], rating: { artist: 0, rock: 0, bolt: 0 },
         attendance: p.attendance as AttendanceStatus,
         paymentStatus: p.paymentStatus as PaymentStatus,
         position: p.position,
@@ -509,7 +507,7 @@ export default function ManageMatchScreen() {
             try {
               await api.completeMatch(match!.id);
               await refreshMatches();
-              router.replace({ pathname: "/post-match-rating", params: { id: match!.id } });
+              router.back();
             } catch {
               showToast("تعذّر إنهاء المباراة", "error");
             } finally {

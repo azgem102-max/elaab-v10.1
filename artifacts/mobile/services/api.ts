@@ -125,7 +125,6 @@ export interface ApiMatchPlayer {
   nickname: string;
   reliability: number | null;
   matchesPlayed: number;
-  badges: ("artist" | "rock" | "bolt")[];
   position: string;
   attendance: "present" | "absent" | "pending";
   paymentStatus: "paid" | "pending";
@@ -158,7 +157,6 @@ export interface ApiMatch {
   players?: ApiMatchPlayer[];
   organizerPhone?: string | null;
   organizerPhoneFull?: string | null;
-  hasRated?: boolean;
 }
 
 export interface ApiGroupMember {
@@ -168,8 +166,6 @@ export interface ApiGroupMember {
   sports: string[];
   sportProfiles: Record<string, unknown>;
   matchesPlayed: number;
-  badges: string[];
-  rating: { artist: number; rock: number; bolt: number };
   role?: "owner" | "admin" | "member";
 }
 
@@ -199,7 +195,7 @@ export interface ApiGroup {
 
 export interface ApiNotification {
   id: string;
-  type: "match" | "group" | "rating" | "system";
+  type: "match" | "group" | "system";
   title: string;
   body: string;
   linkedId?: string;
@@ -227,8 +223,6 @@ export interface ApiUserProfile {
   sportProfiles: Record<string, ApiSportProfile>;
   reliability: number | null;
   matchesPlayed: number;
-  badges: string[];
-  rating: { artist: number; rock: number; bolt: number };
 }
 
 export const api = {
@@ -301,12 +295,6 @@ export const api = {
   removeMatchPlayer: (matchId: string, playerId: string) =>
     apiFetch<{ success: boolean; playerCount: number }>(`/matches/${matchId}/players/${playerId}`, {
       method: "DELETE",
-    }),
-
-  rateMatch: (id: string, ratings: Record<string, string>, levelAccuracyVotes?: Record<string, string>) =>
-    apiFetch<{ success: boolean }>(`/matches/${id}/rate`, {
-      method: "POST",
-      body: JSON.stringify({ ratings, ...(levelAccuracyVotes && Object.keys(levelAccuracyVotes).length > 0 ? { levelAccuracyVotes } : {}) }),
     }),
 
   listGroups: (params?: { q?: string; sport?: string }) => {
@@ -536,10 +524,10 @@ export const api = {
     }),
 
   getNotificationSettings: () =>
-    apiFetch<{ success: boolean; matchNotifs: boolean; groupNotifs: boolean; ratingNotifs: boolean }>("/users/me/notification-settings"),
+    apiFetch<{ success: boolean; matchNotifs: boolean; groupNotifs: boolean }>("/users/me/notification-settings"),
 
-  updateNotificationSettings: (data: { matchNotifs?: boolean; groupNotifs?: boolean; ratingNotifs?: boolean }) =>
-    apiFetch<{ success: boolean; matchNotifs: boolean; groupNotifs: boolean; ratingNotifs: boolean }>("/users/me/notification-settings", {
+  updateNotificationSettings: (data: { matchNotifs?: boolean; groupNotifs?: boolean }) =>
+    apiFetch<{ success: boolean; matchNotifs: boolean; groupNotifs: boolean }>("/users/me/notification-settings", {
       method: "PATCH",
       body: JSON.stringify(data),
     }),

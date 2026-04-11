@@ -195,8 +195,6 @@ export default function ProfileSetupScreen() {
       sportProfiles,
       matchesPlayed: 0,
       reliability: null,
-      badges: [],
-      rating: { artist: 0, rock: 0, bolt: 0 },
     };
     setUser(userObj);
     setSaving(false);

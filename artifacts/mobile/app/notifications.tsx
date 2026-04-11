@@ -48,7 +48,7 @@ function timeAgo(date: Date): string {
 
 function navigateForNotification(notif: Notification) {
   if (notif.linkedId) {
-    if (notif.type === "match" || notif.type === "rating") {
+    if (notif.type === "match") {
       router.push({ pathname: "/match-details", params: { id: notif.linkedId } });
     } else if (notif.type === "group") {
       router.push({ pathname: "/group-detail", params: { id: notif.linkedId } });
