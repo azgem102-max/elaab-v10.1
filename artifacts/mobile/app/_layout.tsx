@@ -244,6 +244,7 @@ function RootLayoutNav() {
         <Stack.Screen name="notifications" />
         <Stack.Screen name="settings" />
         <Stack.Screen name="invite/[token]" />
+        <Stack.Screen name="post-match-rating" options={{ headerShown: false }} />
       </Stack>
     </GlassBackground>
   );

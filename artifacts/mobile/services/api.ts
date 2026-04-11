@@ -128,6 +128,8 @@ export interface ApiMatchPlayer {
   position: string;
   attendance: "present" | "absent" | "pending";
   paymentStatus: "paid" | "pending";
+  skillLevel?: string | null;
+  skillLevelNumeric?: number | null;
 }
 
 export interface ApiMatch {
@@ -521,6 +523,12 @@ export const api = {
   clearAllNotifications: () =>
     apiFetch<{ success: boolean }>("/notifications", {
       method: "DELETE",
+    }),
+
+  submitLevelVotes: (matchId: string, votes: Record<string, "higher" | "accurate" | "lower">) =>
+    apiFetch<{ success: boolean }>(`/matches/${matchId}/level-votes`, {
+      method: "POST",
+      body: JSON.stringify({ votes }),
     }),
 
   getNotificationSettings: () =>

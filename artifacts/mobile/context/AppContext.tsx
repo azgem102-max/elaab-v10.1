@@ -109,17 +109,29 @@ function apiMatchToLocal(m: ApiMatch, existingMatch?: Match): Match {
 
   let players: MatchPlayer[] = existing?.players ?? [];
   if (m.players && m.players.length > 0) {
-    players = m.players.map((p) => ({
-      id: p.id,
-      nickname: p.nickname,
-      sports: [],
-      sportProfiles: {},
-      matchesPlayed: p.matchesPlayed ?? 0,
-      reliability: p.reliability,
-      attendance: p.attendance as AttendanceStatus,
-      paymentStatus: p.paymentStatus as PaymentStatus,
-      position: p.position,
-    }));
+    players = m.players.map((p) => {
+      const sportProfiles: Partial<Record<SportType, SportProfile>> = {};
+      if (p.skillLevel && m.sport) {
+        const sport = m.sport as SportType;
+        sportProfiles[sport] = {
+          sport,
+          skillLevel: p.skillLevel as SkillLevel,
+          skillLevelNumeric: p.skillLevelNumeric ?? null,
+          position: [],
+        };
+      }
+      return {
+        id: p.id,
+        nickname: p.nickname,
+        sports: [],
+        sportProfiles,
+        matchesPlayed: p.matchesPlayed ?? 0,
+        reliability: p.reliability,
+        attendance: p.attendance as AttendanceStatus,
+        paymentStatus: p.paymentStatus as PaymentStatus,
+        position: p.position,
+      };
+    });
   }
 
   return {

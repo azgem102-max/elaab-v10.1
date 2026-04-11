@@ -1,6 +1,6 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { db } from "@workspace/db";
-import { matchesTable, matchPlayersTable, usersTable, groupMembersTable, inviteLinksTable } from "@workspace/db/schema";
+import { matchesTable, matchPlayersTable, usersTable, groupMembersTable, inviteLinksTable, ratingsTable } from "@workspace/db/schema";
 import { eq, and, sql, inArray, lt, or } from "drizzle-orm";
 import { requireAuth, verifyToken } from "../lib/auth";
 import { generateId } from "../lib/id";
@@ -134,15 +134,19 @@ async function buildMatchDetails(match: typeof matchesTable.$inferSelect, req?: 
       }
 
       let skillLevelNumeric: number | null = null;
-      if (match.sport === "padel" || match.sport === "tennis") {
-        try {
-          const sportProfiles = u?.sportProfiles ? JSON.parse(u.sportProfiles) : {};
-          const sportProfile = sportProfiles[match.sport];
-          if (sportProfile && typeof sportProfile.skillLevelNumeric === "number") {
+      let playerSkillLevel: string | null = null;
+      try {
+        const sportProfiles = u?.sportProfiles ? JSON.parse(u.sportProfiles) : {};
+        const sportProfile = sportProfiles[match.sport];
+        if (sportProfile) {
+          if (typeof sportProfile.skillLevelNumeric === "number") {
             skillLevelNumeric = sportProfile.skillLevelNumeric;
           }
-        } catch {}
-      }
+          if (typeof sportProfile.skillLevel === "string") {
+            playerSkillLevel = sportProfile.skillLevel;
+          }
+        }
+      } catch {}
 
       return {
         id: row.userId,
@@ -153,6 +157,7 @@ async function buildMatchDetails(match: typeof matchesTable.$inferSelect, req?: 
         attendance: row.attendanceStatus ?? (row.attended ? "present" : "pending"),
         paymentStatus: row.paid ? "paid" : "pending",
         skillLevelNumeric,
+        skillLevel: playerSkillLevel,
       };
     })
   );
@@ -1188,6 +1193,83 @@ router.post("/matches/:id/invite-link", requireAuth, async (req: AuthRequest, re
   });
 
   res.json({ success: true, token, expiresAt: expiresAt.toISOString() });
+});
+
+router.post("/matches/:id/level-votes", requireAuth, async (req: Request, res: Response) => {
+  const authReq = req as AuthRequest;
+  const matchId = getParam(req.params["id"] ?? "");
+  const raterId = authReq.user.userId;
+
+  const votesSchema = z.record(z.enum(["higher", "accurate", "lower"]));
+  const bodySchema = z.object({ votes: votesSchema });
+  const parsed = bodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "بيانات غير صحيحة" });
+    return;
+  }
+  const { votes } = parsed.data;
+
+  const match = await db.query.matchesTable.findFirst({ where: eq(matchesTable.id, matchId) });
+  if (!match) {
+    res.status(404).json({ error: "المباراة غير موجودة" });
+    return;
+  }
+
+  const matchStatus = await computeMatchStatus(match.date, match.time, match.status);
+  if (matchStatus !== "completed") {
+    res.status(400).json({ error: "يمكن التقييم فقط للمباريات المنتهية" });
+    return;
+  }
+
+  const playerRows = await db
+    .select({ userId: matchPlayersTable.userId })
+    .from(matchPlayersTable)
+    .where(eq(matchPlayersTable.matchId, matchId));
+
+  const playerIds = playerRows.map((r) => r.userId);
+  const allParticipantIds = new Set([...playerIds, match.organizerId]);
+
+  const isParticipant = allParticipantIds.has(raterId);
+  if (!isParticipant) {
+    res.status(403).json({ error: "يجب أن تكون لاعباً في هذه المباراة" });
+    return;
+  }
+
+  let inserted = 0;
+  let skipped = 0;
+  let alreadyVoted = 0;
+
+  for (const [ratedUserId, vote] of Object.entries(votes)) {
+    if (ratedUserId === raterId) {
+      skipped++;
+      continue;
+    }
+    if (!allParticipantIds.has(ratedUserId)) {
+      skipped++;
+      continue;
+    }
+    try {
+      const result = await db.insert(ratingsTable).values({
+        id: generateId("rtg_"),
+        matchId,
+        raterId,
+        ratedUserId,
+        score: 0,
+        ratingType: null,
+        levelAccuracyVote: vote,
+      }).onConflictDoNothing();
+      if (result.rowCount === 0) {
+        alreadyVoted++;
+      } else {
+        inserted++;
+      }
+    } catch (err) {
+      logger.error({ err, matchId, raterId, ratedUserId }, "Failed to insert level vote");
+      skipped++;
+    }
+  }
+
+  res.json({ success: true, inserted, skipped, alreadyVoted });
 });
 
 export default router;

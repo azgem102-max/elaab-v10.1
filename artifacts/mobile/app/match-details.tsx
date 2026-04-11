@@ -819,11 +819,24 @@ export default function MatchDetailsScreen() {
             </View>
           </Pressable>
         ) : match.status === "completed" ? (
-          <View style={[styles.footerBtn, { overflow: "hidden" }]}>
-            <View style={[styles.footerBtnGradient, { backgroundColor: colors.success + "15" }]}>
-              <Ionicons name="checkmark-circle-outline" size={20} color={colors.success} />
-              <Text style={[styles.footerBtnText, { color: colors.success }]}>انتهت المباراة</Text>
+          <View style={{ gap: 10 }}>
+            <View style={[styles.footerBtn, { overflow: "hidden" }]}>
+              <View style={[styles.footerBtnGradient, { backgroundColor: colors.success + "15" }]}>
+                <Ionicons name="checkmark-circle-outline" size={20} color={colors.success} />
+                <Text style={[styles.footerBtnText, { color: colors.success }]}>انتهت المباراة</Text>
+              </View>
             </View>
+            {match.joinedByCurrentUser && (
+              <Pressable
+                style={[styles.footerBtn, { overflow: "hidden", backgroundColor: sc + "18", borderWidth: 1, borderColor: sc + "40", borderRadius: 24 }]}
+                onPress={() => router.push({ pathname: "/post-match-rating", params: { matchId: match.id } })}
+              >
+                <View style={[styles.footerBtnGradient]}>
+                  <Ionicons name="star-outline" size={18} color={sc} />
+                  <Text style={[styles.footerBtnText, { color: sc }]}>قيّم مستوى الفريق</Text>
+                </View>
+              </Pressable>
+            )}
           </View>
         ) : match.joinedByCurrentUser && !isOrganizer ? (
           <Pressable

@@ -214,6 +214,21 @@ export default function MyMatchesScreen() {
                         </Text>
                       </View>
                     )}
+                    {item.status === "completed" &&
+                      Date.now() - new Date(item.date).getTime() < 48 * 60 * 60 * 1000 && (
+                        <Pressable
+                          style={[
+                            styles.rateBtn,
+                            { backgroundColor: (accentColor) + "18", borderColor: accentColor + "40" },
+                          ]}
+                          onPress={() =>
+                            router.push({ pathname: "/post-match-rating", params: { matchId: item.id } })
+                          }
+                        >
+                          <Ionicons name="star-outline" size={13} color={accentColor} />
+                          <Text style={[styles.rateBtnText, { color: accentColor }]}>قيّم المستوى</Text>
+                        </Pressable>
+                      )}
                   </View>
                 )}
 
@@ -388,6 +403,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   attendanceBadgeText: { fontSize: 12, fontFamily: "Cairo_700Bold" },
+  rateBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  rateBtnText: { fontSize: 12, fontFamily: "Cairo_700Bold" },
 
   statusRow: { paddingHorizontal: 12, paddingBottom: 10, paddingTop: 2 },
   statusPill: {
