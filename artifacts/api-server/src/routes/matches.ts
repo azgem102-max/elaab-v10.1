@@ -807,40 +807,6 @@ router.put("/matches/:id/attendance", requireAuth, async (req: AuthRequest, res:
   res.json({ success: true });
 });
 
-router.put("/matches/:id/payment", requireAuth, async (req: AuthRequest, res: Response) => {
-  const matchId = getParam(req.params["id"] as string);
-  const body = (req.body ?? {}) as { userId?: string; paid?: boolean };
-
-  const match = await db.query.matchesTable.findFirst({
-    where: eq(matchesTable.id, matchId),
-  });
-
-  if (!match) {
-    res.status(404).json({ success: false, error: "المباراة غير موجودة" });
-    return;
-  }
-
-  if (match.organizerId !== req.user.userId) {
-    res.status(403).json({ success: false, error: "هذه الميزة للمنظم فقط" });
-    return;
-  }
-
-  if (!body.userId || body.paid === undefined) {
-    res.status(400).json({ success: false, error: "بيانات غير مكتملة" });
-    return;
-  }
-
-  await db
-    .update(matchPlayersTable)
-    .set({ paid: body.paid })
-    .where(and(
-      eq(matchPlayersTable.matchId, matchId),
-      eq(matchPlayersTable.userId, body.userId),
-    ));
-
-  res.json({ success: true });
-});
-
 router.patch("/matches/:id/players/:userId/payment", requireAuth, async (req: AuthRequest, res: Response) => {
   const matchId = getParam(req.params["id"] as string);
   const targetUserId = getParam(req.params["userId"] as string);
