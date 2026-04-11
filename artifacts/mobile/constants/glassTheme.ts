@@ -174,16 +174,6 @@ const footballGlass: SportGlassTheme = {
 };
 
 const padelGlass: SportGlassTheme = {
-<<<<<<< HEAD
-  glassColor: "rgba(5, 150, 105, 0.08)",
-  glassTint: "rgba(5, 150, 105, 0.12)",
-  blurIntensity: 0,
-  borderGlow: "rgba(5, 150, 105, 0.30)",
-  gradientStart: "#059669",
-  gradientEnd: "#34D399",
-  backgroundGradient: ["#FFFFFF", "#F0FDF9", "#D1FAE5"],
-  primary: "#059669",
-=======
   glassColor: "rgba(13, 148, 136, 0.08)",
   glassTint: "rgba(13, 148, 136, 0.12)",
   blurIntensity: 0,
@@ -192,7 +182,6 @@ const padelGlass: SportGlassTheme = {
   gradientEnd: "#14B8A6",
   backgroundGradient: ["#FFFFFF", "#F0FDFA", "#CCFBF1"],
   primary: "#0D9488",
->>>>>>> 70b5f8f (feat(mobile): Home & Explore UI/UX Polish (Task #21))
 };
 
 const tennisGlass: SportGlassTheme = {
@@ -201,11 +190,7 @@ const tennisGlass: SportGlassTheme = {
   blurIntensity: 0,
   borderGlow: "rgba(217, 119, 6, 0.30)",
   gradientStart: "#D97706",
-<<<<<<< HEAD
-  gradientEnd: "#FBBF24",
-=======
   gradientEnd: "#F59E0B",
->>>>>>> 70b5f8f (feat(mobile): Home & Explore UI/UX Polish (Task #21))
   backgroundGradient: ["#FFFFFF", "#FFFBEB", "#FEF3C7"],
   primary: "#D97706",
 };

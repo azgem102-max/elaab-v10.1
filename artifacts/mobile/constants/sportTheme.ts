@@ -61,23 +61,6 @@ const footballTheme: SportCardTheme = {
 };
 
 const padelTheme: SportCardTheme = {
-<<<<<<< HEAD
-  primary: "#059669",
-  primaryContainer: "#D1FAE5",
-  cardBackground: "#F0FDF9",
-  cardGradientStart: "#059669",
-  cardGradientEnd: "#34D399",
-  badgeBackground: "#D1FAE5",
-  badgeForeground: "#065F46",
-  pillBackground: "#ECFDF5",
-  pillForeground: "#059669",
-  infoBackground: "#F0FDF9",
-  surfaceColor: "#F0FDF9",
-  containerStyle: Platform.select({
-    web: { boxShadow: `0px 2px 12px rgba(5, 150, 105, 0.10), 0px 1px 4px rgba(5, 150, 105, 0.06)` },
-    default: {
-      shadowColor: "#059669",
-=======
   primary: "#0D9488",
   primaryLight: "#14B8A6",
   primaryContainer: "#CCFBF1",
@@ -96,7 +79,6 @@ const padelTheme: SportCardTheme = {
     web: { boxShadow: `0px 2px 12px rgba(13, 148, 136, 0.12), 0px 1px 4px rgba(13, 148, 136, 0.06)` },
     default: {
       shadowColor: "#0D9488",
->>>>>>> 70b5f8f (feat(mobile): Home & Explore UI/UX Polish (Task #21))
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.12,
       shadowRadius: 12,
@@ -104,36 +86,15 @@ const padelTheme: SportCardTheme = {
     },
   }) as ViewStyle,
   glass: {
-<<<<<<< HEAD
-    glassColor: "rgba(5, 150, 105, 0.08)",
-    blurIntensity: 0,
-    borderGlow: "rgba(5, 150, 105, 0.25)",
-    backgroundGradient: ["#FFFFFF", "#F0FDF9", "#D1FAE5"],
-=======
     glassColor: "rgba(13, 148, 136, 0.08)",
     blurIntensity: 0,
     borderGlow: "rgba(13, 148, 136, 0.25)",
     backgroundGradient: ["#FFFFFF", "#F0FDFA", "#CCFBF1"],
->>>>>>> 70b5f8f (feat(mobile): Home & Explore UI/UX Polish (Task #21))
   },
 };
 
 const tennisTheme: SportCardTheme = {
   primary: "#D97706",
-<<<<<<< HEAD
-  primaryContainer: "#FEF3C7",
-  cardBackground: "#FFFBEB",
-  cardGradientStart: "#D97706",
-  cardGradientEnd: "#FBBF24",
-  badgeBackground: "#FEF3C7",
-  badgeForeground: "#92400E",
-  pillBackground: "#FFF7ED",
-  pillForeground: "#D97706",
-  infoBackground: "#FFFBEB",
-  surfaceColor: "#FFFBEB",
-  containerStyle: Platform.select({
-    web: { boxShadow: `0px 2px 12px rgba(217, 119, 6, 0.10), 0px 1px 4px rgba(217, 119, 6, 0.06)` },
-=======
   primaryLight: "#F59E0B",
   primaryContainer: "#FEF3C7",
   cardBackground: "#FFFBEB",
@@ -149,7 +110,6 @@ const tennisTheme: SportCardTheme = {
   gradientColors: ["#D97706", "#F59E0B"],
   containerStyle: Platform.select({
     web: { boxShadow: `0px 2px 12px rgba(217, 119, 6, 0.12), 0px 1px 4px rgba(217, 119, 6, 0.06)` },
->>>>>>> 70b5f8f (feat(mobile): Home & Explore UI/UX Polish (Task #21))
     default: {
       shadowColor: "#D97706",
       shadowOffset: { width: 0, height: 2 },
