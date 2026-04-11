@@ -525,8 +525,11 @@ export const api = {
       method: "DELETE",
     }),
 
+  getMatchRatingStatus: (matchId: string) =>
+    apiFetch<{ success: boolean; hasVoted: boolean }>(`/matches/${matchId}/level-votes/status`),
+
   submitLevelVotes: (matchId: string, votes: Record<string, "higher" | "accurate" | "lower">) =>
-    apiFetch<{ success: boolean }>(`/matches/${matchId}/level-votes`, {
+    apiFetch<{ success: boolean; inserted: number; skipped: number; alreadyVoted: number }>(`/matches/${matchId}/level-votes`, {
       method: "POST",
       body: JSON.stringify({ votes }),
     }),

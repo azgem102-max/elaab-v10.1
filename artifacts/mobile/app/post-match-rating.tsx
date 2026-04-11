@@ -206,6 +206,7 @@ export default function PostMatchRatingScreen() {
   const [loading, setLoading] = useState(true);
   const [votes, setVotes] = useState<Record<string, LevelVote>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [hasAlreadyVoted, setHasAlreadyVoted] = useState(false);
 
   const currentUserId = user?.id ?? "";
 
@@ -213,8 +214,12 @@ export default function PostMatchRatingScreen() {
     if (!matchId) return;
     try {
       setLoading(true);
-      const res = await api.getMatch(matchId);
-      setMatchData(res.match);
+      const [matchRes, statusRes] = await Promise.all([
+        api.getMatch(matchId),
+        api.getMatchRatingStatus(matchId).catch(() => ({ success: false, hasVoted: false })),
+      ]);
+      setMatchData(matchRes.match);
+      setHasAlreadyVoted(statusRes.hasVoted);
     } catch {
       Alert.alert("خطأ", "تعذّر تحميل بيانات المباراة");
     } finally {
@@ -231,7 +236,7 @@ export default function PostMatchRatingScreen() {
   const sportAccent = SPORT_ACCENT[matchData?.sport ?? "football"] ?? SPORT_ACCENT.football;
 
   const ratablePlayers: RatablePlayer[] = (matchData?.players ?? [])
-    .filter((p) => p.id !== currentUserId && !!p.skillLevel)
+    .filter((p) => p.id !== currentUserId && !!p.skillLevel && p.attendance !== "absent")
     .map((p) => ({
       id: p.id,
       nickname: p.nickname,
@@ -247,8 +252,12 @@ export default function PostMatchRatingScreen() {
     try {
       await api.submitLevelVotes(matchId, votes);
       router.back();
-    } catch {
-      Alert.alert("خطأ", "تعذّر إرسال التقييم، حاول مرة أخرى");
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "status" in err && (err as { status: number }).status === 409) {
+        setHasAlreadyVoted(true);
+      } else {
+        Alert.alert("خطأ", "تعذّر إرسال التقييم، حاول مرة أخرى");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -258,6 +267,40 @@ export default function PostMatchRatingScreen() {
     return (
       <View style={[styles.container, styles.loadingCenter, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (hasAlreadyVoted) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.header, { paddingTop: topPad + 12, borderBottomColor: colors.border }]}>
+          <Pressable style={styles.backBtn} onPress={() => router.back()} hitSlop={8}>
+            <Ionicons
+              name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"}
+              size={24}
+              color={colors.onSurface}
+            />
+          </Pressable>
+          <View style={styles.headerText}>
+            <Text style={[styles.title, { color: colors.onSurface }]}>كيف كان مستوى زملاؤك؟</Text>
+          </View>
+        </View>
+        <View style={styles.emptyWrap}>
+          <View style={[styles.emptyIcon, { backgroundColor: sportAccent + "15" }]}>
+            <Ionicons name="checkmark-done-circle-outline" size={56} color={sportAccent} />
+          </View>
+          <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>لقد قيّمت هذه المباراة مسبقاً!</Text>
+          <Text style={[styles.emptySubtitle, { color: colors.onSurfaceVariant }]}>
+            شكراً لمساهمتك في تحسين مستويات اللاعبين
+          </Text>
+          <Pressable
+            style={[styles.backBtnLarge, { backgroundColor: sportAccent }]}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backBtnLargeText}>العودة</Text>
+          </Pressable>
+        </View>
       </View>
     );
   }

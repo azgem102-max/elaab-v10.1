@@ -943,15 +943,30 @@ router.patch("/matches/:id", requireAuth, async (req: AuthRequest, res: Response
   }
 
   const players = await db.select().from(matchPlayersTable).where(eq(matchPlayersTable.matchId, matchId));
-  for (const player of players) {
-    if (player.userId === userId) continue;
-    await sendNotification(
-      player.userId,
-      "match",
-      "تم تعديل المباراة",
-      `تم تعديل تفاصيل مباراة "${updatedMatch.title}"`,
-      matchId,
-    );
+
+  if (body.status === "completed") {
+    for (const player of players) {
+      if (player.userId === userId) continue;
+      if (player.attendanceStatus === "absent") continue;
+      await sendNotification(
+        player.userId,
+        "match",
+        "انتهت المباراة — قيّم زملاءك ⭐",
+        `مباراة "${updatedMatch.title}" اكتملت. شاركنا رأيك في مستوى زملائك!`,
+        matchId,
+      );
+    }
+  } else {
+    for (const player of players) {
+      if (player.userId === userId) continue;
+      await sendNotification(
+        player.userId,
+        "match",
+        "تم تعديل المباراة",
+        `تم تعديل تفاصيل مباراة "${updatedMatch.title}"`,
+        matchId,
+      );
+    }
   }
 
   const summary = await buildMatchSummary(updatedMatch, userId);
@@ -1161,6 +1176,34 @@ router.post("/matches/:id/invite-link", requireAuth, async (req: AuthRequest, re
   res.json({ success: true, token, expiresAt: expiresAt.toISOString() });
 });
 
+router.get("/matches/:id/level-votes/status", requireAuth, async (req: Request, res: Response) => {
+  const authReq = req as AuthRequest;
+  const matchId = getParam(req.params["id"] ?? "");
+  const raterId = authReq.user.userId;
+
+  const match = await db.query.matchesTable.findFirst({ where: eq(matchesTable.id, matchId) });
+  if (!match) {
+    res.status(404).json({ success: false, error: "المباراة غير موجودة" });
+    return;
+  }
+
+  const playerRow = await db.query.matchPlayersTable.findFirst({
+    where: and(eq(matchPlayersTable.matchId, matchId), eq(matchPlayersTable.userId, raterId)),
+  });
+  const isParticipant = !!playerRow || match.organizerId === raterId;
+  if (!isParticipant) {
+    res.status(403).json({ success: false, error: "يجب أن تكون لاعباً في هذه المباراة" });
+    return;
+  }
+
+  const existingVotes = await db
+    .select({ ratedUserId: ratingsTable.ratedUserId })
+    .from(ratingsTable)
+    .where(and(eq(ratingsTable.matchId, matchId), eq(ratingsTable.raterId, raterId)));
+
+  res.json({ success: true, hasVoted: existingVotes.length > 0 });
+});
+
 router.post("/matches/:id/level-votes", requireAuth, async (req: Request, res: Response) => {
   const authReq = req as AuthRequest;
   const matchId = getParam(req.params["id"] ?? "");
@@ -1188,16 +1231,31 @@ router.post("/matches/:id/level-votes", requireAuth, async (req: Request, res: R
   }
 
   const playerRows = await db
-    .select({ userId: matchPlayersTable.userId })
+    .select({ userId: matchPlayersTable.userId, attendanceStatus: matchPlayersTable.attendanceStatus })
     .from(matchPlayersTable)
     .where(eq(matchPlayersTable.matchId, matchId));
 
   const playerIds = playerRows.map((r) => r.userId);
   const allParticipantIds = new Set([...playerIds, match.organizerId]);
+  const absentPlayerIds = new Set(
+    playerRows
+      .filter((r) => r.attendanceStatus === "absent")
+      .map((r) => r.userId)
+  );
 
   const isParticipant = allParticipantIds.has(raterId);
   if (!isParticipant) {
     res.status(403).json({ error: "يجب أن تكون لاعباً في هذه المباراة" });
+    return;
+  }
+
+  const existingVotes = await db
+    .select({ id: ratingsTable.id })
+    .from(ratingsTable)
+    .where(and(eq(ratingsTable.matchId, matchId), eq(ratingsTable.raterId, raterId)));
+
+  if (existingVotes.length > 0) {
+    res.status(409).json({ error: "لقد قيّمت هذه المباراة مسبقاً", alreadyVoted: true });
     return;
   }
 
@@ -1211,6 +1269,10 @@ router.post("/matches/:id/level-votes", requireAuth, async (req: Request, res: R
       continue;
     }
     if (!allParticipantIds.has(ratedUserId)) {
+      skipped++;
+      continue;
+    }
+    if (absentPlayerIds.has(ratedUserId)) {
       skipped++;
       continue;
     }
@@ -1235,7 +1297,75 @@ router.post("/matches/:id/level-votes", requireAuth, async (req: Request, res: R
     }
   }
 
+  if (inserted > 0) {
+    const ratedUserIds = Object.keys(votes).filter(
+      (uid) => uid !== raterId && allParticipantIds.has(uid) && !absentPlayerIds.has(uid)
+    );
+    for (const ratedUserId of ratedUserIds) {
+      recomputeSkillLevelFromVotes(ratedUserId, match.sport).catch((err) => {
+        logger.error({ err, ratedUserId }, "Failed to recompute skill level from votes");
+      });
+      recomputeAndPersistReliability(ratedUserId).catch((err) => {
+        logger.error({ err, ratedUserId }, "Failed to recompute reliability after rating");
+      });
+    }
+  }
+
   res.json({ success: true, inserted, skipped, alreadyVoted });
 });
+
+async function recomputeSkillLevelFromVotes(userId: string, sport: string): Promise<void> {
+  const allVotes = await db
+    .select({ levelAccuracyVote: ratingsTable.levelAccuracyVote })
+    .from(ratingsTable)
+    .innerJoin(matchesTable, eq(ratingsTable.matchId, matchesTable.id))
+    .where(and(eq(ratingsTable.ratedUserId, userId), eq(matchesTable.sport, sport)));
+
+  const validVotes = allVotes.filter((v) => v.levelAccuracyVote != null);
+  if (validVotes.length < 3) return;
+
+  const higherCount = validVotes.filter((v) => v.levelAccuracyVote === "higher").length;
+  const lowerCount = validVotes.filter((v) => v.levelAccuracyVote === "lower").length;
+  const total = validVotes.length;
+
+  const higherPct = higherCount / total;
+  const lowerPct = lowerCount / total;
+
+  const THRESHOLD = 0.6;
+
+  let adjustment: "up" | "down" | null = null;
+  if (higherPct >= THRESHOLD) adjustment = "up";
+  else if (lowerPct >= THRESHOLD) adjustment = "down";
+
+  if (!adjustment) return;
+
+  const user = await db.query.usersTable.findFirst({ where: eq(usersTable.id, userId) });
+  if (!user) return;
+
+  let sportProfiles: Record<string, { sport: string; skillLevel: string; skillLevelNumeric?: number | null; position?: string }> = {};
+  try {
+    if (user.sportProfiles) sportProfiles = JSON.parse(user.sportProfiles);
+  } catch { return; }
+
+  const profile = sportProfiles[sport];
+  if (!profile) return;
+
+  const LEVELS = ["مبتدئ", "متوسط", "محترف"];
+  const currentIdx = LEVELS.indexOf(profile.skillLevel ?? "");
+  if (currentIdx === -1) return;
+
+  const newIdx = adjustment === "up"
+    ? Math.min(LEVELS.length - 1, currentIdx + 1)
+    : Math.max(0, currentIdx - 1);
+
+  if (newIdx === currentIdx) return;
+
+  sportProfiles[sport] = { ...profile, skillLevel: LEVELS[newIdx]! };
+
+  await db
+    .update(usersTable)
+    .set({ sportProfiles: JSON.stringify(sportProfiles), updatedAt: new Date() })
+    .where(eq(usersTable.id, userId));
+}
 
 export default router;

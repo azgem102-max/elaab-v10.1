@@ -1,7 +1,7 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import multer from "multer";
 import { db } from "@workspace/db";
-import { usersTable, matchPlayersTable, matchesTable } from "@workspace/db/schema";
+import { usersTable, matchPlayersTable, matchesTable, ratingsTable } from "@workspace/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { requireAuth } from "../lib/auth";
 import type { JwtPayload } from "../lib/auth";
@@ -44,7 +44,22 @@ export async function recomputeAndPersistReliability(userId: string): Promise<nu
   let reliability: number | null = null;
   if (externalJ >= RELIABILITY_MIN_MATCHES) {
     const attendanceScore = Math.round((externalA / externalJ) * 100);
-    reliability = Math.min(100, attendanceScore);
+
+    const levelVotes = await db
+      .select({ levelAccuracyVote: ratingsTable.levelAccuracyVote })
+      .from(ratingsTable)
+      .where(eq(ratingsTable.ratedUserId, userId));
+
+    const validLevelVotes = levelVotes.filter((v) => v.levelAccuracyVote != null);
+    const LEVEL_VOTE_MIN = 3;
+    let levelBonus = 0;
+    if (validLevelVotes.length >= LEVEL_VOTE_MIN) {
+      const accurateCount = validLevelVotes.filter((v) => v.levelAccuracyVote === "accurate").length;
+      const accuracyPct = accurateCount / validLevelVotes.length;
+      levelBonus = Math.round(accuracyPct * 10);
+    }
+
+    reliability = Math.min(100, attendanceScore + levelBonus);
   }
 
   await db
@@ -65,25 +80,9 @@ async function computeUserProfile(userId: string) {
     .from(matchPlayersTable)
     .where(eq(matchPlayersTable.userId, userId));
 
-  const externalPlayerRows = await db
-    .select({ attended: matchPlayersTable.attended })
-    .from(matchPlayersTable)
-    .innerJoin(matchesTable, eq(matchPlayersTable.matchId, matchesTable.id))
-    .where(and(
-      eq(matchPlayersTable.userId, userId),
-      sql`${matchesTable.organizerId} != ${userId}`,
-    ));
-
   const matchesPlayed = Number(allPlayerRows[0]?.count ?? 0);
-  const externalJ = externalPlayerRows.length;
-  const externalA = externalPlayerRows.filter((r) => r.attended).length;
 
-  const RELIABILITY_MIN_MATCHES = 3;
-  let reliability: number | null = null;
-  if (externalJ >= RELIABILITY_MIN_MATCHES) {
-    const attendanceScore = Math.round((externalA / externalJ) * 100);
-    reliability = Math.min(100, attendanceScore);
-  }
+  const reliability = user?.reliability ?? null;
 
   let sports: string[] = [];
   try {
