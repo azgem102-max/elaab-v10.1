@@ -543,6 +543,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setMatches([]);
     setGroups([]);
     setNotifications([]);
+    router.replace("/" as Parameters<typeof router.replace>[0]);
   }, [unregisterPushToken]);
 
   const addNotification = useCallback((notif: Omit<Notification, "id" | "time" | "isRead">) => {

@@ -395,6 +395,12 @@ export default function SettingsScreen() {
   }
 
   async function handleLogout() {
+    if (Platform.OS === "web") {
+      if (window.confirm("هل أنت متأكد أنك تريد تسجيل الخروج؟")) {
+        await logout();
+      }
+      return;
+    }
     Alert.alert("تسجيل الخروج", "هل أنت متأكد أنك تريد تسجيل الخروج؟", [
       { text: "إلغاء", style: "cancel" },
       {
@@ -402,7 +408,6 @@ export default function SettingsScreen() {
         style: "destructive",
         onPress: async () => {
           await logout();
-          router.replace("/" as Parameters<typeof router.replace>[0]);
         },
       },
     ]);

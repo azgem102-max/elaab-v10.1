@@ -148,6 +148,12 @@ export default function NotificationsScreen() {
               )}
               <Pressable
                 onPress={() => {
+                  if (Platform.OS === "web") {
+                    if (window.confirm("هل تريد مسح جميع الإشعارات؟")) {
+                      clearAllNotifications();
+                    }
+                    return;
+                  }
                   Alert.alert("مسح الإشعارات", "هل تريد مسح جميع الإشعارات؟", [
                     { text: "إلغاء", style: "cancel" },
                     { text: "مسح الكل", style: "destructive", onPress: clearAllNotifications },
