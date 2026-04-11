@@ -428,21 +428,35 @@ const MyGroupCard = React.memo(function MyGroupCard({
   const colors = useColors();
   const SportIcon = getSportIcon(group.sport);
   const sportTheme = getSportTheme(group.sport);
+  const glassBg = sportTheme.glass.backgroundGradient;
+  const borderColor = sportTheme.glass.borderGlow;
+  const primaryColor = sportTheme.primary;
+
   return (
     <Pressable
-      style={styles.myCard}
+      style={[
+        styles.myCard,
+        {
+          borderWidth: 1.5,
+          borderColor: borderColor,
+          ...Platform.select({
+            web: { boxShadow: `0px 4px 20px ${sportTheme.glass.glassColor}, 0px 1px 6px rgba(0,0,0,0.06)` },
+            default: {
+              shadowColor: sportTheme.glass.glassColor,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.6,
+              shadowRadius: 16,
+              elevation: 5,
+            },
+          }),
+        },
+      ]}
       onPress={() => router.push({ pathname: "/group-detail", params: { id: group.id } })}
     >
       <LinearGradient
-        colors={[sportTheme.cardGradientStart, sportTheme.cardGradientEnd]}
+        colors={glassBg}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
-      />
-      <LinearGradient
-        colors={["rgba(255,255,255,0.10)", "transparent"]}
-        start={{ x: 1, y: 0 }}
-        end={{ x: 0, y: 1 }}
         style={StyleSheet.absoluteFillObject}
       />
 
@@ -451,42 +465,42 @@ const MyGroupCard = React.memo(function MyGroupCard({
           <View
             style={[
               styles.sportPill,
-              { backgroundColor: "rgba(255,255,255,0.22)", borderWidth: 1, borderColor: "rgba(255,255,255,0.3)" },
+              { backgroundColor: sportTheme.badgeBackground, borderWidth: 1, borderColor: borderColor },
             ]}
           >
-            <SportIcon color="#fff" size={14} />
-            <Text style={styles.sportPillText}>{sportLabel(group.sport)}</Text>
+            <SportIcon color={primaryColor} size={14} />
+            <Text style={[styles.sportPillText, { color: sportTheme.badgeForeground }]}>{sportLabel(group.sport)}</Text>
           </View>
           <View style={styles.myCardTopBadges}>
             {group.adminId === currentUserId && (
-              <View style={[styles.crownBadge, { backgroundColor: "rgba(245,158,11,0.25)" }]}>
+              <View style={[styles.crownBadge, { backgroundColor: colors.warning + "20" }]}>
                 <Ionicons name="star" size={13} color={colors.warning} />
               </View>
             )}
             {!group.isPublic && (
-              <View style={[styles.lockBadge, { backgroundColor: "rgba(0,0,0,0.25)" }]}>
-                <Ionicons name="lock-closed" size={11} color="#fff" />
+              <View style={[styles.lockBadge, { backgroundColor: colors.surfaceContainerHigh }]}>
+                <Ionicons name="lock-closed" size={11} color={colors.mutedForeground} />
               </View>
             )}
           </View>
         </View>
 
         <View style={styles.myCardMiddle}>
-          <Text style={styles.myCardName} numberOfLines={2}>
+          <Text style={[styles.myCardName, { color: colors.onSurface }]} numberOfLines={2}>
             {group.name}
           </Text>
           <View style={styles.memberRow}>
-            <Text style={styles.memberCountText}>{group.memberCount} عضو</Text>
-            <Ionicons name="people" size={15} color="rgba(255,255,255,0.9)" />
+            <Text style={[styles.memberCountText, { color: colors.mutedForeground }]}>{group.memberCount} عضو</Text>
+            <Ionicons name="people" size={15} color={colors.mutedForeground} />
           </View>
         </View>
 
         {group.nextMatch && (
-          <View style={[styles.nextMatchPill, { backgroundColor: "rgba(0,0,0,0.22)" }]}>
-            <Text style={styles.nextMatchPillText} numberOfLines={1}>
+          <View style={[styles.nextMatchPill, { backgroundColor: sportTheme.primaryContainer }]}>
+            <Text style={[styles.nextMatchPillText, { color: primaryColor }]} numberOfLines={1}>
               {typeof group.nextMatch === "object" ? group.nextMatch.title : group.nextMatch}
             </Text>
-            <Ionicons name="calendar-outline" size={13} color="rgba(255,255,255,0.9)" />
+            <Ionicons name="calendar-outline" size={13} color={primaryColor} />
           </View>
         )}
 
@@ -494,35 +508,36 @@ const MyGroupCard = React.memo(function MyGroupCard({
           {group.adminId === currentUserId ? (
             <>
               <Pressable
-                style={[styles.cardActionBtn, { backgroundColor: "rgba(255,255,255,0.25)" }]}
+                style={[styles.cardActionBtn, { backgroundColor: sportTheme.primaryContainer }]}
                 onPress={(e) => {
                   e.stopPropagation();
                   router.push({ pathname: "/group-detail", params: { id: group.id, showInvite: "1" } });
                 }}
               >
-                <Ionicons name="person-add-outline" size={13} color="#fff" />
-                <Text style={styles.cardActionBtnText}>دعوة</Text>
+                <Ionicons name="person-add-outline" size={13} color={primaryColor} />
+                <Text style={[styles.cardActionBtnText, { color: primaryColor }]}>دعوة</Text>
               </Pressable>
               <Pressable
-                style={[styles.cardActionBtn, { backgroundColor: "rgba(255,255,255,0.18)" }]}
+                style={[styles.cardActionBtn, { backgroundColor: sportTheme.primaryContainer }]}
                 onPress={(e) => {
                   e.stopPropagation();
                   router.push({ pathname: "/group-management", params: { id: group.id } });
                 }}
               >
-                <Ionicons name="settings-outline" size={13} color="#fff" />
-                <Text style={styles.cardActionBtnText}>إدارة</Text>
+                <Ionicons name="settings-outline" size={13} color={primaryColor} />
+                <Text style={[styles.cardActionBtnText, { color: primaryColor }]}>إدارة</Text>
               </Pressable>
             </>
           ) : (
             <Pressable
-              style={[styles.cardActionBtn, { backgroundColor: "rgba(0,0,0,0.2)" }]}
+              style={[styles.cardActionBtn, { backgroundColor: colors.destructive + "15", borderWidth: 1, borderColor: colors.destructive + "30" }]}
               onPress={(e) => {
                 e.stopPropagation();
                 onLeave?.();
               }}
             >
-              <Text style={styles.cardActionBtnText}>غادر</Text>
+              <Ionicons name="exit-outline" size={13} color={colors.destructive} />
+              <Text style={[styles.cardActionBtnText, { color: colors.destructive }]}>غادر</Text>
             </Pressable>
           )}
         </View>
@@ -686,16 +701,6 @@ const styles = StyleSheet.create({
     minHeight: 190,
     borderRadius: 24,
     overflow: "hidden",
-    ...Platform.select({
-      web: { boxShadow: "0px 8px 32px rgba(44, 84, 232, 0.22), 0px 2px 8px rgba(44, 84, 232, 0.12)" },
-      default: {
-        shadowColor: "#2C54E8",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.22,
-        shadowRadius: 24,
-        elevation: 8,
-      },
-    }),
   },
   myCardContent: { flex: 1, padding: 18, gap: 10, justifyContent: "space-between" },
   myCardTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
@@ -707,7 +712,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 20,
   },
-  sportPillText: { fontSize: 12, fontFamily: "Cairo_700Bold", color: "#fff" },
+  sportPillText: { fontSize: 12, fontFamily: "Cairo_700Bold" },
   myCardTopBadges: { flexDirection: "row", alignItems: "center", gap: 6 },
   crownBadge: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center" },
   lockBadge: { width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center" },
@@ -715,12 +720,11 @@ const styles = StyleSheet.create({
   myCardName: {
     fontSize: 20,
     fontFamily: "Cairo_900Black",
-    color: "#fff",
     lineHeight: 28,
     textAlign: "right",
   },
   memberRow: { flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "flex-end" },
-  memberCountText: { fontSize: 13, fontFamily: "Cairo_600SemiBold", color: "rgba(255,255,255,0.85)" },
+  memberCountText: { fontSize: 13, fontFamily: "Cairo_600SemiBold" },
   nextMatchPill: {
     flexDirection: "row",
     gap: 6,
@@ -733,7 +737,6 @@ const styles = StyleSheet.create({
   nextMatchPillText: {
     fontSize: 11,
     fontFamily: "Cairo_400Regular",
-    color: "rgba(255,255,255,0.85)",
     flex: 1,
     textAlign: "right",
   },
@@ -746,7 +749,7 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderRadius: 20,
   },
-  cardActionBtnText: { fontSize: 12, fontFamily: "Cairo_700Bold", color: "#fff" },
+  cardActionBtnText: { fontSize: 12, fontFamily: "Cairo_700Bold" },
 
   emptyMyGroups: { marginHorizontal: 16, padding: 24, alignItems: "center", gap: 14 },
   emptyIcon: { width: 68, height: 68, borderRadius: 34, alignItems: "center", justifyContent: "center" },
