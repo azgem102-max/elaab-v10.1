@@ -1,0 +1,329 @@
+{
+  "startedAt": "2026-04-06T19:08:40.997Z",
+  "completedAt": "2026-04-06T19:09:58.630Z",
+  "appUrl": "https://531ecd04-e463-4c65-8f8e-2257830cac18-00-hh63ssvqbasj-ky7kk53q.expo.janeway.replit.dev",
+  "screenshotsDir": "/home/runner/workspace/screenshots",
+  "viewports": [
+    {
+      "name": "iOS-iPhone15Pro",
+      "width": 393,
+      "height": 852
+    },
+    {
+      "name": "Android-412x915",
+      "width": 412,
+      "height": 915
+    }
+  ],
+  "screens": [
+    "landing",
+    "phone",
+    "otp",
+    "profile-setup",
+    "explore",
+    "my-matches",
+    "groups",
+    "profile",
+    "create-match",
+    "match-details"
+  ],
+  "totalPassed": 20,
+  "totalFailed": 0,
+  "totalScreens": 20,
+  "results": [
+    {
+      "viewport": "iOS-iPhone15Pro",
+      "width": 393,
+      "height": 852,
+      "screen": "landing",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "sportSelected": true,
+        "ctaClicked": true,
+        "navigatedToPhone": true
+      },
+      "screenshotFilename": "iOS-iPhone15Pro-landing.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/iOS-iPhone15Pro-landing.jpg"
+    },
+    {
+      "viewport": "iOS-iPhone15Pro",
+      "width": 393,
+      "height": 852,
+      "screen": "phone",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "typedPhoneDigits": true,
+        "prefixVisibleAfterTyping": true
+      },
+      "screenshotFilename": "iOS-iPhone15Pro-phone.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/iOS-iPhone15Pro-phone.jpg"
+    },
+    {
+      "viewport": "iOS-iPhone15Pro",
+      "width": 393,
+      "height": 852,
+      "screen": "otp",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "devFillClicked": true,
+        "verifyClicked": true
+      },
+      "screenshotFilename": "iOS-iPhone15Pro-otp.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/iOS-iPhone15Pro-otp.jpg"
+    },
+    {
+      "viewport": "iOS-iPhone15Pro",
+      "width": 393,
+      "height": 852,
+      "screen": "profile-setup",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "nicknameTyped": true
+      },
+      "screenshotFilename": "iOS-iPhone15Pro-profile-setup.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/iOS-iPhone15Pro-profile-setup.jpg"
+    },
+    {
+      "viewport": "iOS-iPhone15Pro",
+      "width": 393,
+      "height": 852,
+      "screen": "explore",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "sportFilterChipClicked": true
+      },
+      "screenshotFilename": "iOS-iPhone15Pro-explore.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/iOS-iPhone15Pro-explore.jpg"
+    },
+    {
+      "viewport": "iOS-iPhone15Pro",
+      "width": 393,
+      "height": 852,
+      "screen": "my-matches",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "pastMatchesTabClicked": true
+      },
+      "screenshotFilename": "iOS-iPhone15Pro-my-matches.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/iOS-iPhone15Pro-my-matches.jpg"
+    },
+    {
+      "viewport": "iOS-iPhone15Pro",
+      "width": 393,
+      "height": 852,
+      "screen": "groups",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "sportFilterChipClicked": true
+      },
+      "screenshotFilename": "iOS-iPhone15Pro-groups.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/iOS-iPhone15Pro-groups.jpg"
+    },
+    {
+      "viewport": "iOS-iPhone15Pro",
+      "width": 393,
+      "height": 852,
+      "screen": "profile",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "noJsCrash": true
+      },
+      "screenshotFilename": "iOS-iPhone15Pro-profile.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/iOS-iPhone15Pro-profile.jpg"
+    },
+    {
+      "viewport": "iOS-iPhone15Pro",
+      "width": 393,
+      "height": 852,
+      "screen": "create-match",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "sessionTypeCardClicked": true,
+        "nextButtonClicked": true
+      },
+      "screenshotFilename": "iOS-iPhone15Pro-create-match.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/iOS-iPhone15Pro-create-match.jpg"
+    },
+    {
+      "viewport": "iOS-iPhone15Pro",
+      "width": 393,
+      "height": 852,
+      "screen": "match-details",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "gracefulErrorShown": true,
+        "backButtonClicked": true,
+        "noJsCrash": true
+      },
+      "screenshotFilename": "iOS-iPhone15Pro-match-details.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/iOS-iPhone15Pro-match-details.jpg"
+    },
+    {
+      "viewport": "Android-412x915",
+      "width": 412,
+      "height": 915,
+      "screen": "landing",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "sportSelected": true,
+        "ctaClicked": true,
+        "navigatedToPhone": true
+      },
+      "screenshotFilename": "Android-412x915-landing.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/Android-412x915-landing.jpg"
+    },
+    {
+      "viewport": "Android-412x915",
+      "width": 412,
+      "height": 915,
+      "screen": "phone",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "typedPhoneDigits": true,
+        "prefixVisibleAfterTyping": true
+      },
+      "screenshotFilename": "Android-412x915-phone.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/Android-412x915-phone.jpg"
+    },
+    {
+      "viewport": "Android-412x915",
+      "width": 412,
+      "height": 915,
+      "screen": "otp",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "devFillClicked": true,
+        "verifyClicked": true
+      },
+      "screenshotFilename": "Android-412x915-otp.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/Android-412x915-otp.jpg"
+    },
+    {
+      "viewport": "Android-412x915",
+      "width": 412,
+      "height": 915,
+      "screen": "profile-setup",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "nicknameTyped": true
+      },
+      "screenshotFilename": "Android-412x915-profile-setup.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/Android-412x915-profile-setup.jpg"
+    },
+    {
+      "viewport": "Android-412x915",
+      "width": 412,
+      "height": 915,
+      "screen": "explore",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "sportFilterChipClicked": true
+      },
+      "screenshotFilename": "Android-412x915-explore.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/Android-412x915-explore.jpg"
+    },
+    {
+      "viewport": "Android-412x915",
+      "width": 412,
+      "height": 915,
+      "screen": "my-matches",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "pastMatchesTabClicked": true
+      },
+      "screenshotFilename": "Android-412x915-my-matches.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/Android-412x915-my-matches.jpg"
+    },
+    {
+      "viewport": "Android-412x915",
+      "width": 412,
+      "height": 915,
+      "screen": "groups",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "sportFilterChipClicked": true
+      },
+      "screenshotFilename": "Android-412x915-groups.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/Android-412x915-groups.jpg"
+    },
+    {
+      "viewport": "Android-412x915",
+      "width": 412,
+      "height": 915,
+      "screen": "profile",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "noJsCrash": true
+      },
+      "screenshotFilename": "Android-412x915-profile.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/Android-412x915-profile.jpg"
+    },
+    {
+      "viewport": "Android-412x915",
+      "width": 412,
+      "height": 915,
+      "screen": "create-match",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "sessionTypeCardClicked": true,
+        "nextButtonClicked": true
+      },
+      "screenshotFilename": "Android-412x915-create-match.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/Android-412x915-create-match.jpg"
+    },
+    {
+      "viewport": "Android-412x915",
+      "width": 412,
+      "height": 915,
+      "screen": "match-details",
+      "status": "pass",
+      "noOverflow": true,
+      "arabicTextFound": true,
+      "interactions": {
+        "gracefulErrorShown": true,
+        "backButtonClicked": true,
+        "noJsCrash": true
+      },
+      "screenshotFilename": "Android-412x915-match-details.jpg",
+      "screenshotPath": "/home/runner/workspace/screenshots/Android-412x915-match-details.jpg"
+    }
+  ]
+}

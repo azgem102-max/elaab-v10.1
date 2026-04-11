@@ -1,0 +1,37 @@
+uploads = []
+
+[[generated]]
+id = "NliGeAc8k0EfMN76yEULO"
+uri = "file://artifacts/mobile/assets/images/icon.png"
+type = "image"
+title = "elab sports app icon"
+
+[[generated]]
+id = "X3O0HIOsEVjE2bo8imv5G"
+uri = "file://artifacts/mobile/assets/images/hero-sports.png"
+type = "image"
+title = "sports hero illustration"
+
+[[outputs]]
+id = "FEuVR8r43U7j1gGNP77fL"
+uri = "file://screenshots/option1-orange.jpg"
+type = "image"
+title = "خيار 1 — برتقالي"
+
+[[outputs]]
+id = "sfSnTCcmx6uzgSghdQ5KT"
+uri = "file://screenshots/option2-blue-gradient.jpg"
+type = "image"
+title = "خيار 2 — تدرج أزرق"
+
+[[outputs]]
+id = "YAPYBYF33Ep-6PTYj78uF"
+uri = "file://screenshots/option3-cyan.jpg"
+type = "image"
+title = "خيار 3 — سماوي"
+
+[[outputs]]
+id = "aXOh9cd6OrF-iWzPO17vu"
+uri = "file://screenshots/option-playtomic.jpg"
+type = "image"
+title = "هوية Playtomic مطبقة على تطبيقنا"

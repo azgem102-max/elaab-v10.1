@@ -1,0 +1,1463 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.2.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: matches
+    description: Match operations
+  - name: groups
+    description: Group operations
+  - name: auth
+    description: Authentication operations
+  - name: users
+    description: User operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /matches:
+    get:
+      operationId: listMatches
+      tags: [matches]
+      summary: List public matches
+      description: Returns a list of public upcoming matches
+      parameters:
+        - name: sport
+          in: query
+          schema:
+            type: string
+            enum: [football, padel, tennis]
+          description: Filter by sport type
+        - name: date
+          in: query
+          schema:
+            type: string
+            enum: [today, tomorrow, thisWeek]
+          description: Filter by date range
+        - name: openOnly
+          in: query
+          schema:
+            type: boolean
+          description: Only return matches with available spots
+        - name: skill_level
+          in: query
+          schema:
+            type: string
+            enum: [beginner, intermediate, advanced]
+          description: Filter by required skill level
+        - name: time_of_day
+          in: query
+          schema:
+            type: string
+            enum: [morning, afternoon, evening]
+          description: Filter by time of day (morning 5-12, afternoon 12-17, evening 17-24)
+        - name: has_spots
+          in: query
+          schema:
+            type: boolean
+          description: Only return matches with available spots
+      responses:
+        "200":
+          description: List of matches
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchListResponse"
+    post:
+      operationId: createMatch
+      tags: [matches]
+      summary: Create a match
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMatchRequest"
+      responses:
+        "201":
+          description: Created match
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /matches/{id}/join:
+    post:
+      operationId: joinMatch
+      tags: [matches]
+      summary: Join a match
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Joined successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Match not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Conflict (already joined, full, or scheduling conflict)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /matches/{id}/leave:
+    post:
+      operationId: leaveMatch
+      tags: [matches]
+      summary: Leave a match
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Left successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Organizer cannot leave
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /matches/{id}/attendance:
+    put:
+      operationId: updateAttendance
+      tags: [matches]
+      summary: Update player attendance (organizer only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AttendanceRequest"
+      responses:
+        "200":
+          description: Updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Organizer only
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /matches/{id}/payment:
+    put:
+      operationId: updatePayment
+      tags: [matches]
+      summary: Update player payment status (organizer only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentRequest"
+      responses:
+        "200":
+          description: Updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Organizer only
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /matches/{id}:
+    patch:
+      operationId: updateMatch
+      tags: [matches]
+      summary: Update match details or complete it (organizer only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMatchRequest"
+      responses:
+        "200":
+          description: Updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateMatchResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Organizer only
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Match not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteMatch
+      tags: [matches]
+      summary: Cancel and delete a match (organizer only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Organizer only
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Match not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /matches/{id}/invite-link:
+    post:
+      operationId: createMatchInviteLink
+      tags: [matches]
+      summary: Generate an invite link token for a match (organizer only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Invite link created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InviteLinkResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Organizer only
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Match not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /matches/{id}/players/{playerId}:
+    delete:
+      operationId: removeMatchPlayer
+      tags: [matches]
+      summary: Remove a player from a match (organizer only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: playerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Player removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RemovePlayerResponse"
+        "400":
+          description: Cannot remove organizer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Organizer only
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Match or player not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /invites/{token}:
+    get:
+      operationId: getInvite
+      tags: [matches]
+      summary: Get invite details by token
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Invite details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InviteResponse"
+        "404":
+          description: Token not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "410":
+          description: Token revoked or expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /invites/{token}/accept:
+    post:
+      operationId: acceptInvite
+      tags: [matches]
+      summary: Accept an invite (join match or group)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Invite accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AcceptInviteResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Token not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Already joined or match full
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "410":
+          description: Token revoked or expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /matches/{id}/rate:
+    post:
+      operationId: ratePlayer
+      tags: [matches]
+      summary: Rate a player after match (participants only, after match ends)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RatePlayerRequest"
+      responses:
+        "200":
+          description: Rated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Not a participant or match not finished
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /groups:
+    get:
+      operationId: listGroups
+      tags: [groups]
+      summary: List groups
+      description: Returns a list of public groups
+      responses:
+        "200":
+          description: List of groups
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupListResponse"
+    post:
+      operationId: createGroup
+      tags: [groups]
+      summary: Create a group
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGroupRequest"
+      responses:
+        "201":
+          description: Created group
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /groups/{id}/join:
+    post:
+      operationId: joinGroup
+      tags: [groups]
+      summary: Join a group
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Joined successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Group not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Already a member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /matches/{id}/invite-link:
+    post:
+      operationId: createMatchInviteLink
+      tags: [matches]
+      summary: Create an invite link for a match (organizer only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Invite link token created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InviteLinkResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Not the organizer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Match not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /groups/{id}/invite-link:
+    post:
+      operationId: createGroupInviteLink
+      tags: [groups]
+      summary: Create an invite link for a group (admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Invite link token created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InviteLinkResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Not the admin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Group not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /invites/{token}:
+    get:
+      operationId: getInvite
+      tags: [matches, groups]
+      summary: Get invite details by token
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Invite details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InviteInfoResponse"
+        "404":
+          description: Invite not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "410":
+          description: Invite expired or revoked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /invites/{token}/accept:
+    post:
+      operationId: acceptInvite
+      tags: [matches, groups]
+      summary: Accept an invite link (join match or group)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Joined successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AcceptInviteResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Invite not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Match is full or scheduling conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "410":
+          description: Invite expired or revoked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /groups/{id}/leave:
+    post:
+      operationId: leaveGroup
+      tags: [groups]
+      summary: Leave a group
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Left successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Admin cannot leave
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get user profile with reliability score
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/request-otp:
+    post:
+      operationId: requestOtp
+      tags: [auth]
+      summary: Request OTP
+      description: Sends an OTP to the given phone number (SMS via Twilio in production, console log in dev)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestOtpRequest"
+      responses:
+        "200":
+          description: OTP sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OtpRequestResponse"
+  /auth/verify-otp:
+    post:
+      operationId: verifyOtp
+      tags: [auth]
+      summary: Verify OTP
+      description: Verifies the OTP and returns a JWT token. Creates the user account if first login.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyOtpRequest"
+      responses:
+        "200":
+          description: OTP verified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OtpVerifyResponse"
+        "401":
+          description: Invalid OTP
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        version:
+          type: string
+      required:
+        - status
+        - version
+    MatchSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        sport:
+          type: string
+          enum: [football, padel, tennis]
+        date:
+          type: string
+        time:
+          type: string
+        venue:
+          type: string
+        location:
+          type: string
+        maxPlayers:
+          type: integer
+        cost:
+          type: number
+        isPublic:
+          type: boolean
+        organizerId:
+          type: string
+        organizerName:
+          type: string
+        organizerReliability:
+          type: number
+          nullable: true
+        playerCount:
+          type: integer
+        status:
+          type: string
+          enum: [upcoming, today, completed]
+        sessionType:
+          type: string
+          enum: [match, training]
+        skillLevel:
+          type: string
+          enum: [beginner, intermediate, advanced]
+          nullable: true
+      required:
+        - id
+        - title
+        - sport
+        - date
+        - time
+        - venue
+        - location
+        - maxPlayers
+        - cost
+        - isPublic
+        - organizerId
+        - organizerName
+        - playerCount
+        - status
+        - sessionType
+    MatchListResponse:
+      type: object
+      properties:
+        matches:
+          type: array
+          items:
+            $ref: "#/components/schemas/MatchSummary"
+      required:
+        - matches
+    MatchResponse:
+      type: object
+      properties:
+        match:
+          $ref: "#/components/schemas/MatchSummary"
+      required:
+        - match
+    CreateMatchRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        sport:
+          type: string
+        date:
+          type: string
+        time:
+          type: string
+        venue:
+          type: string
+        location:
+          type: string
+        maxPlayers:
+          type: integer
+        cost:
+          type: number
+        isPublic:
+          type: boolean
+        sessionType:
+          type: string
+      required:
+        - title
+        - sport
+        - date
+        - time
+        - venue
+        - maxPlayers
+        - cost
+        - isPublic
+    GroupSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        sport:
+          type: string
+          enum: [football, padel, tennis]
+        description:
+          type: string
+        memberCount:
+          type: integer
+        adminId:
+          type: string
+        adminName:
+          type: string
+        isPublic:
+          type: boolean
+        nextMatch:
+          type: string
+          nullable: true
+      required:
+        - id
+        - name
+        - sport
+        - description
+        - memberCount
+        - adminId
+        - adminName
+        - isPublic
+    GroupListResponse:
+      type: object
+      properties:
+        groups:
+          type: array
+          items:
+            $ref: "#/components/schemas/GroupSummary"
+      required:
+        - groups
+    GroupResponse:
+      type: object
+      properties:
+        group:
+          $ref: "#/components/schemas/GroupSummary"
+      required:
+        - group
+    CreateGroupRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        sport:
+          type: string
+        description:
+          type: string
+        isPublic:
+          type: boolean
+      required:
+        - name
+        - sport
+    AttendanceRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+        attended:
+          type: boolean
+      required:
+        - userId
+        - attended
+    PaymentRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+        paid:
+          type: boolean
+      required:
+        - userId
+        - paid
+    UpdateMatchRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        venue:
+          type: string
+        location:
+          type: string
+          nullable: true
+        date:
+          type: string
+        time:
+          type: string
+        cost:
+          type: number
+        maxPlayers:
+          type: integer
+        description:
+          type: string
+          nullable: true
+        skillLevel:
+          type: string
+          enum: [beginner, intermediate, advanced, professional]
+          nullable: true
+        status:
+          type: string
+          enum: [completed]
+    UpdateMatchResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        match:
+          $ref: "#/components/schemas/MatchSummary"
+      required:
+        - success
+        - match
+    RemovePlayerResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        playerCount:
+          type: integer
+        removedName:
+          type: string
+      required:
+        - success
+        - playerCount
+        - removedName
+    AcceptInviteResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        alreadyMember:
+          type: boolean
+        matchId:
+          type: string
+          nullable: true
+        groupId:
+          type: string
+          nullable: true
+        playerCount:
+          type: integer
+          nullable: true
+        memberCount:
+          type: integer
+          nullable: true
+      required:
+        - success
+    InviteLinkResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        token:
+          type: string
+        expiresAt:
+          type: string
+      required:
+        - success
+        - token
+        - expiresAt
+    InviteResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        invite:
+          type: object
+          properties:
+            targetType:
+              type: string
+              enum: [match, group]
+            match:
+              type: object
+              nullable: true
+              properties:
+                id:
+                  type: string
+                title:
+                  type: string
+                sport:
+                  type: string
+                date:
+                  type: string
+                time:
+                  type: string
+                venue:
+                  type: string
+                maxPlayers:
+                  type: integer
+                playerCount:
+                  type: integer
+                organizerId:
+                  type: string
+                organizerName:
+                  type: string
+                isPublic:
+                  type: boolean
+                isJoined:
+                  type: boolean
+              required:
+                - id
+                - title
+                - sport
+                - maxPlayers
+                - playerCount
+                - organizerId
+                - organizerName
+                - isJoined
+            group:
+              type: object
+              nullable: true
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+                sport:
+                  type: string
+                description:
+                  type: string
+                memberCount:
+                  type: integer
+                adminId:
+                  type: string
+                adminName:
+                  type: string
+                isPublic:
+                  type: boolean
+                isJoined:
+                  type: boolean
+              required:
+                - id
+                - name
+                - sport
+                - memberCount
+                - adminId
+                - adminName
+                - isJoined
+          required:
+            - targetType
+      required:
+        - success
+        - invite
+    RatePlayerRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+        score:
+          type: integer
+          minimum: 1
+          maximum: 5
+      required:
+        - userId
+        - score
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        phone:
+          type: string
+        name:
+          type: string
+          nullable: true
+        avatarUrl:
+          type: string
+          nullable: true
+        reliability:
+          type: number
+          nullable: true
+        matchCount:
+          type: integer
+        attendedCount:
+          type: integer
+        matchesPlayed:
+          type: integer
+        badges:
+          type: array
+          items:
+            type: string
+            enum: [artist, rock, bolt]
+        rating:
+          type: object
+          properties:
+            artist:
+              type: integer
+            rock:
+              type: integer
+            bolt:
+              type: integer
+          required:
+            - artist
+            - rock
+            - bolt
+      required:
+        - id
+        - phone
+        - matchCount
+        - attendedCount
+    UserResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        user:
+          $ref: "#/components/schemas/UserProfile"
+      required:
+        - success
+        - user
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
+    RequestOtpRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+      required:
+        - phone
+    OtpRequestResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
+    VerifyOtpRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+        otp:
+          type: string
+      required:
+        - phone
+        - otp
+    OtpVerifyResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        token:
+          type: string
+        userId:
+          type: string
+      required:
+        - success
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        error:
+          type: string
+      required:
+        - success
+        - error
+    InviteLinkResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        token:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+        - success
+        - token
+        - expiresAt
+    InviteInfoResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        invite:
+          type: object
+          properties:
+            targetType:
+              type: string
+              enum: [match, group]
+            match:
+              type: object
+              nullable: true
+              properties:
+                id:
+                  type: string
+                title:
+                  type: string
+                sport:
+                  type: string
+                date:
+                  type: string
+                time:
+                  type: string
+                venue:
+                  type: string
+                maxPlayers:
+                  type: integer
+                playerCount:
+                  type: integer
+                organizerName:
+                  type: string
+                isPublic:
+                  type: boolean
+                isJoined:
+                  type: boolean
+            group:
+              type: object
+              nullable: true
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+                sport:
+                  type: string
+                description:
+                  type: string
+                memberCount:
+                  type: integer
+                adminName:
+                  type: string
+                isPublic:
+                  type: boolean
+                isJoined:
+                  type: boolean
+          required:
+            - targetType
+      required:
+        - success
+        - invite
+    AcceptInviteResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        alreadyMember:
+          type: boolean
+        groupId:
+          type: string
+          nullable: true
+        matchId:
+          type: string
+          nullable: true
+        memberCount:
+          type: integer
+          nullable: true
+        playerCount:
+          type: integer
+          nullable: true
+      required:
+        - success

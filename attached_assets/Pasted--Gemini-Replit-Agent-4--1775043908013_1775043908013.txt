@@ -1,0 +1,61 @@
+قال Gemini
+هذا هو التوجه الصحيح مع Replit Agent 4؛ إعطاؤه "العقل والمنطق" وتركه يبني "الجسد والهيكل". ريبلت أجينت في إصداره الأخير مذهل في استنتاج تجربة المستخدم (UX) إذا فهم الهدف التجاري والتقني بعمق.
+
+إليك البرومبت المصاغ باحترافية عالية، مصمم لفتح آفاق الإبداع لـ Replit مع الالتزام بقوانين "إلعب" الصارمة:
+
+🚀 System Architect Brief: Project "El'ab" (إلعب)
+Role: You are a Senior Full-stack Developer and Product Architect. Your mission is to build "El'ab", a sports community ecosystem for the Saudi market.
+
+🌟 1. The Core Problem & Solution
+The Problem: Amateur sports in Saudi Arabia (Football, Padel, Tennis) suffer from "flaky" players (no-shows), disorganized WhatsApp groups, and messy payment tracking (Gatta).
+
+The Solution: "El'ab" is a Trust-First platform. It uses a proprietary Reliability Engine and a Manual Financial Ledger to ensure only committed players stay in the community.
+
+⚖️ 2. The Engine (Logic Pillars)
+You must design the app architecture around these two non-negotiable logic engines:
+
+The Reliability Engine: * New Users: Any user with < 3 matches is marked as "New" (جديد) with a grey badge.
+
+Established Users: After 3 matches, a 0-100% score is calculated based on attendance and peer ratings.
+
+Penalty Logic: Automatic deductions for no-shows or late cancellations (< 2 hours).
+
+The Gatta (Financial) Ledger:
+
+The Match Organizer is the "Master of the Session."
+
+They have manual toggle authority over: [Attendance Status] and [Payment Status].
+
+The system must sync this state in real-time for transparency.
+
+🎨 3. Design Language & Identity
+Aesthetic: "Warm Arena" - Minimalist, high-efficiency UX.
+
+Color Palette: Primary Background #F5F5DC (Warm Beige). Accents: Forest Green (Football), Sky Blue (Padel), Clay Orange (Tennis).
+
+Localization: Arabic (RTL) is the primary and default layout. RTL integrity must be maintained across all navigation and components.
+
+Mapping: Integrate Real Google Maps API for discovery and location picking. No abstract maps.
+
+🏗️ 4. Architectural Requirements
+Structural Freedom: Do not limit yourself to a specific number of screens. Build the optimal flow that covers:
+
+Discovery: Finding matches via list and map.
+
+Engagement: Joining matches and selecting Tactical Positions (unique layouts for each sport).
+
+Organization: Tools for hosts to manage requests, payments, and attendance.
+
+Identity: Athlete profiles with Skill Radars, Reliability Badges, and Match History.
+
+Social: Post-match rating system (Artist, Rock, Bolt) to build player reputations.
+
+Tech Stack: Use a modern full-stack approach (e.g., React/Next.js/Expo) with a relational database (Supabase is preferred for RLS and Real-time).
+
+🏁 5. Your First Goal
+Analyze the "Golden Thread" of the user journey: from a user opening the app, finding a match, committing to a tactical position, the organizer marking them as "Paid", to the final post-match rating. Ensure every state change is logically connected and persistent.
+
+💡 نصيحة "عزّام" عند إرسال هذا البرومبت:
+بما أنك ستعطيه "الهوية" لاحقاً، أضف هذه الجملة في نهاية البرومبت:
+
+"I will provide the visual identity and specific design assets shortly. For now, focus on building the Functional Skeleton and Database Relationships that support this logic."
