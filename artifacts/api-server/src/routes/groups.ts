@@ -1017,9 +1017,14 @@ router.delete("/groups/:id", requireAuth, async (req: AuthRequest, res: Response
     }
   }
 
-  await db.delete(groupMembersTable).where(eq(groupMembersTable.groupId, groupId));
-  await db.delete(groupMessagesTable).where(eq(groupMessagesTable.groupId, groupId));
-  await db.delete(groupsTable).where(eq(groupsTable.id, groupId));
+  await db.transaction(async (tx) => {
+    await tx.delete(groupMembersTable).where(eq(groupMembersTable.groupId, groupId));
+    await tx.delete(groupMessagesTable).where(eq(groupMessagesTable.groupId, groupId));
+    await tx.delete(inviteLinksTable).where(
+      and(eq(inviteLinksTable.targetType, "group"), eq(inviteLinksTable.targetId, groupId))
+    );
+    await tx.delete(groupsTable).where(eq(groupsTable.id, groupId));
+  });
 
   res.json({ success: true });
 });

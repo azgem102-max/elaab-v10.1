@@ -8,8 +8,8 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   I18nManager,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -19,6 +19,137 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+type ConfirmDialogConfig = {
+  title: string;
+  message: string;
+  confirmText: string;
+  destructive?: boolean;
+  onConfirm: () => void | Promise<void>;
+};
+
+function ConfirmDialog({
+  config,
+  visible,
+  onCancel,
+  colors,
+}: {
+  config: ConfirmDialogConfig | null;
+  visible: boolean;
+  onCancel: () => void;
+  colors: ReturnType<typeof useColors>;
+}) {
+  const [confirming, setConfirming] = useState(false);
+
+  useEffect(() => {
+    if (!visible) setConfirming(false);
+  }, [visible]);
+
+  if (!config) return null;
+
+  async function handleConfirm() {
+    if (confirming) return;
+    setConfirming(true);
+    try {
+      await config!.onConfirm();
+    } finally {
+      setConfirming(false);
+    }
+  }
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onCancel}
+    >
+      <View style={dlgStyles.overlay}>
+        <View style={[dlgStyles.dialog, { backgroundColor: colors.background }]}>
+          <Text style={[dlgStyles.title, { color: colors.onSurface }]}>{config.title}</Text>
+          <Text style={[dlgStyles.message, { color: colors.mutedForeground }]}>{config.message}</Text>
+          <View style={dlgStyles.buttons}>
+            <Pressable
+              style={[dlgStyles.btn, dlgStyles.cancelBtn, { borderColor: colors.border, opacity: confirming ? 0.5 : 1 }]}
+              onPress={onCancel}
+              disabled={confirming}
+              accessibilityLabel="إلغاء"
+            >
+              <Text style={[dlgStyles.btnText, { color: colors.mutedForeground }]}>إلغاء</Text>
+            </Pressable>
+            <Pressable
+              style={[
+                dlgStyles.btn,
+                dlgStyles.confirmBtn,
+                { backgroundColor: config.destructive ? "#DC2626" : colors.primary, opacity: confirming ? 0.7 : 1 },
+              ]}
+              onPress={handleConfirm}
+              disabled={confirming}
+              accessibilityLabel={config.confirmText}
+            >
+              {confirming ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={[dlgStyles.btnText, { color: "#fff" }]}>{config.confirmText}</Text>
+              )}
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const dlgStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 32,
+  },
+  dialog: {
+    width: "100%",
+    borderRadius: 20,
+    padding: 24,
+    gap: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  title: {
+    fontSize: 17,
+    fontFamily: "Cairo_700Bold",
+    textAlign: "right",
+  },
+  message: {
+    fontSize: 14,
+    fontFamily: "Cairo_400Regular",
+    textAlign: "right",
+    lineHeight: 22,
+  },
+  buttons: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 4,
+  },
+  btn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cancelBtn: {
+    borderWidth: 1,
+  },
+  confirmBtn: {},
+  btnText: {
+    fontSize: 14,
+    fontFamily: "Cairo_700Bold",
+  },
+});
 
 export default function GroupManagementScreen() {
   const colors = useColors();
@@ -41,6 +172,9 @@ export default function GroupManagementScreen() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: "" });
+
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogConfig | null>(null);
+  const [confirmVisible, setConfirmVisible] = useState(false);
 
   const group = groups.find((g) => g.id === id);
 
@@ -68,6 +202,16 @@ export default function GroupManagementScreen() {
   function showToast(message: string) {
     setToast({ visible: true, message });
     setTimeout(() => setToast((t) => ({ ...t, visible: false })), 2500);
+  }
+
+  function showConfirm(config: ConfirmDialogConfig) {
+    setConfirmDialog(config);
+    setConfirmVisible(true);
+  }
+
+  function hideConfirm() {
+    setConfirmVisible(false);
+    setConfirmDialog(null);
   }
 
   if (loadingGroup) {
@@ -132,99 +276,83 @@ export default function GroupManagementScreen() {
   }
 
   function handlePromoteMember(memberId: string, memberName: string) {
-    Alert.alert(
-      "ترقية عضو",
-      `هل تريد ترقية "${memberName}" إلى مشرف؟`,
-      [
-        { text: "إلغاء", style: "cancel" },
-        {
-          text: "ترقية",
-          onPress: async () => {
-            const success = await updateGroupMemberRole(id, memberId, "admin");
-            if (success) {
-              showToast(`تمت ترقية "${memberName}" إلى مشرف ✓`);
-            } else {
-              showToast("فشلت الترقية، حاول مجدداً");
-            }
-          },
-        },
-      ]
-    );
+    showConfirm({
+      title: "ترقية عضو",
+      message: `هل تريد ترقية "${memberName}" إلى مشرف؟`,
+      confirmText: "ترقية",
+      onConfirm: async () => {
+        hideConfirm();
+        const success = await updateGroupMemberRole(id, memberId, "admin");
+        if (success) {
+          showToast(`تمت ترقية "${memberName}" إلى مشرف ✓`);
+        } else {
+          showToast("فشلت الترقية، حاول مجدداً");
+        }
+      },
+    });
   }
 
   function handleDemoteMember(memberId: string, memberName: string) {
-    Alert.alert(
-      "تخفيض مشرف",
-      `هل تريد تخفيض "${memberName}" إلى عضو عادي؟`,
-      [
-        { text: "إلغاء", style: "cancel" },
-        {
-          text: "تخفيض",
-          style: "destructive",
-          onPress: async () => {
-            const success = await updateGroupMemberRole(id, memberId, "member");
-            if (success) {
-              showToast(`تم تخفيض "${memberName}" إلى عضو ✓`);
-            } else {
-              showToast("فشل التخفيض، حاول مجدداً");
-            }
-          },
-        },
-      ]
-    );
+    showConfirm({
+      title: "تخفيض مشرف",
+      message: `هل تريد تخفيض "${memberName}" إلى عضو عادي؟`,
+      confirmText: "تخفيض",
+      destructive: true,
+      onConfirm: async () => {
+        hideConfirm();
+        const success = await updateGroupMemberRole(id, memberId, "member");
+        if (success) {
+          showToast(`تم تخفيض "${memberName}" إلى عضو ✓`);
+        } else {
+          showToast("فشل التخفيض، حاول مجدداً");
+        }
+      },
+    });
   }
 
   function handleRemoveMember(memberId: string, memberName: string) {
-    Alert.alert(
-      "إزالة عضو",
-      `هل أنت متأكد من إزالة "${memberName}" من المجموعة؟`,
-      [
-        { text: "إلغاء", style: "cancel" },
-        {
-          text: "إزالة",
-          style: "destructive",
-          onPress: async () => {
-            const success = await removeGroupMember(id, memberId);
-            if (success) {
-              showToast(`تمت إزالة "${memberName}" من المجموعة`);
-            } else {
-              showToast("فشل إزالة العضو، حاول مجدداً");
-            }
-          },
-        },
-      ]
-    );
+    showConfirm({
+      title: "إزالة عضو",
+      message: `هل أنت متأكد من إزالة "${memberName}" من المجموعة؟`,
+      confirmText: "إزالة",
+      destructive: true,
+      onConfirm: async () => {
+        hideConfirm();
+        const success = await removeGroupMember(id, memberId);
+        if (success) {
+          showToast(`تمت إزالة "${memberName}" من المجموعة`);
+        } else {
+          showToast("فشل إزالة العضو، حاول مجدداً");
+        }
+      },
+    });
   }
 
   function handleDeleteGroup() {
     if (deleting) return;
-    Alert.alert(
-      "حذف المجموعة",
-      `هل أنت متأكد من حذف مجموعة "${safeGroup.name}"؟ لا يمكن التراجع عن هذا الإجراء.`,
-      [
-        { text: "إلغاء", style: "cancel" },
-        {
-          text: "حذف المجموعة",
-          style: "destructive",
-          onPress: async () => {
-            setDeleting(true);
-            try {
-              const groupId = safeGroup.id;
-              const success = await deleteGroup(groupId);
-              if (success) {
-                router.replace("/(tabs)/groups");
-              } else {
-                showToast("فشل حذف المجموعة، تحقق من صلاحياتك وحاول مجدداً");
-              }
-            } catch {
-              showToast("حدث خطأ غير متوقع، حاول مجدداً");
-            } finally {
-              setDeleting(false);
-            }
-          },
-        },
-      ]
-    );
+    showConfirm({
+      title: "حذف المجموعة",
+      message: `هل أنت متأكد من حذف مجموعة "${safeGroup.name}"؟ لا يمكن التراجع عن هذا الإجراء.`,
+      confirmText: "حذف المجموعة",
+      destructive: true,
+      onConfirm: async () => {
+        hideConfirm();
+        setDeleting(true);
+        try {
+          const groupId = safeGroup.id;
+          const success = await deleteGroup(groupId);
+          if (success) {
+            router.replace("/(tabs)/groups");
+          } else {
+            showToast("فشل حذف المجموعة، تحقق من صلاحياتك وحاول مجدداً");
+          }
+        } catch {
+          showToast("حدث خطأ غير متوقع، حاول مجدداً");
+        } finally {
+          setDeleting(false);
+        }
+      },
+    });
   }
 
   return (
@@ -442,9 +570,10 @@ export default function GroupManagementScreen() {
               حذف المجموعة سيزيل جميع البيانات والمحادثات بشكل نهائي ولا يمكن التراجع عنه.
             </Text>
             <Pressable
-              style={[styles.deleteBtn, { backgroundColor: deleting ? "#DC2626" + "08" : "#DC2626", borderRadius: 14 }]}
+              style={[styles.deleteBtn, { backgroundColor: deleting ? "#DC2626" + "80" : "#DC2626", borderRadius: 14 }]}
               onPress={handleDeleteGroup}
               disabled={deleting}
+              accessibilityLabel="حذف المجموعة نهائياً"
             >
               {deleting ? (
                 <ActivityIndicator size="small" color="#fff" />
@@ -458,6 +587,13 @@ export default function GroupManagementScreen() {
           </View>
         )}
       </ScrollView>
+
+      <ConfirmDialog
+        config={confirmDialog}
+        visible={confirmVisible}
+        onCancel={hideConfirm}
+        colors={colors}
+      />
 
       {toast.visible && (
         <View style={[styles.toast, { backgroundColor: colors.success }]} pointerEvents="none">
