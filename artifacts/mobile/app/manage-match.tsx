@@ -485,9 +485,14 @@ export default function ManageMatchScreen() {
         { text: "تراجع", style: "cancel" },
         {
           text: "إلغاء المباراة", style: "destructive", onPress: async () => {
-            const ok = await cancelMatch(match!.id);
-            if (ok) { router.back(); router.back(); }
-            else showToast("تعذّر إلغاء المباراة", "error");
+            const matchId = match!.id;
+            const ok = await cancelMatch(matchId);
+            if (ok) {
+              showToast("تم إلغاء المباراة بنجاح", "success");
+              router.dismissAll();
+            } else {
+              showToast("تعذّر إلغاء المباراة", "error");
+            }
           },
         },
       ]
@@ -506,8 +511,9 @@ export default function ManageMatchScreen() {
             setCompleting(true);
             try {
               await api.completeMatch(match!.id);
-              await refreshMatches();
+              showToast("تم إنهاء المباراة بنجاح", "success");
               router.back();
+              refreshMatches().catch(() => {});
             } catch {
               showToast("تعذّر إنهاء المباراة", "error");
             } finally {

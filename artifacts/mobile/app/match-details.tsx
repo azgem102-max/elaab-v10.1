@@ -784,8 +784,10 @@ export default function MatchDetailsScreen() {
                         { text: "تراجع", style: "cancel" },
                         {
                           text: "إلغاء المباراة", style: "destructive", onPress: async () => {
-                            const ok = await cancelMatch(match.id);
+                            const matchId = match.id;
+                            const ok = await cancelMatch(matchId);
                             if (ok) {
+                              showToast("تم إلغاء المباراة بنجاح", "success");
                               router.back();
                             } else {
                               showToast("تعذّر إلغاء المباراة، حاول مجدداً", "error");
