@@ -1,11 +1,12 @@
 import { useApp, sportColor, reliabilityColor, formatReliability } from "@/context/AppContext";
+import { api, ApiJoinRequest } from "@/services/api";
 import { useColors } from "@/hooks/useColors";
 import { getSportTheme } from "@/constants/sportTheme";
 import { GlassScreenHeader } from "@/components/glass/GlassScreenHeader";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   I18nManager,
@@ -182,6 +183,23 @@ export default function GroupManagementScreen() {
   const [description, setDescription] = useState(group?.description ?? "");
   const [isPublic, setIsPublic] = useState(group?.isPublic ?? true);
 
+  const [joinRequests, setJoinRequests] = useState<ApiJoinRequest[]>([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+  const [processingRequestId, setProcessingRequestId] = useState<string | null>(null);
+
+  const loadJoinRequests = useCallback(async () => {
+    if (!id) return;
+    setLoadingRequests(true);
+    try {
+      const res = await api.getJoinRequests(id);
+      setJoinRequests(res.requests);
+    } catch {
+      setJoinRequests([]);
+    } finally {
+      setLoadingRequests(false);
+    }
+  }, [id]);
+
   useEffect(() => {
     if (!id) return;
     const needsFetch = !group || !group.members || group.members.length < group.memberCount;
@@ -189,6 +207,7 @@ export default function GroupManagementScreen() {
       setLoadingGroup(true);
       fetchGroupById(id).finally(() => setLoadingGroup(false));
     }
+    loadJoinRequests();
   }, [id]);
 
   useEffect(() => {
@@ -328,6 +347,33 @@ export default function GroupManagementScreen() {
     });
   }
 
+  async function handleApproveRequest(requestId: string, nickname: string) {
+    setProcessingRequestId(requestId);
+    try {
+      await api.approveJoinRequest(id, requestId);
+      setJoinRequests((prev) => prev.filter((r) => r.id !== requestId));
+      fetchGroupById(id);
+      showToast(`تمت الموافقة على انضمام "${nickname}" ✓`);
+    } catch {
+      showToast("فشلت الموافقة، حاول مجدداً");
+    } finally {
+      setProcessingRequestId(null);
+    }
+  }
+
+  async function handleRejectRequest(requestId: string, nickname: string) {
+    setProcessingRequestId(requestId);
+    try {
+      await api.rejectJoinRequest(id, requestId);
+      setJoinRequests((prev) => prev.filter((r) => r.id !== requestId));
+      showToast(`تم رفض طلب "${nickname}"`);
+    } catch {
+      showToast("فشل الرفض، حاول مجدداً");
+    } finally {
+      setProcessingRequestId(null);
+    }
+  }
+
   function handleDeleteGroup() {
     if (deleting) return;
     showConfirm({
@@ -458,6 +504,71 @@ export default function GroupManagementScreen() {
               <Text style={styles.saveBtnText}>حفظ التغييرات</Text>
             )}
           </Pressable>
+        </View>
+
+        <View style={[styles.section, { backgroundColor: colors.background, borderWidth: 1, borderColor: sc + "30" }]}>
+          <View style={styles.sectionTitleRow}>
+            <View style={[styles.sectionTitleIcon, { backgroundColor: sc + "18" }]}>
+              <Ionicons name="person-add-outline" size={16} color={sc} />
+            </View>
+            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
+              طلبات الانضمام{joinRequests.length > 0 ? ` (${joinRequests.length})` : ""}
+            </Text>
+          </View>
+
+          {loadingRequests ? (
+            <ActivityIndicator size="small" color={sc} style={{ marginVertical: 12 }} />
+          ) : joinRequests.length === 0 ? (
+            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>لا توجد طلبات انضمام معلقة</Text>
+          ) : (
+            joinRequests.map((request) => {
+              const relColor = reliabilityColor(request.reliability, colors);
+              return (
+              <View key={request.id} style={[styles.memberCard, { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border }]}>
+                <View style={[styles.memberAvatar, { backgroundColor: sc + "20" }]}>
+                  <Text style={[styles.memberInitial, { color: sc }]}>{request.nickname.charAt(0)}</Text>
+                </View>
+                <View style={styles.memberInfo}>
+                  <Text style={[styles.memberName, { color: colors.onSurface }]} numberOfLines={1}>
+                    {request.nickname}
+                  </Text>
+                  <View style={styles.memberMetaRow}>
+                    {request.reliability !== null && (
+                      <View style={[styles.relPill, { backgroundColor: relColor + "20" }]}>
+                        <View style={[styles.relDot, { backgroundColor: relColor }]} />
+                        <Text style={[styles.relPillText, { color: relColor }]}>
+                          {formatReliability(request.reliability)}
+                        </Text>
+                      </View>
+                    )}
+                    <Text style={[styles.memberReliability, { color: colors.mutedForeground }]}>
+                      {request.matchesPlayed} مباراة
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.requestActions}>
+                  <Pressable
+                    style={[styles.requestBtn, { backgroundColor: "#16A34A" + "20", borderColor: "#16A34A" + "40" }]}
+                    onPress={() => handleApproveRequest(request.id, request.nickname)}
+                    disabled={processingRequestId === request.id}
+                  >
+                    {processingRequestId === request.id ? (
+                      <ActivityIndicator size="small" color="#16A34A" />
+                    ) : (
+                      <Ionicons name="checkmark" size={16} color="#16A34A" />
+                    )}
+                  </Pressable>
+                  <Pressable
+                    style={[styles.requestBtn, { backgroundColor: colors.destructive + "20", borderColor: colors.destructive + "40" }]}
+                    onPress={() => handleRejectRequest(request.id, request.nickname)}
+                    disabled={processingRequestId === request.id}
+                  >
+                    <Ionicons name="close" size={16} color={colors.destructive} />
+                  </Pressable>
+                </View>
+              </View>
+            )})
+          )}
         </View>
 
         <View style={[styles.section, { backgroundColor: colors.background, borderWidth: 1, borderColor: sc + "30" }]}>
@@ -801,6 +912,30 @@ const styles = StyleSheet.create({
     borderRadius: 17,
     alignItems: "center",
     justifyContent: "center",
+  },
+
+  emptyText: {
+    fontSize: 13,
+    fontFamily: "Cairo_400Regular",
+    textAlign: "center",
+    paddingVertical: 8,
+  },
+  requestActions: {
+    flexDirection: "row",
+    gap: 8,
+    alignItems: "center",
+  },
+  requestBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+  },
+  memberReliability: {
+    fontSize: 12,
+    fontFamily: "Cairo_400Regular",
   },
 
   moreMembers: {

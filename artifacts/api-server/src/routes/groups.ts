@@ -1,6 +1,6 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { db } from "@workspace/db";
-import { groupsTable, groupMembersTable, usersTable, inviteLinksTable, matchesTable, matchPlayersTable, groupMessagesTable } from "@workspace/db/schema";
+import { groupsTable, groupMembersTable, usersTable, inviteLinksTable, matchesTable, matchPlayersTable, groupMessagesTable, groupJoinRequestsTable } from "@workspace/db/schema";
 import { eq, and, ilike, or, inArray, lt, desc, gt, asc } from "drizzle-orm";
 import { requireAuth, verifyToken } from "../lib/auth";
 import { generateId } from "../lib/id";
@@ -29,6 +29,18 @@ async function buildGroupSummary(group: typeof groupsTable.$inferSelect, userId?
 
   const isJoined = userId ? members.some((m) => m.userId === userId) : false;
 
+  let hasPendingRequest = false;
+  if (userId && !isJoined) {
+    const pendingRequest = await db.query.groupJoinRequestsTable.findFirst({
+      where: and(
+        eq(groupJoinRequestsTable.groupId, group.id),
+        eq(groupJoinRequestsTable.userId, userId),
+        eq(groupJoinRequestsTable.status, "pending"),
+      ),
+    });
+    hasPendingRequest = !!pendingRequest;
+  }
+
   return {
     id: group.id,
     name: group.name,
@@ -40,6 +52,7 @@ async function buildGroupSummary(group: typeof groupsTable.$inferSelect, userId?
     isPublic: group.isPublic,
     nextMatch: null as string | null,
     isJoined,
+    hasPendingRequest,
   };
 }
 
@@ -60,6 +73,18 @@ async function buildGroupDetail(group: typeof groupsTable.$inferSelect, userId?:
   );
 
   const isJoined = userId ? memberRows.some((m) => m.userId === userId) : false;
+
+  let hasPendingRequest = false;
+  if (userId && !isJoined) {
+    const pendingRequest = await db.query.groupJoinRequestsTable.findFirst({
+      where: and(
+        eq(groupJoinRequestsTable.groupId, group.id),
+        eq(groupJoinRequestsTable.userId, userId),
+        eq(groupJoinRequestsTable.status, "pending"),
+      ),
+    });
+    hasPendingRequest = !!pendingRequest;
+  }
 
   const members = memberUsers
     .filter((u): u is NonNullable<typeof u> => u != null)
@@ -141,6 +166,7 @@ async function buildGroupDetail(group: typeof groupsTable.$inferSelect, userId?:
     isPublic: group.isPublic,
     nextMatch,
     isJoined,
+    hasPendingRequest,
     members,
   };
 }
@@ -345,17 +371,268 @@ router.post("/groups/:id/join", requireAuth, async (req: AuthRequest, res: Respo
       return;
     }
 
-    await db.insert(groupMembersTable).values({
-      id: generateId("gm_"),
-      groupId,
-      userId,
+    const existingRequest = await db.query.groupJoinRequestsTable.findFirst({
+      where: and(
+        eq(groupJoinRequestsTable.groupId, groupId),
+        eq(groupJoinRequestsTable.userId, userId),
+        eq(groupJoinRequestsTable.status, "pending"),
+      ),
     });
 
-    const members = await db.select().from(groupMembersTable).where(eq(groupMembersTable.groupId, groupId));
-    res.json({ success: true, memberCount: members.length });
+    if (existingRequest) {
+      res.status(409).json({ success: false, error: "لديك طلب انضمام قيد الانتظار بالفعل" });
+      return;
+    }
+
+    await db.insert(groupJoinRequestsTable).values({
+      id: generateId("gjr_"),
+      groupId,
+      userId,
+      status: "pending",
+    });
+
+    const requester = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, userId),
+    });
+    const requesterName = requester?.name ?? "مستخدم";
+
+    const groupAdmins = await db
+      .select()
+      .from(groupMembersTable)
+      .where(
+        and(
+          eq(groupMembersTable.groupId, groupId),
+          or(
+            eq(groupMembersTable.role, "owner"),
+            eq(groupMembersTable.role, "admin"),
+          ),
+        ),
+      );
+
+    const adminIdsToNotify = new Set<string>([group.adminId]);
+    for (const m of groupAdmins) {
+      adminIdsToNotify.add(m.userId);
+    }
+
+    await Promise.all(
+      Array.from(adminIdsToNotify).map((adminId) =>
+        sendNotification(
+          adminId,
+          "group",
+          "طلب انضمام جديد 👥",
+          `${requesterName} يطلب الانضمام إلى مجموعة "${group.name}"`,
+          groupId,
+        ).catch(() => {}),
+      ),
+    );
+
+    res.json({ success: true, status: "pending" });
   } catch (err) {
     logger.error({ err }, "Error joining group");
     res.status(500).json({ success: false, error: "حدث خطأ في الخادم عند الانضمام للمجموعة" });
+  }
+});
+
+router.get("/groups/:id/join-requests", requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const groupId = getParam(req.params["id"] as string);
+    const requesterId = req.user.userId;
+
+    const group = await db.query.groupsTable.findFirst({
+      where: eq(groupsTable.id, groupId),
+    });
+
+    if (!group) {
+      res.status(404).json({ success: false, error: "المجموعة غير موجودة" });
+      return;
+    }
+
+    const requesterMembership = await db.query.groupMembersTable.findFirst({
+      where: and(
+        eq(groupMembersTable.groupId, groupId),
+        eq(groupMembersTable.userId, requesterId),
+      ),
+    });
+    const isRequesterAdmin = group.adminId === requesterId || requesterMembership?.role === "admin" || requesterMembership?.role === "owner";
+
+    if (!isRequesterAdmin) {
+      res.status(403).json({ success: false, error: "فقط مشرف المجموعة يمكنه رؤية طلبات الانضمام" });
+      return;
+    }
+
+    const requests = await db
+      .select()
+      .from(groupJoinRequestsTable)
+      .where(
+        and(
+          eq(groupJoinRequestsTable.groupId, groupId),
+          eq(groupJoinRequestsTable.status, "pending"),
+        ),
+      );
+
+    const requestsWithUsers = await Promise.all(
+      requests.map(async (r) => {
+        const user = await db.query.usersTable.findFirst({
+          where: eq(usersTable.id, r.userId),
+        });
+        const playerRows = await db
+          .select()
+          .from(matchPlayersTable)
+          .where(eq(matchPlayersTable.userId, r.userId));
+        const matchesPlayed = playerRows.length;
+        return {
+          id: r.id,
+          userId: r.userId,
+          nickname: user?.name ?? "مستخدم",
+          reliability: user?.reliability ?? null,
+          matchesPlayed,
+          requestedAt: r.requestedAt,
+        };
+      }),
+    );
+
+    res.json({ success: true, requests: requestsWithUsers });
+  } catch (err) {
+    logger.error({ err }, "Error getting join requests");
+    res.status(500).json({ success: false, error: "حدث خطأ في الخادم" });
+  }
+});
+
+router.post("/groups/:id/join-requests/:requestId/approve", requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const groupId = getParam(req.params["id"] as string);
+    const requestId = getParam(req.params["requestId"] as string);
+    const reviewerId = req.user.userId;
+
+    const group = await db.query.groupsTable.findFirst({
+      where: eq(groupsTable.id, groupId),
+    });
+
+    if (!group) {
+      res.status(404).json({ success: false, error: "المجموعة غير موجودة" });
+      return;
+    }
+
+    const reviewerMembership = await db.query.groupMembersTable.findFirst({
+      where: and(
+        eq(groupMembersTable.groupId, groupId),
+        eq(groupMembersTable.userId, reviewerId),
+      ),
+    });
+    const isReviewerAdmin = group.adminId === reviewerId || reviewerMembership?.role === "admin" || reviewerMembership?.role === "owner";
+
+    if (!isReviewerAdmin) {
+      res.status(403).json({ success: false, error: "فقط مشرف المجموعة يمكنه الموافقة على الطلبات" });
+      return;
+    }
+
+    const joinRequest = await db.query.groupJoinRequestsTable.findFirst({
+      where: and(
+        eq(groupJoinRequestsTable.id, requestId),
+        eq(groupJoinRequestsTable.groupId, groupId),
+        eq(groupJoinRequestsTable.status, "pending"),
+      ),
+    });
+
+    if (!joinRequest) {
+      res.status(404).json({ success: false, error: "الطلب غير موجود أو تمت مراجعته بالفعل" });
+      return;
+    }
+
+    await db
+      .update(groupJoinRequestsTable)
+      .set({ status: "approved", reviewedAt: new Date(), reviewedBy: reviewerId })
+      .where(eq(groupJoinRequestsTable.id, requestId));
+
+    const existingMember = await db.query.groupMembersTable.findFirst({
+      where: and(
+        eq(groupMembersTable.groupId, groupId),
+        eq(groupMembersTable.userId, joinRequest.userId),
+      ),
+    });
+
+    if (!existingMember) {
+      await db.insert(groupMembersTable).values({
+        id: generateId("gm_"),
+        groupId,
+        userId: joinRequest.userId,
+        role: "member",
+      });
+    }
+
+    await sendNotification(
+      joinRequest.userId,
+      "group",
+      "تمت الموافقة على طلبك ✓",
+      `تمت الموافقة على طلب انضمامك لمجموعة "${group.name}"`,
+      groupId,
+    ).catch(() => {});
+
+    res.json({ success: true });
+  } catch (err) {
+    logger.error({ err }, "Error approving join request");
+    res.status(500).json({ success: false, error: "حدث خطأ في الخادم" });
+  }
+});
+
+router.post("/groups/:id/join-requests/:requestId/reject", requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const groupId = getParam(req.params["id"] as string);
+    const requestId = getParam(req.params["requestId"] as string);
+    const reviewerId = req.user.userId;
+
+    const group = await db.query.groupsTable.findFirst({
+      where: eq(groupsTable.id, groupId),
+    });
+
+    if (!group) {
+      res.status(404).json({ success: false, error: "المجموعة غير موجودة" });
+      return;
+    }
+
+    const reviewerMembership = await db.query.groupMembersTable.findFirst({
+      where: and(
+        eq(groupMembersTable.groupId, groupId),
+        eq(groupMembersTable.userId, reviewerId),
+      ),
+    });
+    const isReviewerAdmin = group.adminId === reviewerId || reviewerMembership?.role === "admin" || reviewerMembership?.role === "owner";
+
+    if (!isReviewerAdmin) {
+      res.status(403).json({ success: false, error: "فقط مشرف المجموعة يمكنه رفض الطلبات" });
+      return;
+    }
+
+    const joinRequest = await db.query.groupJoinRequestsTable.findFirst({
+      where: and(
+        eq(groupJoinRequestsTable.id, requestId),
+        eq(groupJoinRequestsTable.groupId, groupId),
+        eq(groupJoinRequestsTable.status, "pending"),
+      ),
+    });
+
+    if (!joinRequest) {
+      res.status(404).json({ success: false, error: "الطلب غير موجود أو تمت مراجعته بالفعل" });
+      return;
+    }
+
+    await db
+      .update(groupJoinRequestsTable)
+      .set({ status: "rejected", reviewedAt: new Date(), reviewedBy: reviewerId })
+      .where(eq(groupJoinRequestsTable.id, requestId));
+
+    await sendNotification(
+      joinRequest.userId,
+      "group",
+      "تم رفض طلب الانضمام",
+      `تم رفض طلب انضمامك لمجموعة "${group.name}"`,
+      groupId,
+    ).catch(() => {});
+
+    res.json({ success: true });
+  } catch (err) {
+    logger.error({ err }, "Error rejecting join request");
+    res.status(500).json({ success: false, error: "حدث خطأ في الخادم" });
   }
 });
 

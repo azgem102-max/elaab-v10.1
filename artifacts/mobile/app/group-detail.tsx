@@ -278,7 +278,7 @@ export default function GroupDetailScreen() {
 
   function handleJoinGroup() {
     joinGroup(groupSafe.id);
-    showToast(`انضممت لمجموعة "${groupSafe.name}" بنجاح ✓`);
+    showToast(`تم إرسال طلب الانضمام، في انتظار موافقة الأدمن`);
   }
 
   async function handleJoinSession(matchId: string, title: string) {
@@ -883,9 +883,18 @@ export default function GroupDetailScreen() {
               style={{ flex: 1 }}
             />
           )
+        ) : group.hasPendingRequest ? (
+          <SportGradientButton
+            label="في انتظار الموافقة"
+            gradientStart={colors.mutedForeground}
+            gradientEnd={colors.mutedForeground + "BB"}
+            onPress={() => {}}
+            disabled
+            style={{ flex: 1 }}
+          />
         ) : (
           <SportGradientButton
-            label="انضم للمجموعة"
+            label="طلب الانضمام"
             gradientStart={colors.primary}
             gradientEnd={colors.primary + "BB"}
             onPress={handleJoinGroup}

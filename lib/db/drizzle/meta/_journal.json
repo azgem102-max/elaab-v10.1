@@ -78,6 +78,13 @@
       "when": 1743727200000,
       "tag": "0010_add_group_messages",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1744395600000,
+      "tag": "0017_add_group_join_requests",
+      "breakpoints": true
     }
   ]
 }

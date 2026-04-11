@@ -192,7 +192,17 @@ export interface ApiGroup {
   isPublic: boolean;
   nextMatch: ApiGroupNextMatch | string | null;
   isJoined?: boolean;
+  hasPendingRequest?: boolean;
   members?: ApiGroupMember[];
+}
+
+export interface ApiJoinRequest {
+  id: string;
+  userId: string;
+  nickname: string;
+  reliability: number | null;
+  matchesPlayed: number;
+  requestedAt: string;
 }
 
 export interface ApiNotification {
@@ -316,7 +326,7 @@ export const api = {
     }),
 
   joinGroup: (id: string) =>
-    apiFetch<{ success: boolean; memberCount: number }>(`/groups/${id}/join`, {
+    apiFetch<{ success: boolean; status: string; memberCount?: number }>(`/groups/${id}/join`, {
       method: "POST",
     }),
 
@@ -493,6 +503,19 @@ export const api = {
   deleteGroup: (groupId: string) =>
     apiFetch<{ success: boolean }>(`/groups/${groupId}`, {
       method: "DELETE",
+    }),
+
+  getJoinRequests: (groupId: string) =>
+    apiFetch<{ success: boolean; requests: ApiJoinRequest[] }>(`/groups/${groupId}/join-requests`),
+
+  approveJoinRequest: (groupId: string, requestId: string) =>
+    apiFetch<{ success: boolean }>(`/groups/${groupId}/join-requests/${requestId}/approve`, {
+      method: "POST",
+    }),
+
+  rejectJoinRequest: (groupId: string, requestId: string) =>
+    apiFetch<{ success: boolean }>(`/groups/${groupId}/join-requests/${requestId}/reject`, {
+      method: "POST",
     }),
 
   sendGroupMessage: (groupId: string, text: string) =>

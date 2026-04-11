@@ -91,6 +91,7 @@ export interface Group {
   adminId: string;
   adminName: string;
   isJoined: boolean;
+  hasPendingRequest?: boolean;
   isPublic: boolean;
   nextMatch: GroupNextMatch | string | null;
   members: Player[];
@@ -191,6 +192,7 @@ function apiGroupToLocal(g: ApiGroup, existingGroup?: Group): Group {
     adminId: g.adminId,
     adminName: g.adminName ?? "",
     isJoined: g.isJoined ?? existingGroup?.isJoined ?? false,
+    hasPendingRequest: g.hasPendingRequest ?? existingGroup?.hasPendingRequest ?? false,
     isPublic: g.isPublic,
     nextMatch: g.nextMatch,
     members,
@@ -901,7 +903,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const joinGroup = useCallback(async (groupId: string) => {
     setGroups((prev) => {
       const updated = prev.map((g) =>
-        g.id === groupId ? { ...g, isJoined: true, memberCount: g.memberCount + 1 } : g
+        g.id === groupId ? { ...g, hasPendingRequest: true } : g
       );
       persist({ groups: updated });
       return updated;
@@ -911,7 +913,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch {
       setGroups((prev) => {
         const rolled = prev.map((g) =>
-          g.id === groupId ? { ...g, isJoined: false, memberCount: Math.max(0, g.memberCount - 1) } : g
+          g.id === groupId ? { ...g, hasPendingRequest: false } : g
         );
         persist({ groups: rolled });
         return rolled;

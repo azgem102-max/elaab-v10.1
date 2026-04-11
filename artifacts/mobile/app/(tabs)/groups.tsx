@@ -355,7 +355,7 @@ export default function GroupsScreen() {
                   group={group}
                   onJoin={async () => {
                     await joinGroup(group.id);
-                    showToast(`انضممت لمجموعة "${group.name}" بنجاح ✓`);
+                    showToast(`تم إرسال طلب الانضمام، في انتظار موافقة الأدمن`);
                   }}
                 />
               ))
@@ -614,14 +614,25 @@ const DiscoverGroupCard = React.memo(function DiscoverGroupCard({
           )}
 
           <View style={styles.discoverFooter}>
-            <GlassButton
-              label="انضم"
-              sport={group.sport}
-              variant="accent"
-              size="sm"
-              onPress={onJoin}
-              style={styles.discoverBtn}
-            />
+            {group.hasPendingRequest ? (
+              <GlassButton
+                label="في الانتظار..."
+                sport={group.sport}
+                variant="primary"
+                size="sm"
+                onPress={() => {}}
+                style={[styles.discoverBtn, { opacity: 0.5 }]}
+              />
+            ) : (
+              <GlassButton
+                label="طلب"
+                sport={group.sport}
+                variant="accent"
+                size="sm"
+                onPress={onJoin}
+                style={styles.discoverBtn}
+              />
+            )}
           </View>
         </View>
       </GlassCard>

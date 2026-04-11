@@ -6,3 +6,4 @@ export * from "./ratings";
 export * from "./notifications";
 export * from "./push_tokens";
 export * from "./invite_links";
+export * from "./group_join_requests";
