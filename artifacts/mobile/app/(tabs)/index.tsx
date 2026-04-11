@@ -286,7 +286,7 @@ export default function HomeScreen() {
 
   const [refreshing, setRefreshing] = useState(false);
   const [pickerMatch, setPickerMatch] = useState<Match | null>(null);
-  const [toast, setToast] = useState<{ visible: boolean; message: string; type: "success" | "error" }>({
+  const [toast, setToast] = useState<{ visible: boolean; message: string; type: "success" | "error" | "warning" }>({
     visible: false,
     message: "",
     type: "success",
@@ -312,7 +312,7 @@ export default function HomeScreen() {
     setRefreshing(false);
   }
 
-  function showToast(message: string, type: "success" | "error" = "success") {
+  function showToast(message: string, type: "success" | "error" | "warning" = "success") {
     setToast({ visible: true, message, type });
     setTimeout(() => setToast((t) => ({ ...t, visible: false })), 2500);
   }
@@ -330,19 +330,7 @@ export default function HomeScreen() {
   const myGroups = useMemo(() => groups.filter((g) => g.isJoined).slice(0, 4), [groups]);
 
   function handleJoinAction(item: Match) {
-    if (item.isPublic) {
-      setPickerMatch(item);
-      return;
-    }
-    joinMatch(item.id).then((result) => {
-      if (result.success) {
-        showToast(`تم تسجيلك في ${item.title} ✓`);
-      } else if (result.conflict) {
-        showToast(`تعارض مع: "${result.conflict.title}"`, "error");
-      } else if (result.error) {
-        showToast(result.error, "error");
-      }
-    });
+    setPickerMatch(item);
   }
 
   function handleLeaveAction(item: Match) {
@@ -460,7 +448,7 @@ export default function HomeScreen() {
       </Animated.View>
 
       {toast.visible && (
-        <View style={[styles.toast, { backgroundColor: toast.type === "success" ? colors.success : colors.destructive }]}>
+        <View style={[styles.toast, { backgroundColor: toast.type === "success" ? colors.success : toast.type === "warning" ? colors.warning : colors.destructive }]}>
           <Text style={styles.toastText}>{toast.message}</Text>
         </View>
       )}
@@ -478,8 +466,12 @@ export default function HomeScreen() {
             const result = await joinMatch(match.id, position);
             if (result.success) {
               showToast(`تم تسجيلك في ${match.title} ✓`);
+            } else if (result.alreadyJoined) {
+              showToast("أنت مسجل بالفعل في هذه المباراة", "warning");
+            } else if (result.isFull) {
+              showToast("المباراة مكتملة، لا توجد أماكن متاحة", "error");
             } else if (result.conflict) {
-              showToast(`تعارض مع: "${result.conflict.title}"`, "error");
+              showToast(`تعارض في المواعيد مع: "${result.conflict.title}"`, "error");
             } else if (result.error) {
               showToast(result.error, "error");
             }

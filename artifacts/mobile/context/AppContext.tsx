@@ -75,6 +75,13 @@ export interface GroupNextMatch {
   maxPlayers: number;
 }
 
+export interface ConflictMatchInfo {
+  id?: string;
+  title: string;
+  time?: string;
+  date?: string;
+}
+
 export interface Group {
   id: string;
   name: string;
@@ -210,7 +217,7 @@ interface AppContextType {
   refreshGroups: (params?: { q?: string; sport?: string }) => Promise<void>;
   refreshProfile: () => Promise<void>;
   fetchGroupById: (groupId: string) => Promise<Group | null>;
-  joinMatch: (matchId: string, position?: string) => Promise<{ success: boolean; conflict?: Match; alreadyJoined?: boolean; isFull?: boolean; error?: string }>;
+  joinMatch: (matchId: string, position?: string) => Promise<{ success: boolean; conflict?: ConflictMatchInfo; alreadyJoined?: boolean; isFull?: boolean; error?: string }>;
   leaveMatch: (matchId: string) => Promise<void>;
   cancelMatch: (matchId: string) => Promise<boolean>;
   createMatch: (match: Omit<Match, "id" | "players" | "joinedByCurrentUser">, coords?: { lat: number; lng: number } | null) => Promise<string>;
@@ -574,7 +581,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [persist]);
 
-  const joinMatch = useCallback(async (matchId: string, position?: string): Promise<{ success: boolean; conflict?: Match; alreadyJoined?: boolean; isFull?: boolean; error?: string }> => {
+  const joinMatch = useCallback(async (matchId: string, position?: string): Promise<{ success: boolean; conflict?: ConflictMatchInfo; alreadyJoined?: boolean; isFull?: boolean; error?: string }> => {
     if (!user) return { success: false, error: "يرجى تسجيل الدخول أولاً" };
 
     const targetMatch = matches.find((m) => m.id === matchId);
@@ -592,7 +599,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const mEnd = mStart + DURATION_MS;
         return targetStart < mEnd && mStart < targetEnd;
       });
-      if (conflict) return { success: false, conflict };
+      if (conflict) return { success: false, conflict: { id: conflict.id, title: conflict.title, time: conflict.time, date: String(conflict.date) } };
 
       const profilePositions = user.sportProfiles[targetMatch.sport]?.position ?? [];
       const pos = position ?? (profilePositions.length > 0 ? profilePositions[0] : null);
@@ -620,8 +627,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (err instanceof ApiError) {
           if (err.status === 409 && err.conflictMatch) {
             const conflictMatch = matches.find((m) => m.id === err.conflictMatch?.id);
-            if (conflictMatch) return { success: false, conflict: conflictMatch };
+            if (conflictMatch) return { success: false, conflict: { id: conflictMatch.id, title: conflictMatch.title, time: conflictMatch.time, date: String(conflictMatch.date) } };
+            return { success: false, conflict: { id: err.conflictMatch.id, title: err.conflictMatch.title, time: err.conflictMatch.time, date: err.conflictMatch.date } };
           }
+          if (err.status === 409 && err.message?.includes("منضم بالفعل")) return { success: false, alreadyJoined: true };
+          if (err.status === 400 && err.message?.includes("ممتلئة")) return { success: false, isFull: true };
           return { success: false, error: err.message };
         }
         return { success: false, error: "فشل الانضمام للمباراة، تحقق من اتصالك بالإنترنت" };
@@ -640,13 +650,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (err.status === 409) {
           if (err.conflictMatch) {
             const conflictMatch = matches.find((m) => m.id === err.conflictMatch?.id);
-            if (conflictMatch) return { success: false, conflict: conflictMatch };
-            return { success: false, error: err.message };
+            if (conflictMatch) return { success: false, conflict: { id: conflictMatch.id, title: conflictMatch.title, time: conflictMatch.time, date: String(conflictMatch.date) } };
+            return { success: false, conflict: { id: err.conflictMatch.id, title: err.conflictMatch.title, time: err.conflictMatch.time, date: err.conflictMatch.date } };
           }
           if (err.message?.includes("منضم بالفعل")) return { success: false, alreadyJoined: true };
           if (err.message?.includes("ممتلئة")) return { success: false, isFull: true };
           return { success: false, error: err.message };
         }
+        if (err.status === 400 && err.message?.includes("ممتلئة")) return { success: false, isFull: true };
         return { success: false, error: err.message };
       }
       return { success: false, error: "فشل الانضمام للمباراة، تحقق من اتصالك بالإنترنت" };

@@ -365,47 +365,34 @@ export default function ExploreScreen() {
   }
 
   async function handleJoin(match: { id: string; title: string; isPublic?: boolean; sport: SportType }) {
-    if (match.isPublic) {
-      const full = localMatches.find((m) => m.id === match.id);
-      if (full) {
-        setPickerMatch(full);
-      } else {
-        const apiMatch = apiMatches?.find((m) => m.id === match.id);
-        const synth: Match = {
-          id: match.id,
-          title: match.title,
-          sport: match.sport,
-          isPublic: true,
-          date: apiMatch ? new Date(apiMatch.date) : new Date(),
-          time: apiMatch?.time ?? "",
-          venue: apiMatch?.venue ?? "",
-          location: apiMatch?.location ?? "",
-          maxPlayers: apiMatch?.maxPlayers ?? 0,
-          cost: apiMatch?.cost ?? 0,
-          organizerId: apiMatch?.organizerId ?? "",
-          organizerName: apiMatch?.organizerName ?? "",
-          organizerReliability: apiMatch?.organizerReliability ?? null,
-          status: (apiMatch?.status as "upcoming" | "today" | "completed" | "cancelled") ?? "upcoming",
-          sessionType: (apiMatch?.sessionType as "match" | "training") ?? "match",
-          matchFormat: apiMatch?.matchFormat as "single" | "double" | null ?? null,
-          description: apiMatch?.description,
-          players: [],
-          joinedByCurrentUser: false,
-          invitedGroupId: apiMatch?.invitedGroupId,
-        };
-        setPickerMatch(synth);
-      }
-      return;
-    }
-    const result = await joinMatch(match.id);
-    if (result.success) {
-      showToast(`تم تسجيلك في ${match.title} ✓`);
-      fetchMatches();
-      refreshMatches();
-    } else if (result.conflict) {
-      showToast(`تعارض في المواعيد مع: "${result.conflict.title}" الساعة ${result.conflict.time}`, false);
-    } else if (result.error) {
-      showToast(result.error, false);
+    const full = localMatches.find((m) => m.id === match.id);
+    if (full) {
+      setPickerMatch(full);
+    } else {
+      const apiMatch = apiMatches?.find((m) => m.id === match.id);
+      const synth: Match = {
+        id: match.id,
+        title: match.title,
+        sport: match.sport,
+        isPublic: match.isPublic ?? true,
+        date: apiMatch ? new Date(apiMatch.date) : new Date(),
+        time: apiMatch?.time ?? "",
+        venue: apiMatch?.venue ?? "",
+        location: apiMatch?.location ?? "",
+        maxPlayers: apiMatch?.maxPlayers ?? 0,
+        cost: apiMatch?.cost ?? 0,
+        organizerId: apiMatch?.organizerId ?? "",
+        organizerName: apiMatch?.organizerName ?? "",
+        organizerReliability: apiMatch?.organizerReliability ?? null,
+        status: (apiMatch?.status as "upcoming" | "today" | "completed" | "cancelled") ?? "upcoming",
+        sessionType: (apiMatch?.sessionType as "match" | "training") ?? "match",
+        matchFormat: apiMatch?.matchFormat as "single" | "double" | null ?? null,
+        description: apiMatch?.description,
+        players: [],
+        joinedByCurrentUser: false,
+        invitedGroupId: apiMatch?.invitedGroupId,
+      };
+      setPickerMatch(synth);
     }
   }
 

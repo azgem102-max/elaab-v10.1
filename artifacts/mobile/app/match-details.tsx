@@ -235,14 +235,15 @@ export default function MatchDetailsScreen() {
   const currentUserId = user?.id ?? "";
   const sc = sportColor(match.sport, colors);
   const isOrganizer = match.organizerId === currentUserId;
-  const isFull = match.players.length >= match.maxPlayers;
+  const filledCount = match.players.length > 0 ? match.players.length : (match.playerCount ?? 0);
+  const isFull = filledCount >= match.maxPlayers;
   const paidPlayers = match.players.filter((p) => p.paymentStatus === "paid").length;
   const costPerPlayer = match.cost;
   const totalMatchBudget = Math.round(match.maxPlayers * costPerPlayer * 100) / 100;
   const totalCollected = Math.round(paidPlayers * costPerPlayer * 100) / 100;
   const totalExpected = totalMatchBudget;
 
-  const filledSlots = match.players.length;
+  const filledSlots = filledCount;
   const availableSlots = match.maxPlayers - filledSlots;
   const progressPct = match.maxPlayers > 0 ? filledSlots / match.maxPlayers : 0;
   const collectedPct = totalExpected > 0 ? totalCollected / totalExpected : 0;
@@ -324,13 +325,9 @@ export default function MatchDetailsScreen() {
 
   function handleJoin() {
     if (!match) return;
-    if (match.isPublic) {
-      const posArr = user?.sportProfiles[match.sport]?.position ?? [];
-      setSelectedPosition(posArr.length > 0 ? posArr[0] : null);
-      setShowPositionPicker(true);
-    } else {
-      executeJoin();
-    }
+    const posArr = user?.sportProfiles[match.sport]?.position ?? [];
+    setSelectedPosition(posArr.length > 0 ? posArr[0] : null);
+    setShowPositionPicker(true);
   }
 
   const organizerRelColor = reliabilityColor(match.organizerReliability, colors);
@@ -415,7 +412,7 @@ export default function MatchDetailsScreen() {
               </Text>
             </View>
             <Text style={{ color: "rgba(255,255,255,0.85)", fontFamily: "Cairo_600SemiBold", fontSize: 13 }}>
-              {match.players.length}/{match.maxPlayers} لاعب
+              {filledCount}/{match.maxPlayers} لاعب
             </Text>
           </View>
           <LiquidProgressBar progress={progressPct} sport={match.sport} height={6} overrideColor={progressBarColor} />
@@ -540,7 +537,7 @@ export default function MatchDetailsScreen() {
           <View style={styles.sectionHeader}>
             <Ionicons name="people-outline" size={18} color={colors.onSurface} />
             <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
-              اللاعبون ({match.players.length}/{match.maxPlayers})
+              اللاعبون ({filledCount}/{match.maxPlayers})
             </Text>
           </View>
 
