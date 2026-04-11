@@ -173,6 +173,7 @@ export default function ProfileSetupScreen() {
     });
 
     setSaveError("");
+    let apiSucceeded = false;
     try {
       await api.updateProfile({
         name: nickname.trim(),
@@ -180,12 +181,15 @@ export default function ProfileSetupScreen() {
         skillLevel: primarySkillLevel,
         sportProfiles: apiSportProfiles,
       });
+      apiSucceeded = true;
     } catch (err) {
       const msg =
         err instanceof Error
           ? err.message
-          : "تعذّر حفظ البيانات. سيتم المتابعة محلياً.";
+          : "تعذّر حفظ البيانات. تحقق من اتصالك وحاول مرة أخرى.";
       setSaveError(msg);
+      setSaving(false);
+      return;
     }
 
     const userObj: Player = {
@@ -198,7 +202,9 @@ export default function ProfileSetupScreen() {
     };
     setUser(userObj);
     setSaving(false);
-    refreshProfile().catch(() => {});
+    if (apiSucceeded) {
+      refreshProfile().catch(() => {});
+    }
     router.push("/position-selector");
   }
 

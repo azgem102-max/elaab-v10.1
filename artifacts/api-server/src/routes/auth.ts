@@ -131,7 +131,7 @@ router.post("/auth/verify-otp", async (req: Request, res: Response) => {
     });
 
     if (!isDevBypass && !validOtp) {
-      res.status(401).json({ success: false, error: "الرمز غير صحيح أو منتهي الصلاحية" });
+      res.status(400).json({ success: false, error: "الرمز غير صحيح أو منتهي الصلاحية" });
       return;
     }
 

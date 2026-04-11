@@ -253,8 +253,9 @@ export default function OtpScreen() {
             refreshProfile().catch(() => {});
           } catch {
             await completeOnboarding({
-              id: result.userId ?? "user",
+              id: result.userId ?? "",
               nickname: "مستخدم",
+              phone: phone ?? undefined,
               sports: [],
               sportProfiles: {},
               matchesPlayed: 0,
