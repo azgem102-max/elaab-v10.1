@@ -9,6 +9,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { SportGradientButton } from "@/components/SportGradientButton";
 import { GlassScreenHeader } from "@/components/glass/GlassScreenHeader";
 import { LiquidProgressBar } from "@/components/glass/LiquidProgressBar";
+import { DatePickerField } from "@/components/DatePickerField";
 import {
   Animated,
   Dimensions,
@@ -50,16 +51,11 @@ const SPORT_LABELS: Record<string, string> = {
 const VENUES = ["ملعب الأمير محمد", "أكاديمية بادل الرياض", "نادي التنس الملكي", "ملعب الهلال الصغير", "مركز الشباب الرياضي"];
 const TIMES = ["07:00", "08:00", "09:00", "10:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"];
 
-function getNext14Days() {
-  return Array.from({ length: 14 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    return d;
-  });
+function todayAtMidnight(): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
-
-const DAY_LABELS = ["أحد", "إثن", "ثلا", "أرب", "خمي", "جمع", "سبت"];
-const MONTH_LABELS = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
 const STEP_LABELS = ["النوع", "الرياضة", "العنوان", "الموعد", "الملعب", "الإعدادات", "المراجعة"];
 const TOTAL_STEPS = STEP_LABELS.length;
@@ -218,7 +214,7 @@ export default function CreateMatchScreen() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [selectedDate, setSelectedDate] = useState(0);
+  const [selectedDate, setSelectedDate] = useState<Date>(todayAtMidnight);
   const [selectedTime, setSelectedTime] = useState("20:00");
   const [venue, setVenue] = useState(initialVenue);
   const [venueUrl, setVenueUrl] = useState("");
@@ -233,7 +229,6 @@ export default function CreateMatchScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  const days = getNext14Days();
   const sportOpt = SPORT_OPTIONS.find((s) => s.key === sport)!;
   const myGroups = groups.filter((g) => g.isJoined);
   const selectedGroup = myGroups.find((g) => g.id === selectedGroupId);
@@ -393,7 +388,7 @@ export default function CreateMatchScreen() {
       const newId = await createMatch({
         title: title.trim(),
         sport,
-        date: days[selectedDate],
+        date: selectedDate,
         time: selectedTime,
         venue,
         location: venueUrl.trim() ? normalizeUrl(venueUrl) : undefined,
@@ -424,8 +419,8 @@ export default function CreateMatchScreen() {
 
   const effectiveMaxPlayers = isPadelOrTennis ? (matchFormat === "single" ? 2 : 4) : (sport === "football" ? maxPlayers : 4);
   
-  const previewDateStr = days[selectedDate]
-    ? new Date(days[selectedDate]).toLocaleDateString("ar-SA", { weekday: "short", month: "short", day: "numeric" })
+  const previewDateStr = selectedDate
+    ? selectedDate.toLocaleDateString("ar-SA", { weekday: "short", month: "short", day: "numeric" })
     : "";
 
   return (
@@ -697,31 +692,13 @@ export default function CreateMatchScreen() {
                     <Ionicons name="calendar-outline" size={18} color={accentColor} />
                     <Text style={[styles.surfaceCardTitle, { color: colors.onSurface }]}>التاريخ</Text>
                   </View>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingVertical: 4, paddingHorizontal: 4 }}>
-                    {days.map((d, i) => {
-                      const isSelected = selectedDate === i;
-                      return (
-                        <Pressable
-                          key={i}
-                          style={[
-                            styles.dateCard,
-                            isSelected
-                              ? [{ backgroundColor: accentColor }]
-                              : [{ backgroundColor: colors.surfaceContainerHigh, borderWidth: 1, borderColor: colors.border }],
-                          ]}
-                          onPress={() => setSelectedDate(i)}
-                        >
-                          <Text style={[styles.dateDayName, { color: isSelected ? "#fff" : colors.mutedForeground }]}>
-                            {DAY_LABELS[d.getDay()]}
-                          </Text>
-                          <Text style={[styles.dateNum, { color: isSelected ? "#fff" : colors.onSurface }]}>{d.getDate()}</Text>
-                          <Text style={[styles.dateMonth, { color: isSelected ? "rgba(255,255,255,0.8)" : colors.mutedForeground }]}>
-                            {MONTH_LABELS[d.getMonth()].slice(0, 3)}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </ScrollView>
+                  <View style={{ paddingHorizontal: 4, paddingBottom: 4 }}>
+                    <DatePickerField
+                      value={selectedDate}
+                      onChange={setSelectedDate}
+                      accentColor={accentColor}
+                    />
+                  </View>
                 </View>
 
                 <View style={[styles.surfaceCard, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]}>
@@ -1132,11 +1109,6 @@ const styles = StyleSheet.create({
   surfaceCard: { borderRadius: 20, padding: 16, gap: 12 },
   surfaceCardHeader: { flexDirection: "row", alignItems: "center", gap: 8, paddingBottom: 10, justifyContent: "flex-end" },
   surfaceCardTitle: { fontSize: 14, fontFamily: "Cairo_700Bold" },
-
-  dateCard: { width: 60, paddingVertical: 14, borderRadius: 16, alignItems: "center", gap: 4 },
-  dateDayName: { fontSize: 11, fontFamily: "Cairo_600SemiBold" },
-  dateNum: { fontSize: 20, fontFamily: "Cairo_700Bold" },
-  dateMonth: { fontSize: 10, fontFamily: "Cairo_400Regular" },
 
   timesGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, justifyContent: "flex-end" },
   timeChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 24 },

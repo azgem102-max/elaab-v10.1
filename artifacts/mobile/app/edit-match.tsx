@@ -1,5 +1,6 @@
 import { useApp, sportColor, Match } from "@/context/AppContext";
 import { useColors } from "@/hooks/useColors";
+import { DatePickerField } from "@/components/DatePickerField";
 
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -33,15 +34,10 @@ function toYMD(date: Date | string): string {
 const VENUES = ["ملعب الأمير محمد", "أكاديمية بادل الرياض", "نادي التنس الملكي", "ملعب الهلال الصغير", "مركز الشباب الرياضي"];
 const TIMES = ["07:00", "08:00", "09:00", "10:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"];
 
-const DAY_LABELS = ["أحد", "إثن", "ثلا", "أرب", "خمي", "جمع", "سبت"];
-const MONTH_LABELS = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-
-function getNext14Days() {
-  return Array.from({ length: 14 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    return d;
-  });
+function todayAtMidnight(): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
 
 function withAlpha(color: string, alpha: number): string {
@@ -200,8 +196,6 @@ export default function EditMatchScreen() {
 
   const match = matches.find((m) => m.id === id) as Match | undefined;
 
-  const days = getNext14Days();
-
   const [title, setTitle] = useState(match?.title ?? "");
   const [venue, setVenue] = useState(match?.venue ?? "");
   const [venueUrl, setVenueUrl] = useState(match?.location ?? "");
@@ -215,17 +209,14 @@ export default function EditMatchScreen() {
     (match?.skillLevel as "beginner" | "intermediate" | "advanced" | null | undefined) ?? null
   );
 
-  const getInitialDateIndex = () => {
-    if (!match) return null;
-    const matchDate = match.date instanceof Date ? match.date : new Date(match.date);
+  const getInitialDate = (): Date => {
+    if (!match) return todayAtMidnight();
+    const matchDate = match.date instanceof Date ? new Date(match.date) : new Date(match.date);
     matchDate.setHours(0, 0, 0, 0);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const daysDiff = Math.round((matchDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    if (daysDiff >= 0 && daysDiff < 14) return daysDiff;
-    return null;
+    const today = todayAtMidnight();
+    return matchDate >= today ? matchDate : today;
   };
-  const [selectedDate, setSelectedDate] = useState<number | null>(getInitialDateIndex);
+  const [selectedDate, setSelectedDate] = useState<Date>(getInitialDate);
 
   const [venueUrlError, setVenueUrlError] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -277,10 +268,7 @@ export default function EditMatchScreen() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setSaving(true);
 
-    const dateStr: string =
-      selectedDate !== null && days[selectedDate]
-        ? toYMD(days[selectedDate]!)
-        : toYMD(match!.date);
+    const dateStr: string = toYMD(selectedDate);
 
     const ok = await updateMatch(match!.id, {
       title: title.trim(),
@@ -361,39 +349,11 @@ export default function EditMatchScreen() {
 
             <View style={{ gap: 6 }}>
               <Text style={[softStyles.label, { color: colors.onSurface }]}>التاريخ</Text>
-              {selectedDate === null && (
-                <View style={[styles.dateOutOfRangeBadge, { backgroundColor: withAlpha(sc, 0.12) }]}>
-                  <Ionicons name="calendar-outline" size={14} color={sc} />
-                  <Text style={[styles.dateOutOfRangeText, { color: sc }]}>
-                    التاريخ الحالي: {String(match.date)} — اختر تاريخاً جديداً أدناه أو اتركه كما هو
-                  </Text>
-                </View>
-              )}
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingVertical: 4 }}>
-                {days.map((d, i) => {
-                  const isSelected = selectedDate === i;
-                  return (
-                    <Pressable
-                      key={i}
-                      style={[
-                        styles.dateCard,
-                        isSelected
-                          ? { backgroundColor: sc }
-                          : [{ borderWidth: 1, borderColor: "#E5E7EB" }, { backgroundColor: colors.surfaceContainerHigh }],
-                      ]}
-                      onPress={() => setSelectedDate(i)}
-                    >
-                      <Text style={[styles.dateDayName, { color: isSelected ? "#fff" : colors.mutedForeground }]}>
-                        {DAY_LABELS[d.getDay()]}
-                      </Text>
-                      <Text style={[styles.dateNum, { color: isSelected ? "#fff" : colors.onSurface }]}>{d.getDate()}</Text>
-                      <Text style={[styles.dateMonth, { color: isSelected ? "rgba(255,255,255,0.8)" : colors.mutedForeground }]}>
-                        {MONTH_LABELS[d.getMonth()]?.slice(0, 3)}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
+              <DatePickerField
+                value={selectedDate}
+                onChange={setSelectedDate}
+                accentColor={sc}
+              />
             </View>
 
             <View style={{ gap: 6 }}>
@@ -576,13 +536,6 @@ const styles = StyleSheet.create({
 
   section: { gap: 16, paddingBottom: 20 },
   sectionTitle: { fontSize: 17, fontFamily: "Cairo_700Bold", textAlign: "right" },
-
-  dateOutOfRangeBadge: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, justifyContent: "flex-end" },
-  dateOutOfRangeText: { fontSize: 12, fontFamily: "Cairo_400Regular", textAlign: "right", flex: 1 },
-  dateCard: { width: 60, paddingVertical: 14, borderRadius: 16, alignItems: "center", gap: 4 },
-  dateDayName: { fontSize: 11, fontFamily: "Cairo_600SemiBold" },
-  dateNum: { fontSize: 20, fontFamily: "Cairo_700Bold" },
-  dateMonth: { fontSize: 10, fontFamily: "Cairo_400Regular" },
 
   timesGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, justifyContent: "flex-end" },
   timeChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 24 },

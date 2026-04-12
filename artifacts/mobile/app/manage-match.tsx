@@ -2,6 +2,7 @@ import {
   useApp, MatchPlayer, sportColor, sportLabel, formatDate,
   reliabilityColor, formatReliability, AttendanceStatus, PaymentStatus,
 } from "@/context/AppContext";
+import { DatePickerField } from "@/components/DatePickerField";
 import { api } from "@/services/api";
 import { useColors } from "@/hooks/useColors";
 import { GlassCard } from "@/components/glass/GlassCard";
@@ -314,15 +315,11 @@ function SwipeablePlayerRow({
 
 const VENUES = ["ملعب الأمير محمد", "أكاديمية بادل الرياض", "نادي التنس الملكي", "ملعب الهلال الصغير", "مركز الشباب الرياضي"];
 const TIMES = ["07:00", "08:00", "09:00", "10:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"];
-const DAY_LABELS = ["أحد", "إثن", "ثلا", "أرب", "خمي", "جمع", "سبت"];
-const MONTH_LABELS = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
-function getNext14Days() {
-  return Array.from({ length: 14 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    return d;
-  });
+function todayAtMidnight(): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
 
 export default function ManageMatchScreen() {
@@ -344,8 +341,16 @@ export default function ManageMatchScreen() {
   const [cost, setCost] = useState("");
   const [description, setDescription] = useState("");
   const [selectedTime, setSelectedTime] = useState("20:00");
-  const [selectedDate, setSelectedDate] = useState<number | null>(null);
-  const [maxPlayers, setMaxPlayers] = useState(10);
+  const localMatch = matches.find((m) => m.id === id);
+
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
+    if (!localMatch) return null;
+    const matchDate = new Date(localMatch.date instanceof Date ? localMatch.date : new Date(localMatch.date));
+    matchDate.setHours(0, 0, 0, 0);
+    const today = todayAtMidnight();
+    return matchDate >= today ? matchDate : today;
+  });
+  const [maxPlayers, setMaxPlayers] = useState(localMatch?.maxPlayers ?? 10);
   const [saving, setSaving] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -353,11 +358,8 @@ export default function ManageMatchScreen() {
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [showVenueSuggestions, setShowVenueSuggestions] = useState(false);
 
-  const days = getNext14Days();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const botPad = Platform.OS === "web" ? 34 : insets.bottom;
-
-  const localMatch = matches.find((m) => m.id === id);
 
   useEffect(() => {
     return () => { if (toastTimer.current) clearTimeout(toastTimer.current); };
@@ -395,9 +397,10 @@ export default function ManageMatchScreen() {
       setSelectedTime(match.time);
       setMaxPlayers(match.maxPlayers);
       const matchDate = new Date(match.date.getTime());
-      const today = new Date(); today.setHours(0, 0, 0, 0);
-      const diff = Math.round((matchDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      if (diff >= 0 && diff < 14) setSelectedDate(diff);
+      matchDate.setHours(0, 0, 0, 0);
+      const today = todayAtMidnight();
+      if (matchDate >= today) setSelectedDate(matchDate);
+      else setSelectedDate(today);
     }).catch(() => { if (!localMatch) setLoadError(true); }).finally(() => setLoadingApi(false));
   }, [id]);
 
@@ -562,8 +565,8 @@ export default function ManageMatchScreen() {
     setSaving(true);
     let dateStr: string | undefined;
     if (selectedDate !== null) {
-      const d = days[selectedDate];
-      dateStr = d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}` : undefined;
+      const d = selectedDate;
+      dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     }
     const ok = await updateMatch(match!.id, {
       title: title.trim(),
@@ -1035,25 +1038,11 @@ export default function ManageMatchScreen() {
 
               <View style={{ gap: 6 }}>
                 <Text style={[styles.label, { color: colors.onSurface }]}>التاريخ</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingVertical: 4 }}>
-                  {days.map((d, i) => {
-                    const isSelected = selectedDate === i;
-                    return (
-                      <Pressable
-                        key={i}
-                        style={[
-                          styles.dateCard,
-                          isSelected ? { backgroundColor: sc } : [{ backgroundColor: colors.surfaceContainerHigh, borderWidth: 1, borderColor: colors.border }],
-                        ]}
-                        onPress={() => setSelectedDate(i)}
-                      >
-                        <Text style={[styles.dateDayName, { color: isSelected ? "rgba(255,255,255,1)" : colors.mutedForeground }]}>{DAY_LABELS[d.getDay()]}</Text>
-                        <Text style={[styles.dateNum, { color: isSelected ? "rgba(255,255,255,1)" : colors.onSurface }]}>{d.getDate()}</Text>
-                        <Text style={[styles.dateMonth, { color: isSelected ? "rgba(255,255,255,0.8)" : colors.mutedForeground }]}>{MONTH_LABELS[d.getMonth()]?.slice(0, 3)}</Text>
-                      </Pressable>
-                    );
-                  })}
-                </ScrollView>
+                <DatePickerField
+                  value={selectedDate ?? todayAtMidnight()}
+                  onChange={setSelectedDate}
+                  accentColor={sc}
+                />
               </View>
 
               <View style={{ gap: 6 }}>
@@ -1266,10 +1255,6 @@ const styles = StyleSheet.create({
   input: { paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, fontFamily: "Cairo_600SemiBold" },
   errorText: { fontSize: 12, fontFamily: "Cairo_400Regular", textAlign: "right" },
 
-  dateCard: { width: 60, paddingVertical: 12, borderRadius: 16, alignItems: "center", gap: 4 },
-  dateDayName: { fontSize: 11, fontFamily: "Cairo_600SemiBold" },
-  dateNum: { fontSize: 20, fontFamily: "Cairo_700Bold" },
-  dateMonth: { fontSize: 10, fontFamily: "Cairo_400Regular" },
 
   timesGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "flex-end" },
   timeChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 24 },
