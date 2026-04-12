@@ -207,10 +207,10 @@ export default function CreateGroupScreen() {
                 >
                   <Pressable
                     onPress={() => handleSelectSport(s.key)}
-                    style={[styles.sportCard, { borderWidth: 1, borderColor: "#E5E7EB" }]}
+                    style={[styles.sportCard, { borderWidth: selected ? 2 : 1, borderColor: selected ? s.color : "#E5E7EB" }]}
                   >
                     {selected ? (
-                      <View style={[styles.sportCardFill, { backgroundColor: "#2C54E8" }]}>
+                      <View style={[styles.sportCardFill, { backgroundColor: s.color }]}>
                         <View style={styles.sportCardSelectedCheck}>
                           <Ionicons name="checkmark-circle" size={14} color="#fff" />
                         </View>
