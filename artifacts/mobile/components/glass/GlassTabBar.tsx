@@ -19,6 +19,7 @@ import {
   glassSpacing,
   glassSpring,
 } from "@/constants/glassTheme";
+import colors from "@/constants/colors";
 
 interface GlassTabBarRoute {
   key: string;
@@ -130,8 +131,8 @@ function GlassTabItem({
     scale.value = withSpring(1, glassSpring.bouncy);
   };
 
-  const activeColor = "#2C54E8";
-  const inactiveColor = "rgba(107, 114, 128, 0.55)";
+  const activeColor = colors.light.primary;
+  const inactiveColor = colors.light.mutedForeground + "8C";
 
   return (
     <Pressable
@@ -167,9 +168,9 @@ const styles = StyleSheet.create({
     height: TAB_BAR_HEIGHT,
     borderRadius: glassRadius.xxl,
     overflow: "hidden",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.light.surface,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: colors.light.border,
   },
   tabRow: {
     flex: 1,
@@ -194,7 +195,7 @@ const styles = StyleSheet.create({
   activePill: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: glassRadius.md,
-    backgroundColor: "#EEF2FF",
+    backgroundColor: colors.light.surfaceContainer,
   },
   activeDot: {
     width: 4,

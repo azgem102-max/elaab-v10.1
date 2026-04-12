@@ -129,8 +129,8 @@ function ReliabilityTutorialCard() {
         style={[styles.tutorialCta, { backgroundColor: colors.primary }]}
         onPress={() => router.push("/(tabs)/explore")}
       >
-        <Ionicons name="compass-outline" size={16} color="#fff" />
-        <Text style={[styles.tutorialCtaText, { color: "#fff" }]}>اكتشف المباريات</Text>
+        <Ionicons name="compass-outline" size={16} color={colors.primaryForeground} />
+        <Text style={[styles.tutorialCtaText, { color: colors.primaryForeground }]}>اكتشف المباريات</Text>
       </Pressable>
     </View>
   );
@@ -202,7 +202,7 @@ export default function ProfileScreen() {
             refreshProfile().catch(() => setLoadError(true)).finally(() => setIsLoading(false));
           }}
         >
-          <Text style={{ fontSize: 15, fontFamily: "Cairo_700Bold", color: "#fff" }}>إعادة المحاولة</Text>
+          <Text style={{ fontSize: 15, fontFamily: "Cairo_700Bold", color: colors.primaryForeground }}>إعادة المحاولة</Text>
         </Pressable>
       </View>
     );
@@ -226,7 +226,7 @@ export default function ProfileScreen() {
             ]).finally(() => setIsLoading(false));
           }}
         >
-          <Text style={{ fontSize: 15, fontFamily: "Cairo_700Bold", color: "#fff" }}>إعادة المحاولة</Text>
+          <Text style={{ fontSize: 15, fontFamily: "Cairo_700Bold", color: colors.primaryForeground }}>إعادة المحاولة</Text>
         </Pressable>
       </View>
     );
@@ -357,7 +357,7 @@ export default function ProfileScreen() {
       {user.reliability === null && <ReliabilityTutorialCard />}
 
       {/* === STATS CARD === */}
-      <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}>
+      <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]}>
         <View style={styles.cardHeaderRow}>
           <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>إحصائياتي</Text>
           <View style={[styles.cardHeaderIconWrap, { backgroundColor: sportTheme.primary + "12" }]}>
@@ -384,7 +384,7 @@ export default function ProfileScreen() {
 
       {/* === ORGANIZER STATS === */}
       {totalOrganized > 0 && (
-        <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}>
+        <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]}>
           <View style={styles.cardHeaderRow}>
             <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>كمنظّم</Text>
             <View style={[styles.organizerBadge, { backgroundColor: colors.primary + "18" }]}>
@@ -420,7 +420,7 @@ export default function ProfileScreen() {
       )}
 
       {/* === MENU === */}
-      <View style={[styles.menuSection, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}>
+      <View style={[styles.menuSection, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]}>
         {[
           { icon: "notifications-outline" as const, label: "الإشعارات", route: "/notifications", color: colors.secondary, params: undefined },
           { icon: "settings-outline" as const, label: "الإعدادات", route: "/settings", color: colors.tertiary, params: undefined },

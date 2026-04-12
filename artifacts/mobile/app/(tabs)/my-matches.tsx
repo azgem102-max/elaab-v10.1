@@ -18,8 +18,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const ACCENT_LIME = "#C1F422";
-
 const SPORT_ACCENT: Record<string, string> = {
   football: "#2C54E8",
   padel:    "#0E9B6E",
@@ -78,7 +76,7 @@ export default function MyMatchesScreen() {
       <GlassScreenHeader style={{ paddingTop: topPad + 12, paddingHorizontal: 20, gap: 14, paddingBottom: 8 }}>
         <Text style={[styles.title, { color: colors.onSurface }]}>مبارياتي</Text>
 
-        <View style={[styles.summaryBar, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}>
+        <View style={[styles.summaryBar, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]}>
           <StatBadge variant="card" size="lg" icon="calendar-outline" value={upcoming.length} label="قادمة" color={colors.primary} />
           <View style={[styles.summaryDivider, { backgroundColor: colors.outline + "30" }]} />
           <StatBadge variant="card" size="lg" icon="shield-outline" value={organized.length} label="كمنظّم" color={colors.tertiary} />
@@ -91,7 +89,7 @@ export default function MyMatchesScreen() {
             style={[
               styles.tabIndicator,
               {
-                backgroundColor: ACCENT_LIME,
+                backgroundColor: colors.accent,
                 left: tabAnim.interpolate({
                   inputRange: [0, 1],
                   outputRange: ["3%", "53%"],
@@ -111,7 +109,7 @@ export default function MyMatchesScreen() {
               <Text
                 style={[
                   styles.tabText,
-                  { color: tab === t.key ? "#111827" : colors.onSurfaceVariant },
+                  { color: tab === t.key ? colors.accentForeground : colors.onSurfaceVariant },
                 ]}
               >
                 {t.label}
@@ -121,14 +119,14 @@ export default function MyMatchesScreen() {
                   styles.tabCountBadge,
                   {
                     backgroundColor:
-                      tab === t.key ? "rgba(17,24,39,0.15)" : colors.surfaceContainerHigh,
+                      tab === t.key ? colors.accentForeground + "26" : colors.surfaceContainerHigh,
                   },
                 ]}
               >
                 <Text
                   style={[
                     styles.tabCountText,
-                    { color: tab === t.key ? "#111827" : colors.onSurfaceVariant },
+                    { color: tab === t.key ? colors.accentForeground : colors.onSurfaceVariant },
                   ]}
                 >
                   {t.count}
@@ -169,7 +167,7 @@ export default function MyMatchesScreen() {
               <View style={[
                 styles.matchCardWrap,
                 isPast
-                  ? { backgroundColor: colors.surfaceContainerLow, borderColor: "#E5E7EB", borderWidth: 1, opacity: 0.92 }
+                  ? { backgroundColor: colors.surfaceContainerLow, borderColor: colors.border, borderWidth: 1, opacity: 0.92 }
                   : { backgroundColor: colors.surfaceContainerLow, borderColor: accentColor + "40", borderWidth: 1.5, borderLeftWidth: 4, borderLeftColor: accentColor },
               ]}>
                 {/* Organizer badge */}
@@ -265,11 +263,11 @@ function MyMatchesEmptyState({ tab }: { tab: "upcoming" | "past" }) {
   const colors = useColors();
   return (
     <View style={emptyStyles.wrap}>
-      <View style={[emptyStyles.iconCircle, { backgroundColor: tab === "upcoming" ? ACCENT_LIME + "20" : colors.surfaceContainerHigh }]}>
+      <View style={[emptyStyles.iconCircle, { backgroundColor: tab === "upcoming" ? colors.accent + "20" : colors.surfaceContainerHigh }]}>
         <Ionicons
           name={tab === "upcoming" ? "calendar-outline" : "time-outline"}
           size={48}
-          color={tab === "upcoming" ? ACCENT_LIME : colors.mutedForeground}
+          color={tab === "upcoming" ? colors.accent : colors.mutedForeground}
         />
       </View>
       <Text style={[emptyStyles.title, { color: colors.onSurface }]}>
@@ -282,11 +280,11 @@ function MyMatchesEmptyState({ tab }: { tab: "upcoming" | "past" }) {
       </Text>
       {tab === "upcoming" && (
         <Pressable
-          style={[emptyStyles.cta, { backgroundColor: ACCENT_LIME }]}
+          style={[emptyStyles.cta, { backgroundColor: colors.accent }]}
           onPress={() => router.push("/(tabs)/explore")}
         >
-          <Ionicons name="search-outline" size={16} color="#111" />
-          <Text style={emptyStyles.ctaText}>ابحث عن مباراة</Text>
+          <Ionicons name="search-outline" size={16} color={colors.accentForeground} />
+          <Text style={[emptyStyles.ctaText, { color: colors.accentForeground }]}>ابحث عن مباراة</Text>
         </Pressable>
       )}
     </View>
@@ -314,7 +312,7 @@ const emptyStyles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 28,
   },
-  ctaText: { fontSize: 14, fontFamily: "Cairo_700Bold", color: "#111" },
+  ctaText: { fontSize: 14, fontFamily: "Cairo_700Bold" },
 });
 
 const styles = StyleSheet.create({

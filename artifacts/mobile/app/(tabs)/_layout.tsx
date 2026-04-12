@@ -2,6 +2,7 @@ import { useApp } from "@/context/AppContext";
 import { useActiveSport } from "@/context/SportFilterContext";
 import { GlassTabBar } from "@/components/glass/GlassTabBar";
 import { HomeTabIcon, ExploreTabIcon, MatchesTabIcon, GroupsTabIcon, ProfileTabIcon } from "@/components/TabIcons";
+import colors from "@/constants/colors";
 import { Tabs } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
@@ -10,8 +11,8 @@ import {
   View,
 } from "react-native";
 
-const ACTIVE_COLOR = "#2C54E8";
-const INACTIVE_COLOR = "rgba(107, 114, 128, 0.55)";
+const ACTIVE_COLOR = colors.light.primary;
+const INACTIVE_COLOR = colors.light.mutedForeground + "8C";
 
 interface AnimatedTabIconProps {
   focused: boolean;
@@ -84,7 +85,7 @@ export default function TabLayout() {
           headerShown: false,
           tabBarShowLabel: false,
           sceneStyle: {
-            backgroundColor: "#FFFFFF",
+            backgroundColor: colors.light.surface,
           },
         }}
       >
@@ -161,13 +162,13 @@ const styles = StyleSheet.create({
     minWidth: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: "#DC2626",
+    backgroundColor: colors.light.destructive,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 4,
   },
   badgeText: {
-    color: "#FFFFFF",
+    color: colors.light.destructiveForeground,
     fontSize: 10,
     fontFamily: "Cairo_700Bold",
     lineHeight: 14,

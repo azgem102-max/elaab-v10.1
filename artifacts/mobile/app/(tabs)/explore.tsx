@@ -438,7 +438,7 @@ export default function ExploreScreen() {
                 ]}
                 onPress={() => switchViewMode("list")}
               >
-                <Ionicons name="list-outline" size={17} color={viewMode === "list" ? "#fff" : colors.onSurfaceVariant} />
+                <Ionicons name="list-outline" size={17} color={viewMode === "list" ? colors.primaryForeground : colors.onSurfaceVariant} />
               </Pressable>
               <Pressable
                 style={[
@@ -447,7 +447,7 @@ export default function ExploreScreen() {
                 ]}
                 onPress={() => switchViewMode("map")}
               >
-                <Ionicons name="map-outline" size={17} color={viewMode === "map" ? "#fff" : colors.onSurfaceVariant} />
+                <Ionicons name="map-outline" size={17} color={viewMode === "map" ? colors.primaryForeground : colors.onSurfaceVariant} />
               </Pressable>
             </View>
             <Pressable
@@ -456,7 +456,7 @@ export default function ExploreScreen() {
                 {
                   backgroundColor: advancedFilterCount > 0 ? colors.primaryContainer : colors.surfaceContainerLow,
                   borderWidth: 1,
-                  borderColor: "#E5E7EB",
+                  borderColor: colors.border,
                 },
               ]}
               onPress={() => setShowFilterSheet(true)}
@@ -485,7 +485,7 @@ export default function ExploreScreen() {
             <Ionicons
               name={viewMode === "list" ? "map-outline" : "list-outline"}
               size={20}
-              color={viewMode === "map" ? "#fff" : colors.primary}
+              color={viewMode === "map" ? colors.primaryForeground : colors.primary}
             />
           </Pressable>
         </View>
@@ -530,12 +530,12 @@ export default function ExploreScreen() {
               : colors.surfaceContainerLow;
             const activeIconColor = isActive
               ? f.key === "all"
-                ? "#111827"
+                ? colors.accentForeground
                 : "#fff"
               : colors.onSurfaceVariant;
             const activeTextColor = isActive
               ? f.key === "all"
-                ? "#111827"
+                ? colors.accentForeground
                 : "#fff"
               : colors.onSurfaceVariant;
             return (
@@ -545,7 +545,7 @@ export default function ExploreScreen() {
                   styles.filterChip,
                   isActive
                     ? { backgroundColor: activeBg }
-                    : { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" },
+                    : { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border },
                 ]}
                 onPress={() => setSportFilter(f.key)}
               >
@@ -566,16 +566,16 @@ export default function ExploreScreen() {
                 styles.filterChip,
                 dateFilter === f.key
                   ? { backgroundColor: colors.accent }
-                  : { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" },
+                  : { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border },
               ]}
               onPress={() => setDateFilter(f.key)}
             >
               <Ionicons
                 name={f.icon}
                 size={14}
-                color={dateFilter === f.key ? "#111827" : colors.onSurfaceVariant}
+                color={dateFilter === f.key ? colors.accentForeground : colors.onSurfaceVariant}
               />
-              <Text style={[styles.filterText, { color: dateFilter === f.key ? "#111827" : colors.onSurfaceVariant }]}>
+              <Text style={[styles.filterText, { color: dateFilter === f.key ? colors.accentForeground : colors.onSurfaceVariant }]}>
                 {f.label}
               </Text>
             </Pressable>
@@ -588,7 +588,7 @@ export default function ExploreScreen() {
               styles.filterChip,
               openOnly
                 ? { backgroundColor: colors.success }
-                : { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" },
+                : { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border },
             ]}
             onPress={() => setOpenOnly((v) => !v)}
           >
@@ -611,7 +611,7 @@ export default function ExploreScreen() {
                 styles.filterChip,
                 visibilityFilter === f.key
                   ? { backgroundColor: colors.primary }
-                  : { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" },
+                  : { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border },
               ]}
               onPress={() => setVisibilityFilter(f.key)}
             >
@@ -619,10 +619,10 @@ export default function ExploreScreen() {
                 <Ionicons
                   name={f.key === "public" ? "globe-outline" : "lock-closed-outline"}
                   size={13}
-                  color={visibilityFilter === f.key ? "#fff" : colors.onSurfaceVariant}
+                  color={visibilityFilter === f.key ? colors.primaryForeground : colors.onSurfaceVariant}
                 />
               )}
-              <Text style={[styles.filterText, { color: visibilityFilter === f.key ? "#fff" : colors.onSurfaceVariant }]}>
+              <Text style={[styles.filterText, { color: visibilityFilter === f.key ? colors.primaryForeground : colors.onSurfaceVariant }]}>
                 {f.label}
               </Text>
             </Pressable>
@@ -785,10 +785,10 @@ export default function ExploreScreen() {
       )}
 
       <Pressable
-        style={[styles.fab, { backgroundColor: colors.primary, bottom: botPad + 16 }]}
+        style={[styles.fab, { backgroundColor: colors.accent, bottom: botPad + 16 }]}
         onPress={() => router.push("/create-match")}
       >
-        <Ionicons name="add" size={28} color="#fff" />
+        <Ionicons name="add" size={28} color={colors.accentForeground} />
       </Pressable>
 
       {pickerMatch && (

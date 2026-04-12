@@ -740,7 +740,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 14,
     gap: 12,
-    backgroundColor: "#FFFFFF",
   },
   groupActivityAvatar: {
     width: 44,

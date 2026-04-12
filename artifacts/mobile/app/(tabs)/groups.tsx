@@ -322,8 +322,8 @@ export default function GroupsScreen() {
               <SkeletonLoader count={3} variant="list" />
             ) : discoverGroups.length === 0 && !groupsLoading ? (
               <View style={[styles.discoverEmpty, { backgroundColor: colors.surfaceContainerLow, borderRadius: 20 }]}>
-                <View style={[styles.discoverEmptyIcon, { backgroundColor: "#2C54E8" + "12" }]}>
-                  <Ionicons name="compass-outline" size={28} color="#2C54E8" />
+                <View style={[styles.discoverEmptyIcon, { backgroundColor: colors.primary + "12" }]}>
+                  <Ionicons name="compass-outline" size={28} color={colors.primary} />
                 </View>
                 <Text style={[styles.discoverEmptyTitle, { color: colors.onSurface }]}>
                   {isFiltering ? "لا توجد نتائج" : "لا توجد مجموعات للاكتشاف"}
@@ -774,7 +774,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingVertical: 12,
   },
-  emptyCreateBtnText: { fontSize: 14, fontFamily: "Cairo_700Bold", color: "#fff" },
+  emptyCreateBtnText: { fontSize: 14, fontFamily: "Cairo_700Bold" },
 
   noResults: { marginHorizontal: 16, padding: 20, alignItems: "center", gap: 8, marginBottom: 12 },
   noResultsText: { fontSize: 14, fontFamily: "Cairo_400Regular", textAlign: "center" },
@@ -835,7 +835,7 @@ const styles = StyleSheet.create({
   discoverEmptyText: { fontSize: 13, fontFamily: "Cairo_400Regular", textAlign: "center" },
   discoverEmptyCTA: { borderRadius: 24, overflow: "hidden", marginTop: 4 },
   discoverEmptyCTAInner: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 20, paddingVertical: 10 },
-  discoverEmptyCTAText: { fontSize: 14, fontFamily: "Cairo_700Bold", color: "#fff" },
+  discoverEmptyCTAText: { fontSize: 14, fontFamily: "Cairo_700Bold" },
 
   fab: {
     position: "absolute",
