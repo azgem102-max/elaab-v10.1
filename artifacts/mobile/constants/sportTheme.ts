@@ -28,39 +28,6 @@ export interface SportCardTheme {
 }
 
 const footballTheme: SportCardTheme = {
-  primary: "#2C54E8",
-  primaryLight: "#5B7FFF",
-  primaryContainer: "#E0E7FF",
-  cardBackground: "#F4F6FF",
-  cardGradientStart: "#2C54E8",
-  cardGradientEnd: "#5B7FFF",
-  badgeBackground: "#E0E7FF",
-  badgeForeground: "#1E3FA0",
-  pillBackground: "#EEF2FF",
-  pillForeground: "#2C54E8",
-  infoBackground: "#F4F6FF",
-  surfaceColor: "#F4F6FF",
-  emoji: "⚽",
-  gradientColors: ["#2C54E8", "#5B7FFF"],
-  containerStyle: Platform.select({
-    web: { boxShadow: `0px 2px 12px rgba(44, 84, 232, 0.12), 0px 1px 4px rgba(44, 84, 232, 0.06)` },
-    default: {
-      shadowColor: "#2C54E8",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.12,
-      shadowRadius: 12,
-      elevation: 3,
-    },
-  }) as ViewStyle,
-  glass: {
-    glassColor: "rgba(44, 84, 232, 0.08)",
-    blurIntensity: 0,
-    borderGlow: "rgba(44, 84, 232, 0.25)",
-    backgroundGradient: ["#FFFFFF", "#F4F6FF", "#EEF2FF"],
-  },
-};
-
-const padelTheme: SportCardTheme = {
   primary: "#0D9488",
   primaryLight: "#14B8A6",
   primaryContainer: "#CCFBF1",
@@ -73,7 +40,7 @@ const padelTheme: SportCardTheme = {
   pillForeground: "#0D9488",
   infoBackground: "#F0FDFA",
   surfaceColor: "#F0FDFA",
-  emoji: "🏓",
+  emoji: "⚽",
   gradientColors: ["#0D9488", "#14B8A6"],
   containerStyle: Platform.select({
     web: { boxShadow: `0px 2px 12px rgba(13, 148, 136, 0.12), 0px 1px 4px rgba(13, 148, 136, 0.06)` },
@@ -90,6 +57,39 @@ const padelTheme: SportCardTheme = {
     blurIntensity: 0,
     borderGlow: "rgba(13, 148, 136, 0.25)",
     backgroundGradient: ["#FFFFFF", "#F0FDFA", "#CCFBF1"],
+  },
+};
+
+const padelTheme: SportCardTheme = {
+  primary: "#2C54E8",
+  primaryLight: "#5B7FFF",
+  primaryContainer: "#E0E7FF",
+  cardBackground: "#F4F6FF",
+  cardGradientStart: "#2C54E8",
+  cardGradientEnd: "#5B7FFF",
+  badgeBackground: "#E0E7FF",
+  badgeForeground: "#1E3FA0",
+  pillBackground: "#EEF2FF",
+  pillForeground: "#2C54E8",
+  infoBackground: "#F4F6FF",
+  surfaceColor: "#F4F6FF",
+  emoji: "🏓",
+  gradientColors: ["#2C54E8", "#5B7FFF"],
+  containerStyle: Platform.select({
+    web: { boxShadow: `0px 2px 12px rgba(44, 84, 232, 0.12), 0px 1px 4px rgba(44, 84, 232, 0.06)` },
+    default: {
+      shadowColor: "#2C54E8",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.12,
+      shadowRadius: 12,
+      elevation: 3,
+    },
+  }) as ViewStyle,
+  glass: {
+    glassColor: "rgba(44, 84, 232, 0.08)",
+    blurIntensity: 0,
+    borderGlow: "rgba(44, 84, 232, 0.25)",
+    backgroundGradient: ["#FFFFFF", "#F4F6FF", "#EEF2FF"],
   },
 };
 
