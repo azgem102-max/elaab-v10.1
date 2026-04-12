@@ -269,10 +269,10 @@ export default function ProfileScreen() {
     >
       {/* === HERO CARD === */}
       <LinearGradient
-        colors={[sportTheme.primaryContainer, colors.surface]}
+        colors={[colors.primary, colors.primaryLight, colors.surface]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={[styles.heroCard, { borderWidth: 1, borderColor: sportTheme.primary + "30" }]}
+        style={[styles.heroCard, { borderWidth: 1, borderColor: colors.primary + "30" }]}
       >
         {/* Top row: avatar + name + reliability gauge */}
         <View style={styles.heroTop}>
@@ -297,11 +297,11 @@ export default function ProfileScreen() {
           </View>
 
           {/* Avatar */}
-          <View style={[styles.avatarWrap, { width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2, backgroundColor: sportTheme.primaryContainer, borderColor: sportTheme.primary + "60" }]}>
+          <View style={[styles.avatarWrap, { width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2, backgroundColor: colors.primaryContainer, borderColor: colors.primary + "60" }]}>
             {user.avatarUri ? (
               <Image source={{ uri: user.avatarUri }} style={{ width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2 }} />
             ) : (
-              <Text style={[styles.avatarInitial, { color: sportTheme.primary }]}>{user.nickname.charAt(0)}</Text>
+              <Text style={[styles.avatarInitial, { color: colors.primary }]}>{user.nickname.charAt(0)}</Text>
             )}
           </View>
         </View>
@@ -337,11 +337,11 @@ export default function ProfileScreen() {
         {/* Quick Actions */}
         <View style={styles.quickActionsRow}>
           <Pressable
-            style={[styles.quickActionLime, { backgroundColor: colors.primary }]}
+            style={[styles.quickActionLime, { backgroundColor: colors.accent }]}
             onPress={() => router.push({ pathname: "/settings", params: { openEdit: "1" } })}
           >
-            <Ionicons name="create-outline" size={15} color={colors.primaryForeground} />
-            <Text style={[styles.quickActionLimeText, { color: colors.primaryForeground }]}>عدّل الملف</Text>
+            <Ionicons name="create-outline" size={15} color={colors.accentForeground} />
+            <Text style={[styles.quickActionLimeText, { color: colors.accentForeground }]}>عدّل الملف</Text>
           </Pressable>
           <Pressable
             style={[styles.quickActionGhost, { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.outline }]}
