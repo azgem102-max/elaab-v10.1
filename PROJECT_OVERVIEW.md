@@ -39,12 +39,11 @@
 
 ## 📊 إحصائيات المشروع (DYNAMIC-START)
 - **آخر تحديث:** 12 أبريل 2026
-- **آخر مهمة مدموجة:** غير متاح
-- **عدد المهام المنتهية:** 0
-0
+- **آخر مهمة مدموجة:** 27
+- **عدد المهام المنتهية:** 27
 - **عدد صفحات التطبيق:** 22
-- **عدد مسارات الـ API:** 9
-- **عدد جداول قاعدة البيانات:** 9
+- **عدد مسارات الـ API:** 54
+- **عدد جداول قاعدة البيانات:** 12
 <!-- DYNAMIC-END -->
 
 ---
@@ -104,12 +103,14 @@ index → phone → otp → (مستخدم جديد) → profile-setup → positi
 | الصفحة | المسار | الوصف |
 |---|---|---|
 | تفاصيل المجموعة | `/group-detail` | معلومات المجموعة، الأعضاء، مباريات المجموعة |
-| إنشاء مجموعة | `/create-group` | نموذج إنشاء مجموعة جديدة |
+| إدارة المجموعة | `/group-management` | لوحة تحكم المدير: الأعضاء، طلبات الانضمام، الأدوار |
 | محادثة المجموعة | `/group-chat` | دردشة نصية لأعضاء المجموعة (polling-based) |
+| إنشاء مجموعة | `/create-group` | نموذج إنشاء مجموعة جديدة |
 
 **تدفق التنقل:**
 ```
 المجموعات (tab) → group-detail → group-chat
+                              → group-management (للمدير فقط)
                               → match-details (مباريات المجموعة)
                               → create-match (إنشاء مباراة للمجموعة)
 ```
@@ -137,11 +138,12 @@ index ──► phone ──► otp ──► profile-setup ──► position-s
 Home ──────────────────────────────────────────────────────────────────────────┐
 Explore ──────────────────────────────────────────────────────────────────────►│ match-details
 My Matches ───────────────────────────────────────────────────────────────────►│   ├─► manage-match ──► edit-match
-Notifications ────────────────────────────────────────────────────────────────►│   │              └──► post-match-rating
-Invite Link ──────────────────────────────────────────────────────────────────►│   └─► post-match-rating
+Notifications ────────────────────────────────────────────────────────────────►│   └─► post-match-rating
+Invite Link ──────────────────────────────────────────────────────────────────►│
                                                                                │
 Groups ──────────────────────► group-detail ──────────────────────────────────►│ match-details
                           │        ├──► group-chat                             │
+                          │        ├──► group-management                       │
                           │        └──► create-match                           │
                           └──► create-group                                    │
                                                                                │
@@ -162,14 +164,17 @@ Profile ──────────────────────► se
 - **إنشاء مباراة**: العنوان، الرياضة، التاريخ والوقت، الملعب، الموقع الجغرافي، الحد الأقصى للاعبين، المستوى، نوع الجلسة
 - **الانضمام / المغادرة**: مع كشف التعارض الزمني (لا تنضم لمباراتين في نفس الوقت)
 - **البحث والفلترة**: حسب الرياضة، التاريخ، المستوى، الموقع الجغرافي
-- **دفتر القطة (Gatta)**: تتبع تكاليف المباراة المشتركة وحالة الدفع لكل لاعب
+- **دفتر القطة (Gatta)**: تتبع تكاليف المباراة المشتركة وحالة الدفع لكل لاعب، مع إرسال تذكيرات دفع
 - **تسجيل الحضور**: المنظم يسجل من حضر ومن غاب بعد المباراة
 - **إلغاء المباراة**: المنظم يمكنه إلغاء المباراة مع إرسال إشعار للاعبين
+- **إزالة لاعب**: المنظم يمكنه إزالة لاعب من المباراة
 - **روابط الدعوة**: إنشاء رابط خاص لدعوة لاعبين لمباراة مغلقة
 
 ### 3. نظام المجموعات
 - إنشاء مجموعات رياضية (عامة/خاصة)
-- إدارة الأعضاء
+- إدارة الأعضاء والأدوار (مالك، مدير، عضو)
+- طلبات الانضمام للمجموعات الخاصة (قبول/رفض)
+- دعوة مستخدمين مباشرة للمجموعة
 - إنشاء مباريات مرتبطة بالمجموعة
 - دردشة نصية جماعية (polling كل 5 ثوانٍ)
 - روابط دعوة للمجموعات
@@ -185,6 +190,7 @@ Profile ──────────────────────► se
 - مغلق للمباريات الملغاة
 - لا يمكن تقييم نفس اللاعب مرتين
 - لا يمكن تقييم نفسك
+- يشمل التقييم تصويتاً على دقة مستوى اللاعب
 
 ### 5. مؤشر الموثوقية (Reliability Index™)
 نظام تلقائي لحساب موثوقية اللاعب (0–100):
@@ -208,6 +214,7 @@ Profile ──────────────────────► se
   - تقييمك من لاعب آخر
   - مباريات جديدة في مجموعاتك
 - **إعدادات الإشعارات**: يمكن إيقاف كل نوع بشكل مستقل
+- **تحديد الإشعارات كمقروءة**: كل إشعار بشكل مستقل أو جميعها دفعة واحدة
 - **صلاحية POST_NOTIFICATIONS**: للأجهزة Android 13+
 
 ### 7. الملف الشخصي
@@ -222,54 +229,84 @@ Profile ──────────────────────► se
 
 ## 🛠️ API — نقاط النهاية
 
-### المصادقة
+جميع المسارات تعمل تحت البادئة `/api`.
+
+### المصادقة (2 مسار)
 ```
-POST /auth/otp/request   ← طلب OTP
-POST /auth/otp/verify    ← التحقق والحصول على JWT
+POST /auth/request-otp   ← طلب OTP لرقم هاتف
+POST /auth/verify-otp    ← التحقق والحصول على JWT
 ```
 
-### المباريات
+### المباريات (15 مسار)
 ```
-GET    /matches              ← قائمة المباريات العامة (مع فلاتر)
-POST   /matches              ← إنشاء مباراة جديدة
-GET    /matches/{id}         ← تفاصيل مباراة
-PATCH  /matches/{id}         ← تعديل مباراة (المنظم فقط)
-POST   /matches/{id}/join    ← الانضمام لمباراة
-POST   /matches/{id}/leave   ← مغادرة مباراة
-PUT    /matches/{id}/attendance ← تسجيل حضور اللاعبين (المنظم فقط)
-POST   /matches/{id}/rate    ← تقييم اللاعبين بعد المباراة
-POST   /matches/{id}/invite-link ← إنشاء رابط دعوة
-```
-
-### المجموعات
-```
-GET    /groups               ← قائمة المجموعات العامة
-POST   /groups               ← إنشاء مجموعة
-GET    /groups/{id}          ← تفاصيل مجموعة
-POST   /groups/{id}/join     ← الانضمام لمجموعة
+GET    /matches                              ← قائمة المباريات (مع فلاتر)
+GET    /matches/{id}                         ← تفاصيل مباراة
+POST   /matches                              ← إنشاء مباراة جديدة
+DELETE /matches/{id}                         ← إلغاء مباراة (المنظم فقط)
+POST   /matches/{id}/join                    ← الانضمام لمباراة
+POST   /matches/{id}/leave                   ← مغادرة مباراة
+PUT    /matches/{id}/attendance              ← تسجيل حضور اللاعبين (المنظم فقط)
+PATCH  /matches/{id}                         ← تعديل بيانات المباراة (المنظم فقط)
+PATCH  /matches/{id}/players/{userId}/payment← تعديل حالة دفع لاعب
+DELETE /matches/{id}/players/{playerId}      ← إزالة لاعب (المنظم فقط)
+POST   /matches/{id}/payment-reminder        ← تذكير اللاعبين غير الدافعين
+POST   /matches/{id}/mark-attendees-paid     ← تسجيل الحاضرين كدافعين دفعة واحدة
+POST   /matches/{id}/invite-link             ← إنشاء رابط دعوة للمباراة
+GET    /matches/{id}/level-votes/status      ← حالة تصويت المستخدم على المستوى
+POST   /matches/{id}/level-votes             ← تقديم تقييم المستوى بعد المباراة
 ```
 
-### المستخدمون
+### المجموعات (18 مسار)
 ```
-GET    /users/me             ← ملفي الشخصي
-PATCH  /users/me             ← تعديل ملفي الشخصي
-POST   /users/me/avatar      ← رفع صورة شخصية
-GET    /users/{id}           ← ملف مستخدم آخر
+GET    /groups                                         ← قائمة المجموعات العامة والمنضم إليها
+GET    /groups/{id}                                    ← تفاصيل مجموعة والأعضاء
+POST   /groups                                         ← إنشاء مجموعة جديدة
+PUT    /groups/{id}                                    ← تعديل معلومات المجموعة
+DELETE /groups/{id}                                    ← حذف المجموعة (المالك فقط)
+POST   /groups/{id}/join                               ← طلب الانضمام لمجموعة
+POST   /groups/{id}/leave                              ← مغادرة مجموعة
+GET    /groups/{id}/join-requests                      ← قائمة طلبات الانضمام (المدير فقط)
+POST   /groups/{id}/join-requests/{requestId}/approve  ← قبول طلب انضمام
+POST   /groups/{id}/join-requests/{requestId}/reject   ← رفض طلب انضمام
+POST   /groups/{id}/invite                             ← دعوة مستخدم مباشرة للمجموعة
+POST   /groups/{id}/invite-link                        ← إنشاء رابط دعوة للمجموعة
+GET    /invites/{token}                                ← التحقق من رابط دعوة وجلب بيانات الهدف
+POST   /invites/{token}/accept                         ← قبول الدعوة والانضمام
+DELETE /groups/{id}/members/{userId}                   ← إزالة عضو من المجموعة
+PATCH  /groups/{id}/members/{userId}/role              ← تغيير دور العضو
+GET    /groups/{id}/messages                           ← جلب رسائل الدردشة
+POST   /groups/{id}/messages                           ← إرسال رسالة في الدردشة
 ```
 
-### الإشعارات
+### المستخدمون (6 مسارات)
 ```
-GET    /users/me/notification-settings  ← إعدادات الإشعارات
-PATCH  /users/me/notification-settings  ← تعديل الإعدادات
-POST   /push/register                   ← تسجيل Push Token
-GET    /notifications                   ← سجل الإشعارات
+GET    /users/me                          ← ملفي الشخصي ومؤشر الموثوقية
+PATCH  /users/me                          ← تعديل ملفي الشخصي
+GET    /users/me/notification-settings    ← إعدادات الإشعارات
+PATCH  /users/me/notification-settings    ← تعديل إعدادات الإشعارات
+POST   /users/me/avatar                   ← رفع صورة شخصية
+GET    /users/{id}                        ← الملف العام لمستخدم آخر
 ```
 
-### متنوع
+### الإشعارات (5 مسارات) + Push (2 مسار)
 ```
-GET  /healthz              ← فحص صحة الخادم
-POST /invites/validate     ← التحقق من رابط دعوة
-POST /storage/upload       ← رفع ملف
+GET    /notifications                ← سجل الإشعارات
+PATCH  /notifications/read-all       ← تحديد جميع الإشعارات كمقروءة
+PATCH  /notifications/{id}/read      ← تحديد إشعار معين كمقروء
+DELETE /notifications/{id}           ← حذف إشعار معين
+DELETE /notifications                ← حذف جميع الإشعارات
+POST   /push/register                ← تسجيل Expo Push Token
+DELETE /push/unregister              ← إلغاء تسجيل Push Token (عند تسجيل الخروج)
+```
+
+### متنوع (6 مسارات)
+```
+GET  /healthz            ← فحص صحة الخادم
+GET  /invite/{token}     ← صفحة هبوط رابط الدعوة (Deep Link)
+GET  /match/{id}         ← صفحة ملخص مباراة (مشاركة خارجية)
+GET  /group/{id}         ← صفحة ملخص مجموعة (مشاركة خارجية)
+GET  /profile/{userId}   ← صفحة ملخص ملف مستخدم (مشاركة خارجية)
+GET  /storage/avatar     ← بروكسي للصور الشخصية من Object Storage
 ```
 
 ---
@@ -280,15 +317,18 @@ POST /storage/upload       ← رفع ملف
 
 | الجدول | الأعمدة الرئيسية | الوصف |
 |---|---|---|
-| `users` | id, phone, name, avatar_url, sports, skill_level, reliability | بيانات المستخدمين |
-| `matches` | id, title, sport, date, time, venue, lat, lng, max_players, organizer_id, status, skill_level | المباريات |
-| `match_players` | match_id, user_id, attended, attendance_status, paid, position | اللاعبون في كل مباراة |
-| `groups` | id, name, sport, admin_id, is_public | المجموعات |
-| `group_members` | group_id, user_id | أعضاء المجموعات |
-| `ratings` | id, match_id, rater_id, rated_user_id, rating_type, score | التقييمات |
-| `otp_codes` | phone, code, expires_at | رموز التحقق |
-| `notifications` | id, user_id, type, data, read_at | الإشعارات |
-| `push_tokens` | user_id, token, platform | رموز Push |
+| `users` | id, phone, name, avatar_url, sports, skill_level, sport_profiles, reliability, notif_match, notif_group, notif_rating | بيانات المستخدمين وإعدادات الإشعارات |
+| `otp_codes` | id, phone, code, expires_at, used | رموز التحقق عبر SMS |
+| `matches` | id, title, sport, date, time, venue, lat, lng, max_players, cost, is_public, organizer_id, invited_group_id, session_type, skill_level, status | المباريات والتدريبات |
+| `match_players` | id, match_id, user_id, position, attended, attendance_status, paid | اللاعبون في كل مباراة |
+| `groups` | id, name, sport, description, is_public, admin_id | المجموعات الرياضية |
+| `group_members` | id, group_id, user_id, role | أعضاء المجموعات والأدوار |
+| `group_messages` | id, group_id, sender_id, sender_name, text | رسائل دردشة المجموعات |
+| `group_join_requests` | id, group_id, user_id, status, requested_at, reviewed_at, reviewed_by | طلبات الانضمام للمجموعات |
+| `ratings` | id, match_id, rater_id, rated_user_id, score, rating_type, level_accuracy_vote | تقييمات اللاعبين |
+| `notifications` | id, user_id, type, title, body, related_id, read | الإشعارات داخل التطبيق |
+| `push_tokens` | id, user_id, token | رموز Push Notifications |
+| `invite_links` | id, token, target_type, target_id, created_by, expires_at, is_revoked | روابط الدعوة للمباريات والمجموعات |
 
 ---
 
@@ -318,6 +358,8 @@ POST /storage/upload       ← رفع ملف
 | 20 | Android: تحسين FlatList لـ 60fps | ✅ |
 | 21 | Android: صلاحية POST_NOTIFICATIONS لـ Android 13+ | ✅ |
 | 22 | Android: إعداد EAS Build | ✅ |
+| 23 | إدارة المجموعات المتقدمة (أدوار + طلبات انضمام) | ✅ |
+| 24 | روابط الدعوة للمجموعات والمباريات | ✅ |
 | 25 | اختبار التطبيق على محاكاة iOS و Android | ✅ |
 | 26 | تحديث أوصاف مستويات البادل والتنس الرسمية | ✅ |
 | 27 | تحسين دقة سؤال المستوى في شاشة التقييم | ✅ |
