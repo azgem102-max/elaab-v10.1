@@ -4,7 +4,7 @@ import {
 } from "@/context/AppContext";
 import { api } from "@/services/api";
 import { useColors } from "@/hooks/useColors";
-import { SurfaceCard } from "@/components/SurfaceCard";
+import { GlassCard } from "@/components/glass/GlassCard";
 import { LiquidProgressBar } from "@/components/glass/LiquidProgressBar";
 import { getSportIcon } from "@/components/icons/SportIcons";
 import { Ionicons } from "@expo/vector-icons";
@@ -292,16 +292,16 @@ function SwipeablePlayerRow({
             <Text style={[styles.pillText, { color: attendanceColor }]}>{attendanceLabel}</Text>
           </View>
           <View style={[styles.attendancePill, {
-            backgroundColor: player.paymentStatus === "paid" ? "#22C55E18" : "#F59E0B12",
+            backgroundColor: player.paymentStatus === "paid" ? colors.success + "18" : colors.warning + "18",
             borderWidth: 1,
-            borderColor: player.paymentStatus === "paid" ? "#22C55E30" : "#F59E0B30",
+            borderColor: player.paymentStatus === "paid" ? colors.success + "30" : colors.warning + "30",
           }]}>
             <Ionicons
               name={player.paymentStatus === "paid" ? "checkmark-circle" : "time-outline"}
               size={13}
-              color={player.paymentStatus === "paid" ? "#22C55E" : "#F59E0B"}
+              color={player.paymentStatus === "paid" ? colors.success : colors.warning}
             />
-            <Text style={[styles.pillText, { color: player.paymentStatus === "paid" ? "#22C55E" : "#F59E0B" }]}>
+            <Text style={[styles.pillText, { color: player.paymentStatus === "paid" ? colors.success : colors.warning }]}>
               {player.paymentStatus === "paid" ? "دفع" : "لم يدفع"}
             </Text>
           </View>
@@ -638,7 +638,7 @@ export default function ManageMatchScreen() {
       {(() => {
         const ManageSportIcon = getSportIcon(match.sport);
         const fillPct = match.maxPlayers > 0 ? match.players.length / match.maxPlayers : 0;
-        const progressColor = fillPct >= 1 ? "#22C55E" : fillPct >= 0.75 ? "#F59E0B" : "#fff";
+        const progressColor = fillPct >= 1 ? colors.success : fillPct >= 0.75 ? colors.warning : "#fff";
         return (
           <View style={[styles.hero, { paddingTop: topPad + 8, backgroundColor: sc }]}>
             <View style={styles.heroHeader}>
@@ -725,9 +725,9 @@ export default function ManageMatchScreen() {
       >
         {activeTab === "players" && (
           <View style={{ gap: 14 }}>
-            <SurfaceCard elevated style={{ backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border, gap: 12 }}>
+            <GlassCard variant="medium" sport={match.sport} style={{ gap: 12 }}>
               <View style={styles.sectionHeader}>
-                <Ionicons name="people-outline" size={18} color={colors.onSurface} />
+                <Ionicons name="people-outline" size={18} color={sc} />
                 <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
                   اللاعبون ({match.players.length}/{match.maxPlayers})
                 </Text>
@@ -798,7 +798,7 @@ export default function ManageMatchScreen() {
                   </Text>
                 </View>
               )}
-            </SurfaceCard>
+            </GlassCard>
 
             {match.status !== "completed" && match.status !== "cancelled" && (
               <Pressable
@@ -822,10 +822,10 @@ export default function ManageMatchScreen() {
 
         {activeTab === "gatta" && (
           <View style={{ gap: 14 }}>
-            <SurfaceCard elevated style={{ backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border, gap: 14 }}>
+            <GlassCard variant="medium" sport={match.sport} style={{ gap: 14 }}>
               <View style={styles.sectionHeader}>
-                <Ionicons name="wallet-outline" size={18} color={colors.primary} />
-                <Text style={[styles.sectionTitle, { color: colors.primary }]}>دفتر الغطّة</Text>
+                <Ionicons name="wallet-outline" size={18} color={sc} />
+                <Text style={[styles.sectionTitle, { color: sc }]}>دفتر الغطّة</Text>
               </View>
 
               <View style={[styles.gattaSummary, { backgroundColor: colors.surfaceContainer }]}>
@@ -876,9 +876,9 @@ export default function ManageMatchScreen() {
                         style={[
                           styles.paymentRow,
                           {
-                            backgroundColor: isPaid ? "#22C55E10" : colors.surfaceContainerHigh,
+                            backgroundColor: isPaid ? colors.success + "12" : colors.surfaceContainerHigh,
                             borderWidth: 1,
-                            borderColor: isPaid ? "#22C55E30" : "#E5E7EB",
+                            borderColor: isPaid ? colors.success + "30" : colors.border,
                           },
                         ]}
                         onPress={() => {
@@ -905,12 +905,12 @@ export default function ManageMatchScreen() {
                         <Ionicons
                           name={isPaid ? "checkmark-circle" : "ellipse-outline"}
                           size={22}
-                          color={isPaid ? "#22C55E" : colors.mutedForeground}
+                          color={isPaid ? colors.success : colors.mutedForeground}
                         />
                         <Text style={[styles.paymentRowName, { color: colors.onSurface }]}>{player.nickname}</Text>
                         <View style={[
                           styles.paymentStatusPill,
-                          { backgroundColor: isPaid ? "#22C55E" : "#F59E0B" },
+                          { backgroundColor: isPaid ? colors.success : colors.warning },
                         ]}>
                           <Text style={styles.paymentStatusPillText}>
                             {isPaid ? `${match.cost} ر.س ✓` : "لم يدفع"}
@@ -952,11 +952,11 @@ export default function ManageMatchScreen() {
                   </Pressable>
                 </View>
               )}
-            </SurfaceCard>
+            </GlassCard>
 
-            <SurfaceCard elevated style={{ backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border, gap: 14 }}>
+            <GlassCard variant="medium" sport={match.sport} style={{ gap: 14 }}>
               <View style={styles.sectionHeader}>
-                <Ionicons name="stats-chart-outline" size={18} color={colors.secondary} />
+                <Ionicons name="stats-chart-outline" size={18} color={sc} />
                 <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>إحصائيات الحضور</Text>
               </View>
               <View style={styles.attendanceStats}>
@@ -991,13 +991,13 @@ export default function ManageMatchScreen() {
                   <LiquidProgressBar progress={attendancePct} sport={match.sport} height={8} />
                 </View>
               )}
-            </SurfaceCard>
+            </GlassCard>
           </View>
         )}
 
         {activeTab === "settings" && (
           <View style={{ gap: 14 }}>
-            <SurfaceCard elevated style={{ backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border, gap: 16 }}>
+            <GlassCard variant="medium" sport={match.sport} style={{ gap: 16 }}>
               <View style={styles.sectionHeader}>
                 <Ionicons name="create-outline" size={18} color={sc} />
                 <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>تعديل التفاصيل</Text>
@@ -1139,10 +1139,10 @@ export default function ManageMatchScreen() {
                 <Ionicons name={saving ? "time-outline" : "checkmark-circle-outline"} size={20} color="rgba(255,255,255,1)" />
                 <Text style={styles.saveBtnText}>{saving ? "جاري الحفظ..." : "حفظ التعديلات"}</Text>
               </Pressable>
-            </SurfaceCard>
+            </GlassCard>
 
             {match.status !== "completed" && match.status !== "cancelled" && (
-              <SurfaceCard elevated style={{ backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border, gap: 12 }}>
+              <GlassCard variant="medium" sport={match.sport} style={{ gap: 12 }}>
                 <View style={styles.sectionHeader}>
                   <Ionicons name="warning-outline" size={18} color={colors.destructive} />
                   <Text style={[styles.sectionTitle, { color: colors.destructive }]}>منطقة الخطر</Text>
@@ -1154,7 +1154,7 @@ export default function ManageMatchScreen() {
                     <Text style={[styles.cancelBtnSub, { color: colors.mutedForeground }]}>سيتلقى اللاعبون إشعاراً بالإلغاء</Text>
                   </View>
                 </Pressable>
-              </SurfaceCard>
+              </GlassCard>
             )}
           </View>
         )}

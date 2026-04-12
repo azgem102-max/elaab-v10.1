@@ -26,12 +26,6 @@ interface RatablePlayer {
   skillLevel: string | null;
 }
 
-const SPORT_ACCENT: Record<string, string> = {
-  football: "#2C54E8",
-  padel: "#0E9B6E",
-  tennis: "#C97B18",
-};
-
 const SKILL_LEVEL_LABELS: Record<string, string> = {
   beginner: "مبتدئ",
   intermediate: "متوسط",
@@ -233,7 +227,8 @@ export default function PostMatchRatingScreen() {
     }, [fetchMatch])
   );
 
-  const sportAccent = SPORT_ACCENT[matchData?.sport ?? "football"] ?? SPORT_ACCENT.football;
+  const sport = matchData?.sport ?? "football";
+  const sportAccent = sport === "padel" ? colors.padel : sport === "tennis" ? colors.tennis : colors.football;
 
   const ratablePlayers: RatablePlayer[] = (matchData?.players ?? [])
     .filter((p) => p.id !== currentUserId && !!p.skillLevel && p.attendance !== "absent")
@@ -266,7 +261,7 @@ export default function PostMatchRatingScreen() {
   if (loading) {
     return (
       <View style={[styles.container, styles.loadingCenter, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <ActivityIndicator size="large" color={sportAccent} />
       </View>
     );
   }
@@ -275,10 +270,10 @@ export default function PostMatchRatingScreen() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: topPad + 12, borderBottomColor: colors.border }]}>
-          <Pressable style={styles.backBtn} onPress={() => router.back()} hitSlop={8}>
+          <Pressable style={[styles.backBtn, { backgroundColor: colors.surfaceContainerHigh, borderWidth: 1, borderColor: colors.border }]} onPress={() => router.back()} hitSlop={8}>
             <Ionicons
               name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"}
-              size={24}
+              size={22}
               color={colors.onSurface}
             />
           </Pressable>
@@ -311,13 +306,13 @@ export default function PostMatchRatingScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: topPad + 12, borderBottomColor: colors.border }]}>
         <Pressable
-          style={styles.backBtn}
+          style={[styles.backBtn, { backgroundColor: colors.surfaceContainerHigh, borderWidth: 1, borderColor: colors.border }]}
           onPress={() => router.back()}
           hitSlop={8}
         >
           <Ionicons
             name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"}
-            size={24}
+            size={22}
             color={colors.onSurface}
           />
         </Pressable>
@@ -412,7 +407,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   backBtn: {
-    padding: 4,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerText: {
     flex: 1,

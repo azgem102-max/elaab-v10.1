@@ -509,20 +509,20 @@ export default function MatchDetailsScreen() {
               const isPaid = myPayment === "paid";
               return (
                 <>
-                  <View style={[styles.playerShareBox, { backgroundColor: isPaid ? "#22C55E12" : "#EEF2FF", marginTop: 8, borderWidth: 1, borderColor: isPaid ? "#22C55E30" : "#E5E7EB" }]}>
-                    <Ionicons name={isPaid ? "checkmark-circle" : "cash-outline"} size={28} color={isPaid ? "#22C55E" : sc} />
+                  <View style={[styles.playerShareBox, { backgroundColor: isPaid ? colors.success + "12" : colors.surfaceContainerLow, marginTop: 8, borderWidth: 1, borderColor: isPaid ? colors.success + "30" : colors.border }]}>
+                    <Ionicons name={isPaid ? "checkmark-circle" : "cash-outline"} size={28} color={isPaid ? colors.success : sc} />
                     <View style={{ flex: 1, alignItems: "flex-end", gap: 2 }}>
                       <Text style={[styles.playerShareLabel, { color: colors.mutedForeground }]}>نصيبك من الغطّة</Text>
-                      <Text style={[styles.playerShareAmount, { color: isPaid ? "#22C55E" : colors.onSurface }]}>{costPerPlayer} <Text style={{ fontSize: 14, color: colors.mutedForeground }}>ر.س</Text></Text>
+                      <Text style={[styles.playerShareAmount, { color: isPaid ? colors.success : colors.onSurface }]}>{costPerPlayer} <Text style={{ fontSize: 14, color: colors.mutedForeground }}>ر.س</Text></Text>
                     </View>
-                    <View style={[styles.gattaStatusPill, { backgroundColor: isPaid ? "#22C55E" : "#F59E0B" }]}>
+                    <View style={[styles.gattaStatusPill, { backgroundColor: isPaid ? colors.success : colors.warning }]}>
                       <Text style={styles.gattaStatusPillText}>{isPaid ? "دفعت ✓" : "لم تدفع"}</Text>
                     </View>
                   </View>
                   {!isPaid && (
-                    <View style={[styles.playerShareStatusRow, { backgroundColor: "#FEF9C3", borderWidth: 1, borderColor: "#FCD34D" }]}>
-                      <Ionicons name="information-circle-outline" size={16} color="#D97706" />
-                      <Text style={[styles.playerShareStatusText, { color: "#D97706" }]}>
+                    <View style={[styles.playerShareStatusRow, { backgroundColor: colors.warning + "20", borderWidth: 1, borderColor: colors.warning + "40" }]}>
+                      <Ionicons name="information-circle-outline" size={16} color={colors.warning} />
+                      <Text style={[styles.playerShareStatusText, { color: colors.warning }]}>
                         تواصل مع المنظّم لتأكيد دفع حصتك
                       </Text>
                     </View>
