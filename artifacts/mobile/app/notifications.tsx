@@ -2,6 +2,7 @@ import { useApp, Notification } from "@/context/AppContext";
 import { useColors } from "@/hooks/useColors";
 
 import { GlassScreenHeader } from "@/components/glass/GlassScreenHeader";
+import { glassShadow } from "@/constants/glassTheme";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useRef, useEffect, useState, useCallback } from "react";
@@ -124,7 +125,7 @@ export default function NotificationsScreen() {
         <View style={styles.headerRow}>
           <Pressable
             onPress={() => router.back()}
-            style={[styles.iconBtn, { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB" }]}
+            style={[styles.iconBtn, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }]}
           >
             <Ionicons name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"} size={22} color={colors.onSurface} />
           </Pressable>
@@ -350,8 +351,9 @@ function NotificationItem({
           <View
             style={[
               styles.notifCard,
-              { borderWidth: 1, borderColor: "#E5E7EB" },
-              { backgroundColor: "#FFFFFF" },
+              glassShadow.soft,
+              { borderWidth: 1, borderColor: colors.border },
+              { backgroundColor: colors.surface },
             ]}
           >
             <View
@@ -424,7 +426,7 @@ function NotificationItem({
 function EmptyState({ colors }: { colors: ReturnType<typeof useColors> }) {
   return (
     <View style={styles.emptyContainer}>
-      <View style={[styles.emptyIconWrap, { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB" }]}>
+      <View style={[styles.emptyIconWrap, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }]}>
         <Ionicons name="notifications-off-outline" size={44} color={colors.mutedForeground} />
       </View>
       <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>لا توجد إشعارات</Text>

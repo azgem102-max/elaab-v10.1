@@ -1,9 +1,11 @@
 import { useApp, sportLabel, type SportType } from "@/context/AppContext";
 import { api } from "@/services/api";
 import { useColors } from "@/hooks/useColors";
-
+import { getSportTheme } from "@/constants/sportTheme";
+import { glassShadow } from "@/constants/glassTheme";
 
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { router, useLocalSearchParams, type RelativePathString } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -142,6 +144,7 @@ export default function InviteScreen() {
   }
 
   const sport = inviteData ? getSport(inviteData.info.sport) : "football";
+  const sportTheme = getSportTheme(sport);
 
   if (loading) {
     return (
@@ -160,9 +163,12 @@ export default function InviteScreen() {
 
     return (
       <View style={[styles.container, { backgroundColor: "transparent", alignItems: "center", justifyContent: "center", gap: 20, paddingHorizontal: 24 }]}>
-        <View style={[styles.successIcon, { backgroundColor: colors.success + "20" }]}>
+        <LinearGradient
+          colors={[sportTheme.primary + "20", sportTheme.primaryLight + "15"]}
+          style={styles.successIcon}
+        >
           <Ionicons name="checkmark-circle" size={64} color={colors.success} />
-        </View>
+        </LinearGradient>
         <Text style={[styles.successTitle, { color: colors.onSurface }]}>
           {isGroup ? "أهلاً بك في المجموعة!" : "تم تسجيلك في المباراة!"}
         </Text>
@@ -173,7 +179,7 @@ export default function InviteScreen() {
           }
         </Text>
         <Pressable
-          style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
+          style={[styles.primaryBtn, { backgroundColor: sportTheme.primary }]}
           onPress={() => {
             if (isGroup) {
               goToGroupDetail((inviteData.info as InviteGroupInfo).id);
@@ -221,7 +227,12 @@ export default function InviteScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: "transparent" }]}>
-      <View style={[styles.hero, { paddingTop: topPad + 16, backgroundColor: "#2C54E8" }]}>
+      <LinearGradient
+        colors={sportTheme.gradientColors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.hero, { paddingTop: topPad + 16 }]}
+      >
         <Pressable
           style={styles.backBtn}
           onPress={async () => {
@@ -235,7 +246,7 @@ export default function InviteScreen() {
           <Ionicons name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"} size={24} color="#fff" />
         </Pressable>
 
-        <View style={[styles.heroIcon, { backgroundColor: "#ffffff30" }]}>
+        <View style={[styles.heroIcon, { backgroundColor: "rgba(255,255,255,0.2)" }]}>
           <Ionicons name={isGroup ? "people" : "football"} size={40} color="#fff" />
         </View>
 
@@ -279,10 +290,10 @@ export default function InviteScreen() {
             </>
           ) : null}
         </View>
-      </View>
+      </LinearGradient>
 
       <View style={[styles.body, { paddingBottom: botPad + 20 }]}>
-        <View style={[styles.card, { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB" }]}>
+        <View style={[styles.card, glassShadow.soft, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }]}>
           {isGroup && groupInfo ? (
             <>
               <View style={styles.cardRow}>
@@ -346,7 +357,7 @@ export default function InviteScreen() {
               <Text style={[styles.loginBannerText, { color: colors.warning }]}>يرجى تسجيل الدخول لقبول الدعوة</Text>
             </View>
             <Pressable
-              style={[styles.acceptBtn, { backgroundColor: colors.primary }]}
+              style={[styles.acceptBtn, { backgroundColor: sportTheme.primary }]}
               onPress={async () => {
                 if (token) {
                   await AsyncStorage.setItem(STORAGE_KEYS.PENDING_INVITE_TOKEN, token);
@@ -362,7 +373,7 @@ export default function InviteScreen() {
 
         {!isAlreadyMember && user && !isMatchFull ? (
           <Pressable
-            style={[styles.acceptBtn, { backgroundColor: accepting ? colors.primary + "80" : colors.primary }]}
+            style={[styles.acceptBtn, { backgroundColor: accepting ? sportTheme.primary + "80" : sportTheme.primary }]}
             onPress={handleAccept}
             disabled={accepting}
           >
@@ -379,7 +390,7 @@ export default function InviteScreen() {
           </Pressable>
         ) : isAlreadyMember ? (
           <Pressable
-            style={[styles.acceptBtn, { backgroundColor: colors.primary }]}
+            style={[styles.acceptBtn, { backgroundColor: sportTheme.primary }]}
             onPress={() => {
               if (isGroup && groupInfo) goToGroupDetail(groupInfo.id);
               else if (matchInfo) goToMatchDetail(matchInfo.id);
