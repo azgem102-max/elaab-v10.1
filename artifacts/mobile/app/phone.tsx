@@ -35,6 +35,12 @@ export default function PhoneScreen() {
   const saudiRegex = /^05\d{8}$/;
   const isValid = saudiRegex.test(cleanPhone);
 
+  function formatSaudiPhone(digits: string): string {
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return digits.slice(0, 3) + " " + digits.slice(3);
+    return digits.slice(0, 3) + " " + digits.slice(3, 6) + " " + digits.slice(6);
+  }
+
   function formatPhoneE164(local: string): string {
     const digits = local.replace(/\s/g, "");
     return `+966${digits.substring(1)}`;
@@ -115,13 +121,10 @@ export default function PhoneScreen() {
             sport="football"
             value={phone}
             onChangeText={(t) => {
-              let cleaned = t.replace(/[^0-9\s+]/g, "");
-              cleaned = cleaned.replace(/^\+966\s*/, "0");
-              cleaned = cleaned.replace(/^966/, "0");
-              cleaned = cleaned.replace(/[^0-9\s]/g, "");
-              const digitsOnly = cleaned.replace(/\s/g, "");
-              if (digitsOnly.length > 10) return;
-              setPhone(cleaned);
+              let digits = t.replace(/[^0-9]/g, "");
+              if (digits.startsWith("966")) digits = "0" + digits.slice(3);
+              if (digits.length > 10) return;
+              setPhone(formatSaudiPhone(digits));
               setError("");
             }}
             placeholder="05X XXX XXXX"
@@ -129,7 +132,7 @@ export default function PhoneScreen() {
             maxLength={12}
             textAlign="right"
             editable={!loading}
-            style={styles.glassInput}
+            style={[styles.glassInput, { fontSize: 20, fontFamily: "Cairo_600SemiBold" }]}
           />
         </View>
 
