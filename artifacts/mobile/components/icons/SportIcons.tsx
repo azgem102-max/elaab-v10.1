@@ -7,7 +7,7 @@ interface SportIconProps {
   size?: number;
 }
 
-export function AllSportsIcon({ color = "currentColor", size = 24 }: SportIconProps) {
+export function AllSportsIcon({ color = "#000000", size = 24 }: SportIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Rect x="3" y="3" width="7" height="7" rx="2" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
@@ -18,7 +18,7 @@ export function AllSportsIcon({ color = "currentColor", size = 24 }: SportIconPr
   );
 }
 
-export function FootballIcon({ color = "currentColor", size = 24 }: SportIconProps) {
+export function FootballIcon({ color = "#000000", size = 24 }: SportIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
@@ -41,7 +41,7 @@ export function FootballIcon({ color = "currentColor", size = 24 }: SportIconPro
   );
 }
 
-export function PadelIcon({ color = "currentColor", size = 24 }: SportIconProps) {
+export function PadelIcon({ color = "#000000", size = 24 }: SportIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       {/* Wide, short, rounded-rectangular head — distinctive padel shape */}
@@ -61,7 +61,7 @@ export function PadelIcon({ color = "currentColor", size = 24 }: SportIconProps)
   );
 }
 
-export function TennisIcon({ color = "currentColor", size = 24 }: SportIconProps) {
+export function TennisIcon({ color = "#000000", size = 24 }: SportIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       {/* Tall teardrop/oval head — distinctive tennis shape */}
