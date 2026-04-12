@@ -10,6 +10,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   ActivityIndicator,
+  I18nManager,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -332,12 +333,16 @@ export default function OtpScreen() {
           onPress={() => router.back()}
           style={[styles.backBtn, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.border }]}
         >
-          <Ionicons name="chevron-back" size={22} color={colors.onSurface} />
+          <Ionicons
+            name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"}
+            size={22}
+            color={colors.onSurface}
+          />
         </Pressable>
 
         <GlassCard variant="dark" padding="md" style={styles.headerCard}>
           <View style={styles.header}>
-            <View style={[styles.iconWrap, { backgroundColor: "#DBEAFE", borderColor: "#93C5FD" }]}>
+            <View style={[styles.iconWrap, { backgroundColor: colors.surfaceContainer, borderColor: colors.surfaceContainerHighest }]}>
               <Ionicons
                 name="shield-checkmark-outline"
                 size={32}

@@ -1,6 +1,6 @@
 import { useApp, SportType, Player } from "@/context/AppContext";
 import { api } from "@/services/api";
-
+import { useColors } from "@/hooks/useColors";
 import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 import { FootballIcon, PadelIcon, TennisIcon } from "@/components/icons/SportIcons";
 import { GlassCard } from "@/components/glass/GlassCard";
@@ -72,21 +72,23 @@ function PadelCourt({
   selectedPositions,
   onToggle,
   color,
+  colors,
 }: {
   selectedPositions: string[];
   onToggle: (key: string) => void;
   color: string;
+  colors: ReturnType<typeof useColors>;
 }) {
   const rightSelected = selectedPositions.includes("يمين");
   const leftSelected = selectedPositions.includes("يسار");
 
   return (
     <View style={courtStyles.wrapper}>
-      <View style={[courtStyles.court, { borderColor: color + "60" }]}>
-        <View style={courtStyles.opponentHalf}>
-          <View style={courtStyles.opponentNet} />
-          <View style={courtStyles.opponentDivider} />
-          <Text style={courtStyles.opponentLabel}>الخصم</Text>
+      <View style={[courtStyles.court, { borderColor: color + "60", backgroundColor: colors.surfaceContainerLow }]}>
+        <View style={[courtStyles.opponentHalf, { backgroundColor: colors.surfaceContainer }]}>
+          <View style={[courtStyles.opponentNet, { backgroundColor: colors.border }]} />
+          <View style={[courtStyles.opponentDivider, { backgroundColor: colors.border }]} />
+          <Text style={[courtStyles.opponentLabel, { color: colors.mutedForeground }]}>الخصم</Text>
         </View>
 
         <View style={[courtStyles.netRow, { backgroundColor: color }]}>
@@ -96,14 +98,14 @@ function PadelCourt({
           <View style={courtStyles.netLine} />
         </View>
 
-        <View style={courtStyles.playerHalf}>
+        <View style={[courtStyles.playerHalf, { backgroundColor: color + "18" }]}>
           <Pressable
             style={[
               courtStyles.zone,
               courtStyles.zoneLeft,
               leftSelected
                 ? { backgroundColor: color + "28", borderColor: color, borderWidth: 2.5 }
-                : { backgroundColor: "#F8F9FA", borderColor: "#DEE2E6", borderWidth: 1.5 },
+                : { backgroundColor: colors.background, borderColor: colors.border, borderWidth: 1.5 },
             ]}
             onPress={() => onToggle("يسار")}
           >
@@ -115,9 +117,9 @@ function PadelCourt({
             <Ionicons
               name="person"
               size={22}
-              color={leftSelected ? color : "#ADB5BD"}
+              color={leftSelected ? color : colors.mutedForeground}
             />
-            <Text style={[courtStyles.zoneLabel, { color: leftSelected ? color : "#6C757D" }]}>
+            <Text style={[courtStyles.zoneLabel, { color: leftSelected ? color : colors.mutedForeground }]}>
               الأيسر
             </Text>
           </Pressable>
@@ -130,7 +132,7 @@ function PadelCourt({
               courtStyles.zoneRight,
               rightSelected
                 ? { backgroundColor: color + "28", borderColor: color, borderWidth: 2.5 }
-                : { backgroundColor: "#F8F9FA", borderColor: "#DEE2E6", borderWidth: 1.5 },
+                : { backgroundColor: colors.background, borderColor: colors.border, borderWidth: 1.5 },
             ]}
             onPress={() => onToggle("يمين")}
           >
@@ -142,15 +144,15 @@ function PadelCourt({
             <Ionicons
               name="person"
               size={22}
-              color={rightSelected ? color : "#ADB5BD"}
+              color={rightSelected ? color : colors.mutedForeground}
             />
-            <Text style={[courtStyles.zoneLabel, { color: rightSelected ? color : "#6C757D" }]}>
+            <Text style={[courtStyles.zoneLabel, { color: rightSelected ? color : colors.mutedForeground }]}>
               الأيمن
             </Text>
           </Pressable>
         </View>
       </View>
-      <Text style={courtStyles.hint}>اضغط لاختيار جانبك — يمكن اختيار الاثنين</Text>
+      <Text style={[courtStyles.hint, { color: colors.mutedForeground }]}>اضغط لاختيار جانبك — يمكن اختيار الاثنين</Text>
     </View>
   );
 }
@@ -163,11 +165,9 @@ const courtStyles = StyleSheet.create({
     borderRadius: 16,
     overflow: "hidden",
     borderWidth: 2.5,
-    backgroundColor: "#E8F5E9",
   },
   opponentHalf: {
     height: 90,
-    backgroundColor: "#ECEFF1",
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
@@ -178,7 +178,6 @@ const courtStyles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1.5,
-    backgroundColor: "#90A4AE",
   },
   opponentDivider: {
     position: "absolute",
@@ -186,12 +185,10 @@ const courtStyles = StyleSheet.create({
     bottom: 0,
     left: "50%",
     width: 1.5,
-    backgroundColor: "#B0BEC5",
   },
   opponentLabel: {
     fontSize: 12,
     fontFamily: "Cairo_600SemiBold",
-    color: "#90A4AE",
   },
   netRow: {
     height: 14,
@@ -209,7 +206,6 @@ const courtStyles = StyleSheet.create({
   playerHalf: {
     height: 130,
     flexDirection: "row",
-    backgroundColor: "#C8E6C9",
   },
   zone: {
     flex: 1,
@@ -242,13 +238,13 @@ const courtStyles = StyleSheet.create({
   hint: {
     fontSize: 12,
     fontFamily: "Cairo_400Regular",
-    color: "#6C757D",
     textAlign: "center",
   },
 });
 
 export default function PositionSelectorScreen() {
   const insets = useSafeAreaInsets();
+  const colors = useColors();
   const { user, completeOnboarding } = useApp();
   const sports = user?.sports ?? [];
   const [step, setStep] = useState(0);
@@ -411,7 +407,7 @@ export default function PositionSelectorScreen() {
     <View
       style={[
         styles.container,
-        { paddingTop: topPad + 16, paddingBottom: botPad + 24 },
+        { paddingTop: topPad + 16, paddingBottom: botPad + 24, backgroundColor: colors.background },
       ]}
     >
       <View style={[styles.bgAccent, { backgroundColor: sbg }]} />
@@ -426,7 +422,7 @@ export default function PositionSelectorScreen() {
               router.back();
             }
           }}
-          style={[styles.backBtn, { borderColor: sc + "40" }]}
+          style={[styles.backBtn, { borderColor: sc + "40", backgroundColor: colors.background }]}
         >
           <Ionicons
             name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"}
@@ -458,10 +454,10 @@ export default function PositionSelectorScreen() {
             {SPORT_LABELS[currentSport]}
           </Text>
         </View>
-        <Text style={[styles.sportTitle, { color: "#212529" }]}>
+        <Text style={[styles.sportTitle, { color: colors.onSurface }]}>
           ما مركزك في {SPORT_LABELS[currentSport]}؟
         </Text>
-        <Text style={[styles.sportSub, { color: "#6C757D" }]}>
+        <Text style={[styles.sportSub, { color: colors.mutedForeground }]}>
           اختر مركزاً أو أكثر — يساعدك في إيجاد المباريات المناسبة
         </Text>
       </Animated.View>
@@ -477,6 +473,7 @@ export default function PositionSelectorScreen() {
             selectedPositions={positions[currentSport] ?? []}
             onToggle={togglePosition}
             color={sc}
+            colors={colors}
           />
         ) : (
           sportPositions.map((pos) => {
@@ -489,38 +486,31 @@ export default function PositionSelectorScreen() {
                 <GlassCard
                   variant={selected ? "sport" : "light"}
                   padding="none"
-                  style={[
-                    styles.posCard,
-                    selected
-                      ? {
-                          borderColor: sc,
-                          borderWidth: 2,
-                          backgroundColor: sbg,
-                        }
-                      : {
-                          borderColor: "#E9ECEF",
-                          borderWidth: 1,
-                        },
-                  ]}
+                  style={{
+                    overflow: "hidden",
+                    borderColor: selected ? sc : colors.border,
+                    borderWidth: selected ? 2 : 1,
+                    backgroundColor: selected ? sbg : undefined,
+                  }}
                 >
                   <View style={styles.posRow}>
                     <View
                       style={[
                         styles.posIndicator,
-                        { backgroundColor: selected ? sc : "#CED4DA" },
+                        { backgroundColor: selected ? sc : colors.muted },
                       ]}
                     />
                     {pos.icon && (
                       <Ionicons
                         name={pos.icon as any}
                         size={20}
-                        color={selected ? sc : "#ADB5BD"}
+                        color={selected ? sc : colors.mutedForeground}
                       />
                     )}
                     <Text
                       style={[
                         styles.posLabel,
-                        { color: selected ? sc : "#495057", flex: 1, textAlign: "right" },
+                        { color: selected ? sc : colors.onSurface, flex: 1, textAlign: "right" },
                       ]}
                     >
                       {pos.label}
@@ -605,7 +595,7 @@ export default function PositionSelectorScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 24, gap: 16, backgroundColor: "#FFFFFF" },
+  container: { flex: 1, paddingHorizontal: 24, gap: 16 },
   bgAccent: {
     position: "absolute",
     top: 0,
@@ -620,7 +610,6 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1.5,

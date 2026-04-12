@@ -1,4 +1,5 @@
 import { useApp } from "@/context/AppContext";
+import { useColors } from "@/hooks/useColors";
 import { GlassCard } from "@/components/glass/GlassCard";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -15,11 +16,6 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
-
-const PRIMARY = "#2C54E8";
-const ACCENT = "#C1F422";
-const TEXT_DARK = "#111827";
-const TEXT_MUTED = "#6B7280";
 
 const SPORTS = [
   {
@@ -53,11 +49,15 @@ function SportCard({
   index,
   isSelected,
   onPress,
+  primary,
+  textDark,
 }: {
   sport: (typeof SPORTS)[0];
   index: number;
   isSelected: boolean;
   onPress: () => void;
+  primary: string;
+  textDark: string;
 }) {
   const translateY = useRef(new Animated.Value(50)).current;
   const opacity = useRef(new Animated.Value(0)).current;
@@ -134,7 +134,7 @@ function SportCard({
             opacity,
             width: (width - 96) / 3,
             borderWidth: isSelected ? 2 : 1.5,
-            borderColor: isSelected ? sport.color : "#C7D2FE",
+            borderColor: isSelected ? sport.color : primary + "50",
           },
         ]}
       >
@@ -145,20 +145,20 @@ function SportCard({
               borderRadius: 18,
               backgroundColor: isSelected
                 ? sport.color + "22"
-                : "#EEF2FF",
+                : primary + "18",
             },
           ]}
         >
           <Ionicons
             name={sport.icon}
             size={32}
-            color={isSelected ? sport.color : PRIMARY}
+            color={isSelected ? sport.color : primary}
           />
         </View>
         <Text
           style={[
             styles.sportLabel,
-            { color: isSelected ? sport.color : TEXT_DARK },
+            { color: isSelected ? sport.color : textDark },
           ]}
         >
           {sport.label}
@@ -179,6 +179,7 @@ function SportCard({
 export default function WelcomeScreen() {
   const insets = useSafeAreaInsets();
   const { isOnboarded } = useApp();
+  const colors = useColors();
   const [selectedSport, setSelectedSport] = useState<number | null>(null);
 
   const logoScale = useRef(new Animated.Value(0.6)).current;
@@ -257,7 +258,7 @@ export default function WelcomeScreen() {
       style={[
         styles.container,
         {
-          backgroundColor: "#FFFFFF",
+          backgroundColor: colors.background,
           paddingTop: topPad,
           paddingBottom: botPad + 24,
         },
@@ -272,9 +273,9 @@ export default function WelcomeScreen() {
           { opacity: logoOpacity, transform: [{ scale: logoScale }] },
         ]}
       >
-        <View style={styles.logoWrap}>
+        <View style={[styles.logoWrap, { backgroundColor: colors.primary }]}>
           <View style={styles.logoInner}>
-            <Text style={[styles.logoText, { color: "#FFFFFF" }]}>ع</Text>
+            <Text style={[styles.logoText, { color: colors.primaryForeground }]}>ع</Text>
           </View>
         </View>
       </Animated.View>
@@ -288,14 +289,14 @@ export default function WelcomeScreen() {
           },
         ]}
       >
-        <Text style={[styles.appName, { color: TEXT_DARK }]}>العب</Text>
-        <Text style={[styles.tagline, { color: TEXT_MUTED }]}>
+        <Text style={[styles.appName, { color: colors.onSurface }]}>العب</Text>
+        <Text style={[styles.tagline, { color: colors.mutedForeground }]}>
           مجتمع الرياضة الموثوق في المملكة
         </Text>
         <Animated.Text
           style={[
             styles.description,
-            { color: TEXT_MUTED, opacity: taglineOpacity },
+            { color: colors.mutedForeground, opacity: taglineOpacity },
           ]}
         >
           منصة لتنظيم المباريات الرياضية مع الأصدقاء
@@ -312,6 +313,8 @@ export default function WelcomeScreen() {
             onPress={() =>
               setSelectedSport((prev) => (prev === i ? null : i))
             }
+            primary={colors.primary}
+            textDark={colors.onSurface}
           />
         ))}
       </View>
@@ -323,21 +326,17 @@ export default function WelcomeScreen() {
           { icon: "people-outline" as const, text: "مجتمع اللاعبين" },
         ].map((f, i) => (
           <GlassCard key={i} variant="medium" padding="none">
-            <View
-              style={[
-                styles.featureRow,
-              ]}
-            >
-              <Text style={[styles.featureText, { color: TEXT_DARK }]}>
+            <View style={styles.featureRow}>
+              <Text style={[styles.featureText, { color: colors.onSurface }]}>
                 {f.text}
               </Text>
               <View
                 style={[
                   styles.featureIcon,
-                  { borderRadius: 14, backgroundColor: PRIMARY + "18" },
+                  { borderRadius: 14, backgroundColor: colors.primary + "18" },
                 ]}
               >
-                <Ionicons name={f.icon} size={20} color={PRIMARY} />
+                <Ionicons name={f.icon} size={20} color={colors.primary} />
               </View>
             </View>
           </GlassCard>
@@ -351,7 +350,7 @@ export default function WelcomeScreen() {
         ]}
       >
         <Pressable
-          style={[styles.startButton, { backgroundColor: PRIMARY }]}
+          style={[styles.startButton, { backgroundColor: colors.primary }]}
           onPress={() => router.push("/phone")}
         >
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -362,11 +361,11 @@ export default function WelcomeScreen() {
             />
             <Text style={styles.startButtonText}>ابدأ الآن</Text>
           </View>
-          <View style={[styles.startArrow, { backgroundColor: ACCENT }]}>
-            <Ionicons name="chevron-back-outline" size={20} color={TEXT_DARK} />
+          <View style={[styles.startArrow, { backgroundColor: colors.accent }]}>
+            <Ionicons name="chevron-back-outline" size={20} color={colors.accentForeground} />
           </View>
         </Pressable>
-        <Text style={[styles.disclaimer, { color: TEXT_MUTED }]}>
+        <Text style={[styles.disclaimer, { color: colors.mutedForeground }]}>
           بالمتابعة، أنت توافق على شروط الاستخدام وسياسة الخصوصية
         </Text>
       </Animated.View>
@@ -406,7 +405,6 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: PRIMARY,
     alignItems: "center",
     justifyContent: "center",
     ...Platform.select({
