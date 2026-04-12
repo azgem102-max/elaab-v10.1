@@ -30,6 +30,106 @@ interface ToastState {
   type: ToastType;
 }
 
+type ConfirmDialogConfig = {
+  title: string;
+  message: string;
+  confirmText: string;
+  destructive?: boolean;
+  onConfirm: () => void | Promise<void>;
+};
+
+function ConfirmDialog({
+  config,
+  visible,
+  onCancel,
+  colors,
+}: {
+  config: ConfirmDialogConfig | null;
+  visible: boolean;
+  onCancel: () => void;
+  colors: ReturnType<typeof useColors>;
+}) {
+  const [confirming, setConfirming] = useState(false);
+
+  useEffect(() => {
+    if (!visible) setConfirming(false);
+  }, [visible]);
+
+  if (!config) return null;
+
+  async function handleConfirm() {
+    if (confirming) return;
+    setConfirming(true);
+    try {
+      await config!.onConfirm();
+    } finally {
+      setConfirming(false);
+    }
+  }
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
+      <View style={dlgStyles.overlay}>
+        <View style={[dlgStyles.dialog, { backgroundColor: colors.background }]}>
+          <Text style={[dlgStyles.title, { color: colors.onSurface }]}>{config.title}</Text>
+          <Text style={[dlgStyles.message, { color: colors.mutedForeground }]}>{config.message}</Text>
+          <View style={dlgStyles.buttons}>
+            <Pressable
+              style={[dlgStyles.btn, dlgStyles.cancelBtn, { borderColor: colors.border, opacity: confirming ? 0.5 : 1 }]}
+              onPress={onCancel}
+              disabled={confirming}
+            >
+              <Text style={[dlgStyles.btnText, { color: colors.mutedForeground }]}>تراجع</Text>
+            </Pressable>
+            <Pressable
+              style={[
+                dlgStyles.btn,
+                dlgStyles.confirmBtn,
+                { backgroundColor: config.destructive ? "#DC2626" : colors.primary, opacity: confirming ? 0.7 : 1 },
+              ]}
+              onPress={handleConfirm}
+              disabled={confirming}
+            >
+              {confirming ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={[dlgStyles.btnText, { color: "#fff" }]}>{config.confirmText}</Text>
+              )}
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const dlgStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 32,
+  },
+  dialog: {
+    width: "100%",
+    borderRadius: 20,
+    padding: 24,
+    gap: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  title: { fontSize: 17, fontFamily: "Cairo_700Bold", textAlign: "right" },
+  message: { fontSize: 14, fontFamily: "Cairo_400Regular", textAlign: "right", lineHeight: 22 },
+  buttons: { flexDirection: "row", gap: 10, marginTop: 4 },
+  btn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  cancelBtn: { borderWidth: 1 },
+  confirmBtn: {},
+  btnText: { fontSize: 14, fontFamily: "Cairo_700Bold" },
+});
+
 function Toast({ toast }: { toast: ToastState }) {
   const anim = useRef(new Animated.Value(0)).current;
 
@@ -99,6 +199,8 @@ export default function MatchDetailsScreen() {
   const [joiningLoading, setJoiningLoading] = useState(false);
   const [showAbsent, setShowAbsent] = useState(false);
   const [contactSheetVisible, setContactSheetVisible] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogConfig | null>(null);
+  const [confirmVisible, setConfirmVisible] = useState(false);
   const scrollViewRef = useRef<React.ElementRef<typeof ScrollView>>(null);
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const botPad = Platform.OS === "web" ? 34 : insets.bottom;
@@ -272,6 +374,16 @@ export default function MatchDetailsScreen() {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast({ visible: true, message, type });
     toastTimer.current = setTimeout(() => setToast((t) => ({ ...t, visible: false })), 2800);
+  }
+
+  function showConfirm(config: ConfirmDialogConfig) {
+    setConfirmDialog(config);
+    setConfirmVisible(true);
+  }
+
+  function hideConfirm() {
+    setConfirmVisible(false);
+    setConfirmDialog(null);
   }
 
   async function handleShareMatch() {
@@ -774,39 +886,47 @@ export default function MatchDetailsScreen() {
                   onPress={handleShareInviteLink}
                   size="sm"
                 />
-                <Pressable
-                  style={[styles.organizerActionBtn, { backgroundColor: "rgba(239,68,68,0.12)", borderWidth: 1, borderColor: "rgba(239,68,68,0.25)", borderRadius: 100 }]}
-                  onPress={() => {
-                    Alert.alert(
-                      `إلغاء المباراة`,
-                      `هل أنت متأكد من إلغاء هذه المباراة؟ لن يتمكن اللاعبون من الانضمام بعد الإلغاء.`,
-                      [
-                        { text: "تراجع", style: "cancel" },
-                        {
-                          text: "إلغاء المباراة", style: "destructive", onPress: async () => {
-                            const matchId = match.id;
-                            const ok = await cancelMatch(matchId);
-                            if (ok) {
-                              showToast("تم إلغاء المباراة بنجاح", "success");
-                              router.back();
-                            } else {
-                              showToast("تعذّر إلغاء المباراة، حاول مجدداً", "error");
-                            }
-                          },
-                        },
-                      ]
-                    );
-                  }}
-                >
-                  <View style={styles.organizerActionBtnInner}>
-                    <Ionicons name="trash-outline" size={18} color={colors.destructive} />
-                    <Text style={[styles.organizerActionBtnText, { color: colors.destructive }]}>إلغاء المباراة</Text>
-                  </View>
-                </Pressable>
               </>
             )}
           </GlassCard>
         )}
+
+        {isOrganizer && match.status !== "completed" && match.status !== "cancelled" && (
+          <GlassCard variant="medium" sport={match.sport} style={{ gap: 12 }}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="warning-outline" size={18} color={colors.destructive} />
+              <Text style={[styles.sectionTitle, { color: colors.destructive }]}>منطقة الخطر</Text>
+            </View>
+            <Pressable
+              style={[styles.dangerCancelBtn, { backgroundColor: colors.destructive + "15", borderColor: colors.destructive + "40" }]}
+              onPress={() => {
+                showConfirm({
+                  title: "إلغاء المباراة",
+                  message: "هل أنت متأكد من إلغاء هذه المباراة؟ سيتلقى جميع اللاعبين إشعاراً بالإلغاء.",
+                  confirmText: "إلغاء المباراة",
+                  destructive: true,
+                  onConfirm: async () => {
+                    hideConfirm();
+                    const ok = await cancelMatch(match.id);
+                    if (ok) {
+                      showToast("تم إلغاء المباراة بنجاح", "success");
+                      router.back();
+                    } else {
+                      showToast("تعذّر إلغاء المباراة، حاول مجدداً", "error");
+                    }
+                  },
+                });
+              }}
+            >
+              <Ionicons name="trash-outline" size={20} color={colors.destructive} />
+              <View style={{ alignItems: "flex-end" }}>
+                <Text style={[styles.dangerCancelBtnTitle, { color: colors.destructive }]}>إلغاء المباراة</Text>
+                <Text style={[styles.dangerCancelBtnSub, { color: colors.mutedForeground }]}>سيتلقى اللاعبون إشعاراً بالإلغاء</Text>
+              </View>
+            </Pressable>
+          </GlassCard>
+        )}
+
       </ScrollView>
 
       <View style={[styles.stickyFooter, { paddingBottom: botPad + 10, backgroundColor: colors.background }]}>
@@ -892,6 +1012,12 @@ export default function MatchDetailsScreen() {
       </View>
 
       <Toast toast={toast} />
+      <ConfirmDialog
+        config={confirmDialog}
+        visible={confirmVisible}
+        onCancel={hideConfirm}
+        colors={colors}
+      />
 
       {match && (
         <PositionPickerModal
@@ -1302,6 +1428,10 @@ const styles = StyleSheet.create({
   organizerActionBtn: { borderRadius: 18 },
   organizerActionBtnInner: { paddingVertical: 13, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   organizerActionBtnText: { fontSize: 15, fontFamily: "Cairo_700Bold" },
+
+  dangerCancelBtn: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 16, paddingHorizontal: 16, borderRadius: 16, borderWidth: 1 },
+  dangerCancelBtnTitle: { fontSize: 15, fontFamily: "Cairo_700Bold" },
+  dangerCancelBtnSub: { fontSize: 12, fontFamily: "Cairo_400Regular" },
 
   stickyFooter: {
     paddingHorizontal: 16,
