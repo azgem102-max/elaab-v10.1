@@ -113,13 +113,14 @@ export default function PhoneScreen() {
           </View>
           <GlassInput
             sport="football"
-            label="رقم الجوال"
             value={phone}
             onChangeText={(t) => {
               let cleaned = t.replace(/[^0-9\s+]/g, "");
               cleaned = cleaned.replace(/^\+966\s*/, "0");
               cleaned = cleaned.replace(/^966/, "0");
               cleaned = cleaned.replace(/[^0-9\s]/g, "");
+              const digitsOnly = cleaned.replace(/\s/g, "");
+              if (digitsOnly.length > 10) return;
               setPhone(cleaned);
               setError("");
             }}
