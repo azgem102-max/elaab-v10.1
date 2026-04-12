@@ -576,8 +576,8 @@ export default function GroupDetailScreen() {
               {isAdmin && (
                 <SportGradientButton
                   label="دعوة أعضاء"
-                  gradientStart={colors.primary}
-                  gradientEnd={colors.primary + "BB"}
+                  gradientStart={sc}
+                  gradientEnd={sc + "BB"}
                   onPress={() => setInviteModalVisible(true)}
                   style={{ borderRadius: 20 }}
                 />
@@ -797,7 +797,7 @@ export default function GroupDetailScreen() {
                               styles.chatBubble,
                               isMe
                                 ? { backgroundColor: sc, borderBottomEndRadius: 4 }
-                                : { backgroundColor: colors.surfaceContainerLow, borderColor: "#E5E7EB", borderWidth: 1, borderBottomStartRadius: 4 }
+                                : { backgroundColor: colors.surfaceContainerLow, borderColor: colors.border, borderWidth: 1, borderBottomStartRadius: 4 }
                             ]}>
                               {!isMe && (
                                 <Text style={[styles.chatSender, { color: sc }]}>{msg.senderName}</Text>
@@ -812,7 +812,7 @@ export default function GroupDetailScreen() {
                       })
                     )}
                   </ScrollView>
-                  <View style={[styles.chatInputRow, { backgroundColor: colors.surfaceContainerLow, borderTopColor: "#E5E7EB", borderTopWidth: 1 }]}>
+                  <View style={[styles.chatInputRow, { backgroundColor: colors.surfaceContainerLow, borderTopColor: colors.border, borderTopWidth: 1 }]}>
                     <Pressable
                       style={[
                         styles.chatSendBtn,
@@ -833,7 +833,7 @@ export default function GroupDetailScreen() {
                       )}
                     </Pressable>
                     <TextInput
-                      style={[styles.chatInput, { color: colors.onSurface, fontFamily: "Cairo_400Regular", backgroundColor: "#fff", borderColor: "#E5E7EB", borderWidth: 1, borderRadius: 20 }]}
+                      style={[styles.chatInput, { color: colors.onSurface, fontFamily: "Cairo_400Regular", backgroundColor: colors.background, borderColor: colors.border, borderWidth: 1, borderRadius: 20 }]}
                       value={chatInput}
                       onChangeText={setChatInput}
                       placeholder="اكتب رسالة..."

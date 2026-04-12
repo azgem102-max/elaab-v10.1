@@ -3,6 +3,7 @@ import { api, ApiJoinRequest } from "@/services/api";
 import { useColors } from "@/hooks/useColors";
 import { getSportTheme } from "@/constants/sportTheme";
 import { GlassScreenHeader } from "@/components/glass/GlassScreenHeader";
+import { SportGradientButton } from "@/components/SportGradientButton";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
@@ -493,17 +494,14 @@ export default function GroupManagementScreen() {
             {isPublic ? "المجموعات العامة تظهر في نتائج البحث وتجذب لاعبين جدد" : "المجموعات الخاصة لا تظهر في البحث — فقط من تدعوهم يمكنهم الرؤية"}
           </Text>
 
-          <Pressable
-            style={[styles.saveBtn, { backgroundColor: saving ? sc + "80" : sc }]}
+          <SportGradientButton
+            label="حفظ التغييرات"
+            gradientStart={sc}
+            gradientEnd={sc + "BB"}
             onPress={handleSaveGroupInfo}
+            loading={saving}
             disabled={saving}
-          >
-            {saving ? (
-              <ActivityIndicator size="small" color={colors.background} />
-            ) : (
-              <Text style={styles.saveBtnText}>حفظ التغييرات</Text>
-            )}
-          </Pressable>
+          />
         </View>
 
         <View style={[styles.section, { backgroundColor: colors.background, borderWidth: 1, borderColor: sc + "30" }]}>
@@ -670,7 +668,7 @@ export default function GroupManagementScreen() {
         </View>
 
         {isOwner && (
-          <View style={[styles.section, { backgroundColor: "#FFF5F5", borderWidth: 1, borderColor: colors.destructive + "30" }]}>
+          <View style={[styles.section, { backgroundColor: colors.destructive + "08", borderWidth: 1, borderColor: colors.destructive + "30" }]}>
             <View style={styles.sectionTitleRow}>
               <View style={[styles.sectionTitleIcon, { backgroundColor: colors.destructive + "18" }]}>
                 <Ionicons name="warning-outline" size={16} color={colors.destructive} />
@@ -809,19 +807,6 @@ const styles = StyleSheet.create({
   toggleSubLabel: {
     fontSize: 12,
     fontFamily: "Cairo_400Regular",
-  },
-
-  saveBtn: {
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 4,
-  },
-  saveBtnText: {
-    fontSize: 15,
-    fontFamily: "Cairo_700Bold",
-    color: "#fff",
   },
 
   memberCard: {

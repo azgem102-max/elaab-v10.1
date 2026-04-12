@@ -182,7 +182,7 @@ export default function CreateGroupScreen() {
           <Text style={[typography.displayMd, styles.title, { color: colors.onSurface }]}>مجموعة جديدة</Text>
           <Pressable
             onPress={() => router.back()}
-            style={[styles.backBtn, { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB" }]}
+            style={[styles.backBtn, { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border }]}
           >
             <Ionicons name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"} size={22} color={colors.onSurface} />
           </Pressable>
@@ -325,15 +325,15 @@ export default function CreateGroupScreen() {
         </View>
 
         {/* Public/Private Selector */}
-        <View style={[styles.toggleCard, { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB" }]}>
+        <View style={[styles.toggleCard, { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border }]}>
           <Text style={[styles.toggleTitle, { color: colors.onSurface, marginBottom: 4 }]}>نوع المجموعة</Text>
           <View style={styles.visibilityRow}>
             <Pressable
               style={[
                 styles.visibilityBtn,
                 isPublic
-                  ? { backgroundColor: "#F5C518", borderColor: "#F5C518" }
-                  : { backgroundColor: colors.muted, borderColor: "#E5E7EB" },
+                  ? { backgroundColor: sportOpt.color, borderColor: sportOpt.color }
+                  : { backgroundColor: colors.muted, borderColor: colors.border },
               ]}
               onPress={() => {
                 if (!isPublic) {
@@ -342,8 +342,8 @@ export default function CreateGroupScreen() {
                 }
               }}
             >
-              <Ionicons name="globe-outline" size={16} color={isPublic ? "#1a1a1a" : colors.mutedForeground} />
-              <Text style={[styles.visibilityBtnText, { color: isPublic ? "#1a1a1a" : colors.mutedForeground }]}>
+              <Ionicons name="globe-outline" size={16} color={isPublic ? "#fff" : colors.mutedForeground} />
+              <Text style={[styles.visibilityBtnText, { color: isPublic ? "#fff" : colors.mutedForeground }]}>
                 عامة
               </Text>
             </Pressable>
@@ -351,8 +351,8 @@ export default function CreateGroupScreen() {
               style={[
                 styles.visibilityBtn,
                 !isPublic
-                  ? { backgroundColor: "#F5C518", borderColor: "#F5C518" }
-                  : { backgroundColor: colors.muted, borderColor: "#E5E7EB" },
+                  ? { backgroundColor: sportOpt.color, borderColor: sportOpt.color }
+                  : { backgroundColor: colors.muted, borderColor: colors.border },
               ]}
               onPress={() => {
                 if (isPublic) {
@@ -361,8 +361,8 @@ export default function CreateGroupScreen() {
                 }
               }}
             >
-              <Ionicons name="lock-closed-outline" size={16} color={!isPublic ? "#1a1a1a" : colors.mutedForeground} />
-              <Text style={[styles.visibilityBtnText, { color: !isPublic ? "#1a1a1a" : colors.mutedForeground }]}>
+              <Ionicons name="lock-closed-outline" size={16} color={!isPublic ? "#fff" : colors.mutedForeground} />
+              <Text style={[styles.visibilityBtnText, { color: !isPublic ? "#fff" : colors.mutedForeground }]}>
                 خاصة
               </Text>
             </Pressable>
