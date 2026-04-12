@@ -286,12 +286,12 @@ export default function ProfileScreen() {
 
           {/* Name & Info */}
           <View style={styles.heroInfo}>
-            <Text style={[styles.heroBadgeLabel, { color: colors.mutedForeground }]}>ملفي الرياضي</Text>
-            <Text style={[styles.heroNickname, { color: colors.onSurface }]} numberOfLines={1}>{user.nickname}</Text>
+            <Text style={[styles.heroBadgeLabel, { color: "rgba(255,255,255,0.75)" }]}>ملفي الرياضي</Text>
+            <Text style={[styles.heroNickname, { color: "#FFFFFF" }]} numberOfLines={1}>{user.nickname}</Text>
             {user.phone ? (
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
-                <Text style={[styles.heroPhone, { color: colors.mutedForeground }]}>{user.phone}</Text>
-                <Ionicons name="call-outline" size={12} color={colors.mutedForeground} />
+                <Text style={[styles.heroPhone, { color: "rgba(255,255,255,0.75)" }]}>{user.phone}</Text>
+                <Ionicons name="call-outline" size={12} color="rgba(255,255,255,0.75)" />
               </View>
             ) : null}
           </View>
