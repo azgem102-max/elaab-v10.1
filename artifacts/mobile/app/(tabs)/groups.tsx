@@ -152,12 +152,20 @@ export default function GroupsScreen() {
             const isActive = sportFilter === item.key;
             const iconColor = isActive ? "rgba(255,255,255,1)" : colors.mutedForeground;
             const IconComponent = item.icon;
+            const activeBgColor =
+              item.key === "football"
+                ? colors.football
+                : item.key === "padel"
+                ? colors.padel
+                : item.key === "tennis"
+                ? colors.tennis
+                : colors.primary;
             return (
               <Pressable
                 style={[
                   styles.filterChip,
                   isActive
-                    ? { backgroundColor: colors.primary }
+                    ? { backgroundColor: activeBgColor }
                     : { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border },
                 ]}
                 onPress={() => setSportFilter(item.key)}
