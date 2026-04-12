@@ -4,7 +4,6 @@ import {
   Pressable,
   StyleSheet,
   View,
-  ViewStyle,
 } from "react-native";
 import Animated, {
   useAnimatedStyle,
@@ -62,39 +61,42 @@ export function GlassTabBar({
 }: GlassTabBarProps) {
   const insets = useSafeAreaInsets();
 
+  const tabItems = state.routes.map((route: GlassTabBarRoute, index: number) => {
+    const { options } = descriptors[route.key];
+    const isFocused = state.index === index;
+
+    const onPress = () => {
+      const event = navigation.emit({
+        type: "tabPress",
+        target: route.key,
+        canPreventDefault: true,
+      });
+      if (!isFocused && !event.defaultPrevented) {
+        navigation.navigate(route.name, route.params);
+      }
+    };
+
+    return (
+      <GlassTabItem
+        key={route.key}
+        focused={isFocused}
+        onPress={onPress}
+        icon={options.tabBarIcon}
+      />
+    );
+  });
+
+  const containerStyle = [
+    styles.floatingContainer,
+    { bottom: Math.max(insets.bottom, FLOAT_MARGIN) },
+    glassShadow.medium,
+    Platform.OS === "ios" ? styles.overflowHidden : undefined,
+  ];
+
   return (
-    <View
-      style={[
-        styles.floatingContainer,
-        { bottom: Math.max(insets.bottom, FLOAT_MARGIN) },
-        glassShadow.medium,
-      ]}
-    >
+    <View style={containerStyle}>
       <View style={styles.tabRow}>
-        {state.routes.map((route: GlassTabBarRoute, index: number) => {
-          const { options } = descriptors[route.key];
-          const isFocused = state.index === index;
-
-          const onPress = () => {
-            const event = navigation.emit({
-              type: "tabPress",
-              target: route.key,
-              canPreventDefault: true,
-            });
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name, route.params);
-            }
-          };
-
-          return (
-            <GlassTabItem
-              key={route.key}
-              focused={isFocused}
-              onPress={onPress}
-              icon={options.tabBarIcon}
-            />
-          );
-        })}
+        {tabItems}
       </View>
     </View>
   );
@@ -141,7 +143,10 @@ function GlassTabItem({
       onPressOut={handlePressOut}
       style={styles.tabItem}
     >
-      <Animated.View style={[styles.tabIconWrap, animatedStyle]}>
+      <Animated.View
+        collapsable={false}
+        style={[styles.tabIconWrap, animatedStyle]}
+      >
         {focused && (
           <View style={styles.activePill} />
         )}
@@ -167,10 +172,12 @@ const styles = StyleSheet.create({
     end: FLOAT_MARGIN,
     height: TAB_BAR_HEIGHT,
     borderRadius: glassRadius.xxl,
-    overflow: "hidden",
     backgroundColor: colors.light.surface,
     borderWidth: 1,
     borderColor: colors.light.border,
+  },
+  overflowHidden: {
+    overflow: "hidden",
   },
   tabRow: {
     flex: 1,

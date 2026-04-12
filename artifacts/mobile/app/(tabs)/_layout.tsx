@@ -47,6 +47,7 @@ function AnimatedTabIcon({
   return (
     <View style={styles.tabIconContainer}>
       <Animated.View
+        collapsable={false}
         style={{
           transform: [{ scale: scaleAnim }],
           opacity: opacityAnim,
