@@ -1,5 +1,5 @@
 # العَب (Al'ab) — Comprehensive Project Overview
-> Last updated: April 2026
+> Last updated: 14 April 2026
 
 ---
 
@@ -14,8 +14,9 @@
 | Backend Server | Node.js + Express |
 | Database | PostgreSQL + Drizzle ORM |
 | State Management | React Query (TanStack) |
-| Design Language | Glassmorphism / Liquid Glass 2026 |
-| Text Direction | RTL (fully Arabic) |
+| Design Language | Visual Silence (Minimalist Luxury) / Liquid Glass 2026 |
+| Text Direction | Multi-language (Arabic/English) — RTL/LTR |
+| Internationalization | i18next + expo-localization |
 | Push Notifications | Expo Push Notifications |
 | File Uploads | Replit Object Storage |
 
@@ -36,10 +37,10 @@
 ---
 
 ## 📊 Project Statistics
-- **Last updated:** 12 April 2026
-- **Last merged task:** 27
-- **Completed tasks:** 27
-- **App screens:** 22
+- **Last updated:** 14 April 2026
+- **Last merged task:** 30
+- **Completed tasks:** 30
+- **App screens:** 23
 - **API routes:** 54
 - **Database tables:** 12
 
@@ -362,13 +363,17 @@ GET  /storage/avatar     ← Avatar image proxy from Object Storage
 | 25 | App testing on iOS and Android simulators | ✅ |
 | 26 | Update official Padel and Tennis skill-level descriptions | ✅ |
 | 27 | Improve skill-level question accuracy in the rating screen | ✅ |
+| 28 | Implement "Visual Silence" UI/UX identity (Minimalist Luxury) | ✅ |
+| 29 | Multi-language support (i18n) — Full Arabic and English interfaces | ✅ |
+| 30 | Consolidate translation keys and resolve TypeScript conflicts | ✅ |
 
 ---
 
 ## 🎨 Visual Identity
 
-- **Style**: Glassmorphism + Liquid Glass 2026
-- **Direction**: Fully RTL (right-to-left)
+- **Style**: Visual Silence + Glassmorphism + Liquid Glass 2026
+- **Philosophy**: Reducing visual noise, removing borders, relying on tonal layering.
+- **Direction**: Full RTL and LTR support (Arabic/English)
 - **Background**: Dark gradients with transparent glass layers
 - **Sport-specific colours**: Football (green), Padel (blue), Tennis (orange)
 - **Typography**: Clear Arabic font with full RTL support
