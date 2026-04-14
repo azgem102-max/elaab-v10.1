@@ -376,6 +376,6 @@ GET  /storage/avatar     ← Avatar image proxy from Object Storage
 - **Direction**: Full RTL and LTR support (Arabic/English)
 - **Background**: Dark gradients with transparent glass layers
 - **Sport-specific colours**: Football (green), Padel (blue), Tennis (orange)
-- **Typography**: Clear Arabic font with full RTL support
+- **Typography**: Modern Arabic and English fonts (Tajawal, Alexandria, Inter, Manrope) with full RTL/LTR support
 - **Corners**: Rounded (large border-radius)
 - **Effects**: BlurView, LinearGradient, and shadow on all cards
