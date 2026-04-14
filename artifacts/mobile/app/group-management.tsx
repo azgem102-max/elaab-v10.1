@@ -21,6 +21,8 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { typography } from "@/constants/typography";
+
 
 type ConfirmDialogConfig = {
   title: string;
@@ -122,12 +124,12 @@ const dlgStyles = StyleSheet.create({
   },
   title: {
     fontSize: 17,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "right",
   },
   message: {
     fontSize: 14,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "right",
     lineHeight: 22,
   },
@@ -149,7 +151,7 @@ const dlgStyles = StyleSheet.create({
   confirmBtn: {},
   btnText: {
     fontSize: 14,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
 });
 
@@ -246,12 +248,12 @@ export default function GroupManagementScreen() {
     return (
       <View style={[styles.centered, { backgroundColor: "transparent", gap: 16 }]}>
         <Ionicons name="people-outline" size={48} color={colors.mutedForeground} />
-        <Text style={{ fontFamily: "Cairo_700Bold", fontSize: 16, color: colors.onSurface }}>المجموعة غير موجودة</Text>
+        <Text style={{ fontFamily: typography.headlineSm.fontFamily, fontSize: 16, color: colors.onSurface }}>المجموعة غير موجودة</Text>
         <Pressable
           onPress={() => router.back()}
           style={[{ paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24 }, { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border }]}
         >
-          <Text style={{ fontFamily: "Cairo_600SemiBold", fontSize: 14, color: colors.primary }}>العودة</Text>
+          <Text style={{ fontFamily: typography.bodyLg.fontFamily, fontSize: 14, color: colors.primary }}>العودة</Text>
         </Pressable>
       </View>
     );
@@ -269,12 +271,12 @@ export default function GroupManagementScreen() {
     return (
       <View style={[styles.centered, { backgroundColor: "transparent", gap: 16 }]}>
         <Ionicons name="lock-closed-outline" size={48} color={colors.mutedForeground} />
-        <Text style={{ fontFamily: "Cairo_700Bold", fontSize: 16, color: colors.onSurface }}>غير مصرح لك بالوصول</Text>
+        <Text style={{ fontFamily: typography.headlineSm.fontFamily, fontSize: 16, color: colors.onSurface }}>غير مصرح لك بالوصول</Text>
         <Pressable
           onPress={() => router.back()}
           style={[{ paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24 }, { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border }]}
         >
-          <Text style={{ fontFamily: "Cairo_600SemiBold", fontSize: 14, color: colors.primary }}>العودة</Text>
+          <Text style={{ fontFamily: typography.bodyLg.fontFamily, fontSize: 14, color: colors.primary }}>العودة</Text>
         </Pressable>
       </View>
     );
@@ -410,14 +412,9 @@ export default function GroupManagementScreen() {
             <Ionicons name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"} size={24} color={colors.onSurface} />
           </Pressable>
           <View style={styles.headerCenter}>
-            <LinearGradient
-              colors={[sportTheme.cardGradientStart, sportTheme.cardGradientEnd]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.headerSportIcon}
-            >
+            <View style={[styles.headerSportIcon, { backgroundColor: sc }]}>
               <Ionicons name="settings" size={16} color="#fff" />
-            </LinearGradient>
+            </View>
             <Text style={[styles.headerTitle, { color: colors.onSurface }]}>إدارة المجموعة</Text>
           </View>
           <View style={{ width: 32 }} />
@@ -737,7 +734,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "center",
   },
 
@@ -768,13 +765,13 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "right",
   },
 
   label: {
     fontSize: 13,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
     textAlign: "right",
     marginBottom: -4,
   },
@@ -784,7 +781,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
   },
   textArea: {
     minHeight: 80,
@@ -803,10 +800,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-  visibilityBtnText: { fontSize: 14, fontFamily: "Cairo_700Bold" },
+  visibilityBtnText: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily },
   toggleSubLabel: {
     fontSize: 12,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
   },
 
   memberCard: {
@@ -825,7 +822,7 @@ const styles = StyleSheet.create({
   },
   memberInitial: {
     fontSize: 16,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   memberInfo: {
     flex: 1,
@@ -841,7 +838,7 @@ const styles = StyleSheet.create({
   },
   memberName: {
     fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
   memberMetaRow: {
     flexDirection: "row",
@@ -855,7 +852,7 @@ const styles = StyleSheet.create({
   },
   youBadgeText: {
     fontSize: 10,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   roleBadge: {
     flexDirection: "row",
@@ -867,7 +864,7 @@ const styles = StyleSheet.create({
   },
   roleBadgeText: {
     fontSize: 10,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   relPill: {
     flexDirection: "row",
@@ -884,7 +881,7 @@ const styles = StyleSheet.create({
   },
   relPillText: {
     fontSize: 10,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
   memberActions: {
     flexDirection: "row",
@@ -901,7 +898,7 @@ const styles = StyleSheet.create({
 
   emptyText: {
     fontSize: 13,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "center",
     paddingVertical: 8,
   },
@@ -920,19 +917,19 @@ const styles = StyleSheet.create({
   },
   memberReliability: {
     fontSize: 12,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
   },
 
   moreMembers: {
     fontSize: 13,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "center",
     paddingVertical: 4,
   },
 
   dangerDesc: {
     fontSize: 13,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "right",
     lineHeight: 20,
   },
@@ -946,7 +943,7 @@ const styles = StyleSheet.create({
   },
   deleteBtnText: {
     fontSize: 15,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
 
   toast: {
@@ -964,7 +961,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   toastText: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     fontSize: 14,
     color: "#fff",
   },

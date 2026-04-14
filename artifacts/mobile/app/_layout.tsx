@@ -1,10 +1,33 @@
 import {
-  Cairo_400Regular,
-  Cairo_600SemiBold,
-  Cairo_700Bold,
-  Cairo_900Black,
+  Tajawal_400Regular,
+  Tajawal_500Medium,
+  Tajawal_700Bold,
+  Tajawal_900Black,
   useFonts,
-} from "@expo-google-fonts/cairo";
+} from "@expo-google-fonts/tajawal";
+import {
+  Alexandria_400Regular,
+  Alexandria_700Bold,
+  Alexandria_900Black,
+} from "@expo-google-fonts/alexandria";
+import {
+  IBMPlexSansArabic_400Regular,
+  IBMPlexSansArabic_500Medium,
+  IBMPlexSansArabic_600SemiBold,
+  IBMPlexSansArabic_700Bold,
+} from "@expo-google-fonts/ibm-plex-sans-arabic";
+import {
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  Inter_900Black,
+} from "@expo-google-fonts/inter";
+import {
+  Manrope_400Regular,
+  Manrope_600SemiBold,
+  Manrope_700Bold,
+  Manrope_800ExtraBold,
+} from "@expo-google-fonts/manrope";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { router, Stack } from "expo-router";
@@ -28,16 +51,13 @@ import { AppProvider, useApp, setQueryClientRef, setCachedPushTokenRef } from "@
 import { SportFilterProvider } from "@/context/SportFilterContext";
 import { usePushNotifications, NOTIF_PERMISSION_KEY } from "@/hooks/usePushNotifications";
 import { api } from "@/services/api";
+import { LanguageProvider } from "@/i18n";
+import { typography } from "@/constants/typography";
 
-// Force Arabic RTL layout for all platforms
-I18nManager.allowRTL(true);
-if (!I18nManager.isRTL) {
-  I18nManager.forceRTL(true);
-  // On Android, the RTL direction change only takes effect after a reload
-  if (Platform.OS === "android") {
-    NativeModules.DevSettings?.reload?.();
-  }
-}
+
+// RTL/LTR is now managed dynamically by LanguageProvider
+// The LanguageProvider reads the saved language from AsyncStorage
+// and applies the correct I18nManager.forceRTL() on mount.
 
 SplashScreen.preventAutoHideAsync();
 
@@ -143,7 +163,7 @@ const bannerStyles = StyleSheet.create({
   },
   text: {
     color: "#fff",
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
     fontSize: 13,
     flex: 1,
     textAlign: "right",
@@ -164,7 +184,7 @@ const bannerStyles = StyleSheet.create({
   },
   actionText: {
     color: "#fff",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     fontSize: 13,
   },
 });
@@ -227,6 +247,7 @@ function RootLayoutNav() {
           },
         }}
       >
+        <Stack.Screen name="language" options={{ animation: "fade", gestureEnabled: false }} />
         <Stack.Screen name="index" options={{ animation: "fade", gestureEnabled: false }} />
         <Stack.Screen name="phone" options={{ animation: "slide_from_left", gestureEnabled: true }} />
         <Stack.Screen name="otp" options={{ animation: "slide_from_left", gestureEnabled: true }} />
@@ -252,10 +273,25 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
-    Cairo_400Regular,
-    Cairo_600SemiBold,
-    Cairo_700Bold,
-    Cairo_900Black,
+    Tajawal_400Regular,
+    Tajawal_500Medium,
+    Tajawal_700Bold,
+    Tajawal_900Black,
+    Alexandria_400Regular,
+    Alexandria_700Bold,
+    Alexandria_900Black,
+    IBMPlexSansArabic_400Regular,
+    IBMPlexSansArabic_500Medium,
+    IBMPlexSansArabic_600SemiBold,
+    IBMPlexSansArabic_700Bold,
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    Inter_900Black,
+    Manrope_400Regular,
+    Manrope_600SemiBold,
+    Manrope_700Bold,
+    Manrope_800ExtraBold,
     ...Ionicons.font,
     ...Feather.font,
   });
@@ -274,11 +310,13 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
+              <LanguageProvider>
               <AppProvider>
                 <SportFilterProvider>
                   <RootLayoutNav />
                 </SportFilterProvider>
               </AppProvider>
+            </LanguageProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>

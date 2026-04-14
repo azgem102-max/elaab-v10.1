@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View, ViewStyle } from "react-native";
+import { StyleSheet, Text, View, ViewStyle, StyleProp } from "react-native";
 
 import {
   glassRadius,
@@ -16,7 +16,7 @@ interface GlassBadgeProps {
   variant?: BadgeVariant;
   sport?: SportType;
   size?: "sm" | "md";
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 const variantColors: Record<

@@ -4,6 +4,8 @@ import { Ionicons } from "@expo/vector-icons";
 import type { ApiMatch } from "@/services/api";
 import { sportColor, sportLabel } from "@/context/AppContext";
 import { useColors } from "@/hooks/useColors";
+import { typography } from "@/constants/typography";
+
 
 export function MatchMapView({
   matches,
@@ -114,12 +116,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 17,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 13,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "center",
   },
   list: {
@@ -132,7 +134,7 @@ const styles = StyleSheet.create({
   },
   listHeader: {
     fontSize: 13,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
     textAlign: "right",
     marginBottom: 4,
   },
@@ -156,20 +158,20 @@ const styles = StyleSheet.create({
   },
   matchTitle: {
     fontSize: 13,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "right",
   },
   matchMeta: {
     fontSize: 11,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "right",
   },
   sportLabel: {
     fontSize: 11,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   spotsText: {
     fontSize: 11,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
 });

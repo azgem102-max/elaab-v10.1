@@ -18,8 +18,10 @@ import {
   glassSpacing,
   glassSpring,
 } from "@/constants/glassTheme";
+import { getSportTheme } from "@/constants/sportTheme";
 import { typography } from "@/constants/typography";
 import type { SportType } from "@/context/AppContext";
+import { useColors } from "@/hooks/useColors";
 
 interface GlassInputProps extends TextInputProps {
   sport?: SportType;
@@ -28,9 +30,6 @@ interface GlassInputProps extends TextInputProps {
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
-const PRIMARY_BLUE = "#2C54E8";
-const BORDER_DEFAULT = "#E5E7EB";
-const BG_DEFAULT = "#FFFFFF";
 const PLACEHOLDER_COLOR = "rgba(107, 114, 128, 0.6)";
 const TEXT_COLOR = "#111827";
 const LABEL_COLOR_DEFAULT = "#6B7280";
@@ -45,6 +44,10 @@ export function GlassInput({
   ...rest
 }: GlassInputProps) {
   const isRTL = I18nManager.isRTL;
+
+  const colors = useColors();
+  const theme = getSportTheme(sport);
+  const sportPrimary = theme.primary;
 
   const focusProgress = useSharedValue(0);
   const labelPosition = useSharedValue(value ? 1 : 0);
@@ -71,11 +74,22 @@ export function GlassInput({
 
   const borderStyle = useAnimatedStyle(() => {
     "worklet";
-    const isFocused = focusProgress.value > 0.5;
     return {
-      borderWidth: isFocused ? 2 : 1,
-      borderColor: isFocused ? PRIMARY_BLUE : BORDER_DEFAULT,
-      backgroundColor: BG_DEFAULT,
+      borderWidth: 0,
+      backgroundColor: focusProgress.value > 0.5 ? colors.surfaceContainerHighest : colors.surfaceContainerLow,
+    };
+  });
+
+  const focusBackgroundStyle = useAnimatedStyle(() => {
+    "worklet";
+    return {
+      backgroundColor: sportPrimary,
+      opacity: interpolate(focusProgress.value, [0, 1], [0, 0.05]),
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
     };
   });
 
@@ -92,14 +106,14 @@ export function GlassInput({
 
   const labelColorStyle = useAnimatedStyle(() => {
     "worklet";
-    const isFocused = focusProgress.value > 0.5;
     return {
-      color: isFocused ? PRIMARY_BLUE : LABEL_COLOR_DEFAULT,
+      color: LABEL_COLOR_DEFAULT,
     };
   });
 
   return (
     <AnimatedView style={[styles.container, borderStyle]}>
+      <AnimatedView style={focusBackgroundStyle} />
       {label && (
         <Animated.Text
           style={[

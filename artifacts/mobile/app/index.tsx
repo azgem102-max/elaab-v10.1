@@ -14,6 +14,9 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation, hasChosenLanguage } from "@/i18n";
+import { typography } from "@/constants/typography";
+
 
 const { width } = Dimensions.get("window");
 
@@ -180,7 +183,9 @@ export default function WelcomeScreen() {
   const insets = useSafeAreaInsets();
   const { isOnboarded } = useApp();
   const colors = useColors();
+  const { t, locale, isRTL, isLanguageLoaded } = useTranslation();
   const [selectedSport, setSelectedSport] = useState<number | null>(null);
+  const [languageChecked, setLanguageChecked] = useState(false);
 
   const logoScale = useRef(new Animated.Value(0.6)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
@@ -192,10 +197,20 @@ export default function WelcomeScreen() {
   const btnOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (isOnboarded) {
-      router.replace("/(tabs)");
-      return;
-    }
+    if (!isLanguageLoaded) return;
+
+    // Check if language has been chosen
+    hasChosenLanguage().then((chosen) => {
+      if (!chosen) {
+        router.replace("/language");
+        return;
+      }
+      setLanguageChecked(true);
+
+      if (isOnboarded) {
+        router.replace("/(tabs)");
+        return;
+      }
 
     Animated.sequence([
       Animated.parallel([
@@ -248,7 +263,14 @@ export default function WelcomeScreen() {
         }),
       ]),
     ]).start();
-  }, [isOnboarded]);
+    });
+  }, [isOnboarded, isLanguageLoaded, languageChecked]);
+
+  // Build SPORTS array with translated labels
+  const SPORTS_TRANSLATED = SPORTS.map((s, i) => ({
+    ...s,
+    label: i === 0 ? t('sports.football') : i === 1 ? t('sports.padel') : t('sports.tennis'),
+  }));
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const botPad = Platform.OS === "web" ? 34 : insets.bottom;
@@ -275,7 +297,7 @@ export default function WelcomeScreen() {
       >
         <View style={[styles.logoWrap, { backgroundColor: colors.primary }]}>
           <View style={styles.logoInner}>
-            <Text style={[styles.logoText, { color: colors.primaryForeground }]}>ع</Text>
+            <Text style={[styles.logoText, { color: colors.primaryForeground }]}>{isRTL ? 'ع' : 'E'}</Text>
           </View>
         </View>
       </Animated.View>
@@ -289,9 +311,9 @@ export default function WelcomeScreen() {
           },
         ]}
       >
-        <Text style={[styles.appName, { color: colors.onSurface }]}>العب</Text>
+        <Text style={[styles.appName, { color: colors.onSurface }]}>{t('welcome.appName')}</Text>
         <Text style={[styles.tagline, { color: colors.mutedForeground }]}>
-          مجتمع الرياضة الموثوق في المملكة
+          {locale === 'ar' ? 'مجتمع الرياضة الموثوق في المملكة' : 'The trusted sports community in Saudi Arabia'}
         </Text>
         <Animated.Text
           style={[
@@ -299,12 +321,12 @@ export default function WelcomeScreen() {
             { color: colors.mutedForeground, opacity: taglineOpacity },
           ]}
         >
-          منصة لتنظيم المباريات الرياضية مع الأصدقاء
+          {t('welcome.tagline')}
         </Animated.Text>
       </Animated.View>
 
       <View style={styles.cardsRow}>
-        {SPORTS.map((sport, i) => (
+        {SPORTS_TRANSLATED.map((sport, i) => (
           <SportCard
             key={i}
             sport={sport}
@@ -321,9 +343,9 @@ export default function WelcomeScreen() {
 
       <Animated.View style={[styles.features, { opacity: featuresOpacity }]}>
         {[
-          { icon: "shield-checkmark-outline" as const, text: "مؤشر الموثوقية™" },
-          { icon: "wallet-outline" as const, text: "دفتر القطة" },
-          { icon: "people-outline" as const, text: "مجتمع اللاعبين" },
+          { icon: "shield-checkmark-outline" as const, text: locale === 'ar' ? "مؤشر الموثوقية™" : "Reliability Index™" },
+          { icon: "wallet-outline" as const, text: locale === 'ar' ? "دفتر القطة" : "Payment Tracker" },
+          { icon: "people-outline" as const, text: locale === 'ar' ? "مجتمع اللاعبين" : "Player Community" },
         ].map((f, i) => (
           <GlassCard key={i} variant="medium" padding="none">
             <View style={styles.featureRow}>
@@ -359,14 +381,16 @@ export default function WelcomeScreen() {
               size={20}
               color="rgba(255,255,255,0.9)"
             />
-            <Text style={styles.startButtonText}>ابدأ الآن</Text>
+            <Text style={styles.startButtonText}>{t('welcome.startNow')}</Text>
           </View>
           <View style={[styles.startArrow, { backgroundColor: colors.accent }]}>
-            <Ionicons name="chevron-back-outline" size={20} color={colors.accentForeground} />
+            <Ionicons name={isRTL ? "chevron-back-outline" : "chevron-forward-outline"} size={20} color={colors.accentForeground} />
           </View>
         </Pressable>
         <Text style={[styles.disclaimer, { color: colors.mutedForeground }]}>
-          بالمتابعة، أنت توافق على شروط الاستخدام وسياسة الخصوصية
+          {locale === 'ar'
+            ? 'بالمتابعة، أنت توافق على شروط الاستخدام وسياسة الخصوصية'
+            : 'By continuing, you agree to the Terms of Service and Privacy Policy'}
         </Text>
       </Animated.View>
     </View>
@@ -425,22 +449,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  logoText: { fontSize: 38, fontFamily: "Cairo_900Black" },
+  logoText: { fontSize: 38, fontFamily: typography.displaySm.fontFamily },
   appName: {
     fontSize: 76,
-    fontFamily: "Cairo_900Black",
+    fontFamily: typography.displaySm.fontFamily,
     letterSpacing: -2,
     lineHeight: 90,
   },
   tagline: {
     fontSize: 15,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "center",
     lineHeight: 24,
   },
   description: {
     fontSize: 13,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "center",
     lineHeight: 20,
     marginTop: 2,
@@ -473,7 +497,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  sportLabel: { fontSize: 11, fontFamily: "Cairo_700Bold", textAlign: "center" },
+  sportLabel: { fontSize: 11, fontFamily: typography.headlineSm.fontFamily, textAlign: "center" },
   sportSelectedDot: {
     width: 6,
     height: 6,
@@ -496,7 +520,7 @@ const styles = StyleSheet.create({
   },
   featureText: {
     fontSize: 16,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
     lineHeight: 24,
   },
   startButtonWrap: { width: "100%", gap: 12, alignItems: "center" },
@@ -520,7 +544,7 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  startButtonText: { fontSize: 18, fontFamily: "Cairo_700Bold", color: "#fff" },
+  startButtonText: { fontSize: 18, fontFamily: typography.headlineSm.fontFamily, color: "#fff" },
   startArrow: {
     width: 40,
     height: 40,
@@ -530,7 +554,7 @@ const styles = StyleSheet.create({
   },
   disclaimer: {
     fontSize: 11,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "center",
     lineHeight: 18,
   },

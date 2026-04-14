@@ -24,6 +24,8 @@ import { GlassScreenHeader } from "@/components/glass/GlassScreenHeader";
 import { SportGradientButton } from "@/components/SportGradientButton";
 
 import { LiquidProgressBar } from "@/components/glass/LiquidProgressBar";
+import { typography } from "@/constants/typography";
+
 
 function toYMD(date: Date | string): string {
   const d = date instanceof Date ? date : new Date(date);
@@ -50,7 +52,7 @@ function withAlpha(color: string, alpha: number): string {
 }
 
 const softStyles = StyleSheet.create({
-  label: { fontSize: 14, fontFamily: "Cairo_700Bold", textAlign: "right" },
+  label: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily, textAlign: "right" },
   inputWrap: {
     borderRadius: 14,
     borderBottomWidth: 1,
@@ -64,7 +66,7 @@ const softStyles = StyleSheet.create({
   },
   inputFlex: { flex: 1 },
   input: { paddingHorizontal: 16, paddingVertical: 14, fontSize: 15 },
-  errorText: { fontSize: 12, fontFamily: "Cairo_400Regular", textAlign: "right" },
+  errorText: { fontSize: 12, fontFamily: typography.body.fontFamily, textAlign: "right" },
 });
 
 interface VenueInputProps {
@@ -91,7 +93,7 @@ function VenueInput({ venue, onChangeVenue, onBlur, hasError, accentColor, color
     >
       <View style={softStyles.iconRow}>
         <TextInput
-          style={[softStyles.input, softStyles.inputFlex, { color: colors.onSurface, fontFamily: "Cairo_600SemiBold" }]}
+          style={[softStyles.input, softStyles.inputFlex, { color: colors.onSurface, fontFamily: typography.bodyLg.fontFamily }]}
           value={venue}
           onChangeText={onChangeVenue}
           placeholder="اسم الملعب..."
@@ -141,7 +143,7 @@ function SoftInput({ value, onChangeText, placeholder, accentColor, multiline, k
               style={[
                 softStyles.input,
                 softStyles.inputFlex,
-                { color: colors.onSurface, fontFamily: "Cairo_600SemiBold" },
+                { color: colors.onSurface, fontFamily: typography.bodyLg.fontFamily },
                 multiline && { minHeight: 80, textAlignVertical: "top" },
               ]}
               value={value}
@@ -160,7 +162,7 @@ function SoftInput({ value, onChangeText, placeholder, accentColor, multiline, k
           <TextInput
             style={[
               softStyles.input,
-              { color: colors.onSurface, fontFamily: "Cairo_600SemiBold" },
+              { color: colors.onSurface, fontFamily: typography.bodyLg.fontFamily },
               multiline && { minHeight: 80, textAlignVertical: "top" },
             ]}
             value={value}
@@ -227,9 +229,9 @@ export default function EditMatchScreen() {
   if (!match) {
     return (
       <View style={[styles.container, { alignItems: "center", justifyContent: "center", backgroundColor: "transparent" }]}>
-        <Text style={{ color: colors.onSurface, fontFamily: "Cairo_700Bold", fontSize: 16 }}>المباراة غير موجودة</Text>
+        <Text style={{ color: colors.onSurface, fontFamily: typography.headlineSm.fontFamily, fontSize: 16 }}>المباراة غير موجودة</Text>
         <Pressable onPress={() => router.back()} style={{ marginTop: 16 }}>
-          <Text style={{ color: sc, fontFamily: "Cairo_700Bold", fontSize: 14 }}>العودة</Text>
+          <Text style={{ color: sc, fontFamily: typography.headlineSm.fontFamily, fontSize: 14 }}>العودة</Text>
         </Pressable>
       </View>
     );
@@ -238,7 +240,7 @@ export default function EditMatchScreen() {
   if (match.organizerId !== user?.id) {
     return (
       <View style={[styles.container, { alignItems: "center", justifyContent: "center", backgroundColor: "transparent" }]}>
-        <Text style={{ color: colors.onSurface, fontFamily: "Cairo_700Bold", fontSize: 16 }}>غير مخوّل بتعديل هذه المباراة</Text>
+        <Text style={{ color: colors.onSurface, fontFamily: typography.headlineSm.fontFamily, fontSize: 16 }}>غير مخوّل بتعديل هذه المباراة</Text>
       </View>
     );
   }
@@ -395,7 +397,7 @@ export default function EditMatchScreen() {
                   {VENUES.filter((v) => v.includes(venue)).map((v) => (
                     <Pressable key={v} style={styles.suggestion} onPress={() => { setVenue(v); setShowVenueSuggestions(false); }}>
                       <Ionicons name="location-outline" size={16} color={sc} />
-                      <Text style={[styles.suggestionText, { color: colors.onSurface, fontFamily: "Cairo_400Regular" }]}>{v}</Text>
+                      <Text style={[styles.suggestionText, { color: colors.onSurface, fontFamily: typography.body.fontFamily }]}>{v}</Text>
                     </Pressable>
                   ))}
                 </View>
@@ -529,17 +531,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 12,
   },
-  navTitle: { fontSize: 18, fontFamily: "Cairo_700Bold", lineHeight: 28 },
+  navTitle: { fontSize: 18, fontFamily: typography.headlineSm.fontFamily, lineHeight: 28 },
   backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
 
   scroll: { paddingHorizontal: 20, gap: 0 },
 
   section: { gap: 16, paddingBottom: 20 },
-  sectionTitle: { fontSize: 17, fontFamily: "Cairo_700Bold", textAlign: "right" },
+  sectionTitle: { fontSize: 17, fontFamily: typography.headlineSm.fontFamily, textAlign: "right" },
 
   timesGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, justifyContent: "flex-end" },
   timeChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 24 },
-  timeText: { fontSize: 14, fontFamily: "Cairo_600SemiBold" },
+  timeText: { fontSize: 14, fontFamily: typography.bodyLg.fontFamily },
 
   suggestions: { marginTop: 4, overflow: "hidden" },
   suggestion: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingVertical: 12, justifyContent: "flex-end" },
@@ -547,7 +549,7 @@ const styles = StyleSheet.create({
 
   counterRow: { flexDirection: "row", alignItems: "center", gap: 16, justifyContent: "center" },
   counterBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  counterVal: { fontSize: 22, fontFamily: "Cairo_700Bold", minWidth: 40, textAlign: "center" },
+  counterVal: { fontSize: 22, fontFamily: typography.headlineSm.fontFamily, minWidth: 40, textAlign: "center" },
 
   fixedBadge: {
     flexDirection: "row",
@@ -558,9 +560,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: "flex-end",
   },
-  fixedBadgeText: { fontSize: 14, fontFamily: "Cairo_600SemiBold" },
+  fixedBadgeText: { fontSize: 14, fontFamily: typography.bodyLg.fontFamily },
 
   skillChip: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18 },
   skillChipEmoji: { fontSize: 15 },
-  skillChipText: { fontSize: 13, fontFamily: "Cairo_700Bold" },
+  skillChipText: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily },
 });

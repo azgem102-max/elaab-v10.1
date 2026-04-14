@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, ViewStyle } from "react-native";
+import { StyleSheet, View, ViewStyle, StyleProp } from "react-native";
 
 import {
   glassRadius,
@@ -15,30 +15,32 @@ interface GlassCardProps {
   children: React.ReactNode;
   variant?: GlassVariant;
   sport?: SportType;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   borderless?: boolean;
   padding?: "none" | "sm" | "md" | "lg";
 }
 
+import colors from "@/constants/colors";
+
 const variantConfig = {
   light: {
-    bg: "#FFFFFF",
-    border: "#E5E7EB",
+    bg: colors.light.card,
+    border: "transparent",
     shadow: glassShadow.soft,
   },
   medium: {
-    bg: "#F4F6FF",
-    border: "#D1D5DB",
-    shadow: glassShadow.medium,
+    bg: colors.light.surfaceContainerLow,
+    border: "transparent",
+    shadow: glassShadow.soft,
   },
   dark: {
-    bg: "#EEF2FF",
-    border: "#C7D2FE",
+    bg: colors.light.surfaceContainer,
+    border: "transparent",
     shadow: glassShadow.medium,
   },
   sport: {
-    bg: "#FFFFFF",
-    border: "#E0E7FF",
+    bg: colors.light.card,
+    border: "transparent",
     shadow: glassShadow.soft,
   },
 };
@@ -72,8 +74,8 @@ export function GlassCard({
         config.shadow,
         {
           backgroundColor: cardBg,
-          borderWidth: borderless ? 0 : 1,
-          borderColor: borderless ? "transparent" : config.border,
+          borderWidth: 0,
+          borderColor: "transparent",
         },
         style,
       ]}

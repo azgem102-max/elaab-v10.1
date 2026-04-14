@@ -6,12 +6,14 @@ import {
   Text,
   View,
   ViewStyle,
+  StyleProp,
 } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
+import colors from "@/constants/colors";
 
 import {
   glassRadius,
@@ -29,7 +31,7 @@ interface GlassButtonProps {
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   size?: "sm" | "md" | "lg";
   variant?: "primary" | "accent";
 }
@@ -65,7 +67,7 @@ export function GlassButton({
   variant = "primary",
 }: GlassButtonProps) {
   const scale = useSharedValue(1);
-  void sport;
+  const theme = getSportGlassTheme(sport);
 
   const handlePressIn = useCallback(() => {
     scale.value = withSpring(0.96, glassSpring.snappy);
@@ -81,8 +83,10 @@ export function GlassButton({
 
   const sizeStyle = sizeConfig[size];
 
-  const bgColor = variant === "accent" ? "#C1F422" : "#2C54E8";
-  const labelColor = variant === "accent" ? "#111827" : "#FFFFFF";
+  // Primary: Sport Gradient
+  // Accent: Tonal shift (Secondary background)
+  const isPrimary = variant === "primary";
+  const labelColor = isPrimary ? "#FFFFFF" : colors.light.foreground;
 
   return (
     <AnimatedPressable
@@ -98,13 +102,27 @@ export function GlassButton({
         style,
       ]}
     >
-      <View style={[styles.gradient, sizeStyle, { backgroundColor: bgColor }]}>
-        {loading ? (
-          <ActivityIndicator color={labelColor} size="small" />
-        ) : (
-          <Text style={[styles.label, { color: labelColor }]} numberOfLines={1}>{label}</Text>
-        )}
-      </View>
+      {isPrimary ? (
+        <View style={[styles.gradient, sizeStyle, { backgroundColor: theme.primary }]}>
+          {loading ? (
+            <ActivityIndicator color={labelColor} size="small" />
+          ) : (
+            <Text style={[styles.label, { color: labelColor }]} numberOfLines={1}>
+              {label}
+            </Text>
+          )}
+        </View>
+      ) : (
+        <View style={[styles.gradient, sizeStyle, { backgroundColor: colors.light.surfaceVariant }]}>
+          {loading ? (
+            <ActivityIndicator color={labelColor} size="small" />
+          ) : (
+            <Text style={[styles.label, { color: labelColor }]} numberOfLines={1}>
+              {label}
+            </Text>
+          )}
+        </View>
+      )}
     </AnimatedPressable>
   );
 }

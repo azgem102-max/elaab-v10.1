@@ -13,6 +13,8 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { typography } from "@/constants/typography";
+
 
 const SCREEN_W = Dimensions.get("window").width;
 const FIELD_W = SCREEN_W - 48;
@@ -209,8 +211,8 @@ const styles = StyleSheet.create({
   },
   handle: { width: 44, height: 5, borderRadius: 3 },
   header: { alignItems: "center", gap: 4, width: "100%" },
-  title: { fontSize: 20, fontFamily: "Cairo_700Bold" },
-  sub: { fontSize: 13, fontFamily: "Cairo_400Regular" },
+  title: { fontSize: 20, fontFamily: typography.headlineSm.fontFamily },
+  sub: { fontSize: 13, fontFamily: typography.body.fontFamily },
   field: {
     borderRadius: 16,
     overflow: "hidden",
@@ -238,16 +240,16 @@ const styles = StyleSheet.create({
     marginTop: 3, paddingHorizontal: 6, paddingVertical: 2,
     borderRadius: 8,
   },
-  dotLabelText: { fontSize: 10, fontFamily: "Cairo_600SemiBold" },
+  dotLabelText: { fontSize: 10, fontFamily: typography.bodyLg.fontFamily },
   actions: { flexDirection: "row", gap: 12, width: "100%", paddingTop: 4 },
   skipBtn: {
     flex: 1, paddingVertical: 14, borderRadius: 50,
     alignItems: "center", justifyContent: "center",
   },
-  skipText: { fontSize: 15, fontFamily: "Cairo_700Bold" },
+  skipText: { fontSize: 15, fontFamily: typography.headlineSm.fontFamily },
   confirmBtn: {
     flex: 2, paddingVertical: 14, borderRadius: 50,
     alignItems: "center", justifyContent: "center",
   },
-  confirmText: { fontSize: 15, fontFamily: "Cairo_700Bold" },
+  confirmText: { fontSize: 15, fontFamily: typography.headlineSm.fontFamily },
 });

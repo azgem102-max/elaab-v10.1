@@ -23,6 +23,8 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "@/i18n";
+import { typography } from "@/constants/typography";
 
 const SPORTS: {
   key: SportType;
@@ -31,9 +33,9 @@ const SPORTS: {
   color: string;
   bg: string;
 }[] = [
-  { key: "football", label: "كرة القدم", icon: FootballIcon, color: "#2E7D32", bg: "#E8F5E9" },
-  { key: "padel", label: "بادل", icon: PadelIcon, color: "#0288D1", bg: "#E3F2FD" },
-  { key: "tennis", label: "تنس", icon: TennisIcon, color: "#EF6C00", bg: "#FFF3E0" },
+  { key: "football", label: "كرة القدم", icon: FootballIcon, color: "#22C55E", bg: "#F0FDF4" },
+  { key: "padel", label: "بادل", icon: PadelIcon, color: "#0047AB", bg: "#F9F8FF" },
+  { key: "tennis", label: "تنس", icon: TennisIcon, color: "#D2691E", bg: "#FFFDF9" },
 ];
 
 const FOOTBALL_LEVELS: SkillLevel[] = ["مبتدئ", "متوسط", "محترف"];
@@ -47,6 +49,7 @@ function numericLevelToSkillLevel(value: number): SkillLevel {
 export default function ProfileSetupScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { t, isRTL } = useTranslation();
   const { setUser, refreshProfile } = useApp();
   const [step, setStep] = useState(0);
   const [nickname, setNickname] = useState("");
@@ -186,7 +189,7 @@ export default function ProfileSetupScreen() {
       const msg =
         err instanceof Error
           ? err.message
-          : "تعذّر حفظ البيانات. تحقق من اتصالك وحاول مرة أخرى.";
+          : t('common.connectionError');
       setSaveError(msg);
       setSaving(false);
       return;
@@ -223,10 +226,10 @@ export default function ProfileSetupScreen() {
       >
         <Pressable
           onPress={() => (step > 0 ? goToStep(step - 1) : router.back())}
-          style={[styles.backBtn, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.border }]}
+          style={[styles.backBtn, { backgroundColor: colors.surfaceContainerLow }]}
         >
           <Ionicons
-            name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"}
+            name={isRTL ? "chevron-forward" : "chevron-back"}
             size={20}
             color={colors.onSurface}
           />
@@ -255,24 +258,24 @@ export default function ProfileSetupScreen() {
           {step === 0 ? (
             <>
               <View style={styles.header}>
-                <View style={[styles.iconWrap, { backgroundColor: colors.surfaceContainer, borderColor: colors.surfaceContainerHighest }]}>
+                <View style={[styles.iconWrap, { backgroundColor: colors.surfaceContainerLow }]}>
                   <Ionicons name="person" size={36} color={colors.primary} />
                 </View>
-                <Text style={[styles.title, { color: colors.onSurface }]}>أنشئ ملفك الرياضي</Text>
+                <Text style={[styles.title, { color: colors.onSurface }]}>{t('profileSetup.title')}</Text>
                 <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-                  ليعرف زملاؤك من أنت في الملعب
+                  {t('profileSetup.subtitle')}
                 </Text>
               </View>
 
               <GlassCard variant="medium" padding="md">
                 <View style={styles.section}>
-                  <Text style={[styles.label, { color: colors.primary }]}>الاسم المستعار</Text>
+                  <Text style={[styles.label, { color: colors.primary }]}>{t('profileSetup.nameLabel')}</Text>
                   <Text style={[styles.sublabel, { color: colors.mutedForeground }]}>
-                    الاسم الذي سيراه اللاعبون الآخرون
+                    {t('profileSetup.nameHint')}
                   </Text>
                   <GlassInput
                     sport="football"
-                    label="مثال: الصخرة، الغزال، الحارس..."
+                    label={t('profileSetup.namePlaceholder')}
                     value={nickname}
                     onChangeText={(t) => {
                       setNickname(t);
@@ -295,7 +298,7 @@ export default function ProfileSetupScreen() {
                       ]}
                     >
                       {nickname.trim().length > 0 && nickname.trim().length < 2
-                        ? "الاسم قصير جداً (٢ أحرف على الأقل)"
+                        ? t('profileSetup.nameTooShort', { min: "2" }) || "الاسم قصير جداً (٢ أحرف على الأقل)"
                         : `${nickname.trim().length}/20`}
                     </Text>
                   </View>
@@ -305,9 +308,9 @@ export default function ProfileSetupScreen() {
           ) : (
             <>
               <View style={styles.header}>
-                <Text style={[styles.title, { color: colors.onSurface }]}>اختر رياضاتك</Text>
+                <Text style={[styles.title, { color: colors.onSurface }]}>{t('profileSetup.sportsLabel')}</Text>
                 <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-                  يمكنك اختيار أكثر من رياضة وتحديد مستواك
+                  {t('profileSetup.sportsHint')}
                 </Text>
               </View>
 
@@ -321,9 +324,8 @@ export default function ProfileSetupScreen() {
                         style={[
                           styles.sportChip,
                           {
-                            backgroundColor: selected ? sport.bg : colors.background,
-                            borderColor: selected ? sport.color : colors.border,
-                            borderWidth: selected ? 2 : 1,
+                            backgroundColor: selected ? sport.bg : colors.surfaceContainerLow,
+                            borderWidth: 0,
                           },
                         ]}
                         onPress={() => toggleSport(sport.key)}
@@ -351,7 +353,7 @@ export default function ProfileSetupScreen() {
                             },
                           ]}
                         >
-                          {sport.label}
+                          {t(`sports.${sport.key}`)}
                         </Text>
                         {selected && (
                           <Ionicons
@@ -374,19 +376,19 @@ export default function ProfileSetupScreen() {
                   const numericValue = numericLevels[sportKey] ?? null;
                   const hasLevel = numericValue !== null;
                   const levelLabel = hasLevel
-                    ? getLevelLabel(numericValue, sportKey)
+                    ? getLevelLabel(numericValue, sportKey, t)
                     : null;
 
                   return (
                     <GlassCard
                       key={sportKey}
-                      variant="dark"
+                      variant="sport"
+                      sport={sportKey}
                       padding="md"
-                      style={{ borderColor: sport.color + "40", borderWidth: 1.5 }}
                     >
                       <View style={styles.section}>
                         <Text style={[styles.label, { color: sport.color }]}>
-                          مستواك في {sport.label}
+                          {t('profileSetup.skillLabel')} {t(`sports.${sportKey}`)}
                         </Text>
                         <Pressable
                           style={[
@@ -394,9 +396,8 @@ export default function ProfileSetupScreen() {
                             {
                               backgroundColor: hasLevel
                                 ? sport.color + "15"
-                                : colors.background,
-                              borderColor: hasLevel ? sport.color : colors.border,
-                              borderWidth: hasLevel ? 2 : 1,
+                                : colors.surfaceContainerLow,
+                              borderWidth: 0,
                             },
                           ]}
                           onPress={() => setLevelPickerSport(sportKey)}
@@ -435,7 +436,7 @@ export default function ProfileSetupScreen() {
                                   { color: colors.mutedForeground },
                                 ]}
                               >
-                                اضغط لاختيار مستواك
+                                {t('profileSetup.tapToSelectLevel') || "Tap to select level"}
                               </Text>
                               <Ionicons
                                 name="chevron-back"
@@ -453,13 +454,13 @@ export default function ProfileSetupScreen() {
                 return (
                   <GlassCard
                     key={sportKey}
-                    variant="dark"
+                    variant="sport"
+                    sport={sportKey}
                     padding="md"
-                    style={{ borderColor: sport.color + "40", borderWidth: 1.5 }}
                   >
                     <View style={styles.section}>
                       <Text style={[styles.label, { color: sport.color }]}>
-                        مستواك في {sport.label}
+                        {t('profileSetup.skillLabel')} {t(`sports.${sportKey}`)}
                       </Text>
                       <View style={styles.levelsRow}>
                         {FOOTBALL_LEVELS.map((level) => {
@@ -471,10 +472,9 @@ export default function ProfileSetupScreen() {
                                 styles.levelChip,
                                 {
                                   backgroundColor: active
-                                    ? sport.color + "18"
-                                    : colors.background,
-                                  borderColor: active ? sport.color : colors.border,
-                                  borderWidth: active ? 2 : 1,
+                                    ? sport.bg
+                                    : colors.surfaceContainerLow,
+                                  borderWidth: 0,
                                 },
                               ]}
                               onPress={() =>
@@ -492,7 +492,7 @@ export default function ProfileSetupScreen() {
                                   },
                                 ]}
                               >
-                                {level}
+                                {t(`skillLevels.${level === "مبتدئ" ? "beginner" : level === "متوسط" ? "intermediate" : "advanced"}` as any) || level}
                               </Text>
                             </Pressable>
                           );
@@ -520,11 +520,11 @@ export default function ProfileSetupScreen() {
         {saving ? (
           <View style={styles.savingIndicator}>
             <ActivityIndicator size="small" color={colors.primary} />
-            <Text style={[styles.savingText, { color: colors.mutedForeground }]}>جاري الحفظ...</Text>
+            <Text style={[styles.savingText, { color: colors.mutedForeground }]}>{t('common.saving') || "Saving..."}</Text>
           </View>
         ) : (
           <GlassButton
-            label={step === 0 ? "التالي: اختيار الرياضات" : "اختيار المراكز"}
+            label={step === 0 ? t('profileSetup.nextSports') || "Next: Select Sports" : t('profileSetup.nextPositions') || "Select Positions"}
             sport="football"
             onPress={handleContinue}
             disabled={!canContinue}
@@ -566,7 +566,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: "rgba(193, 244, 34, 0.06)",
+    backgroundColor: "rgba(34, 197, 94, 0.06)",
   },
   topBar: {
     flexDirection: "row",
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
     borderRadius: 21,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
+    borderWidth: 0,
   },
   scroll: { paddingHorizontal: 24, gap: 20 },
   stepContent: { gap: 20 },
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
+    borderWidth: 0,
     marginBottom: 4,
     ...Platform.select({
       web: { boxShadow: "0px 6px 20px rgba(44,84,232,0.14)" },
@@ -606,28 +606,28 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 14,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "center",
   },
   section: { gap: 10 },
   label: {
     fontSize: 16,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "right",
   },
   sublabel: {
     fontSize: 13,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "right",
     marginTop: -4,
   },
   nicknameHintRow: { alignItems: "flex-end", marginTop: -4 },
-  nicknameHint: { fontSize: 12, fontFamily: "Cairo_400Regular" },
+  nicknameHint: { fontSize: 12, fontFamily: typography.body.fontFamily },
   sportsRow: { gap: 12 },
   sportChip: {
     flexDirection: "row",
@@ -647,7 +647,7 @@ const styles = StyleSheet.create({
   sportChipText: {
     flex: 1,
     fontSize: 15,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "right",
   },
   levelsRow: { flexDirection: "row", gap: 10 },
@@ -657,7 +657,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     alignItems: "center",
   },
-  levelText: { fontSize: 14, fontFamily: "Cairo_600SemiBold" },
+  levelText: { fontSize: 14, fontFamily: typography.bodyLg.fontFamily },
   levelPickerBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -669,7 +669,7 @@ const styles = StyleSheet.create({
   levelPickerBtnText: {
     flex: 1,
     fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
     textAlign: "right",
   },
   saveErrorBox: {
@@ -683,7 +683,7 @@ const styles = StyleSheet.create({
   saveErrorText: {
     flex: 1,
     fontSize: 12,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
     textAlign: "right",
   },
   savingIndicator: {
@@ -695,7 +695,7 @@ const styles = StyleSheet.create({
   },
   savingText: {
     fontSize: 15,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
   btn: {
     width: "100%",

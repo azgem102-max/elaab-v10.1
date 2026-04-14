@@ -6,6 +6,7 @@ import { SportGradientButton } from "@/components/SportGradientButton";
 import { MatchCard } from "@/components/glass/MatchCard";
 import { GlassScreenHeader } from "@/components/glass/GlassScreenHeader";
 import { getSportTheme } from "@/constants/sportTheme";
+import { typography } from "@/constants/typography";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
@@ -181,12 +182,12 @@ export default function GroupDetailScreen() {
     return (
       <View style={[styles.container, { backgroundColor: "transparent", alignItems: "center", justifyContent: "center", gap: 16 }]}>
         <Ionicons name="people-outline" size={48} color={colors.mutedForeground} />
-        <Text style={{ fontFamily: "Cairo_700Bold", fontSize: 16, color: colors.onSurface }}>المجموعة غير موجودة</Text>
+        <Text style={{ fontFamily: typography.headlineSm.fontFamily, fontSize: 16, color: colors.onSurface }}>المجموعة غير موجودة</Text>
         <Pressable
           onPress={() => router.back()}
           style={[{ paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24 }, { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border }]}
         >
-          <Text style={{ fontFamily: "Cairo_600SemiBold", fontSize: 14, color: colors.primary }}>العودة</Text>
+          <Text style={{ fontFamily: typography.bodyLg.fontFamily, fontSize: 14, color: colors.primary }}>العودة</Text>
         </Pressable>
       </View>
     );
@@ -359,14 +360,9 @@ export default function GroupDetailScreen() {
           </Pressable>
 
           <View style={styles.headerGroupInfo}>
-            <LinearGradient
-              colors={[sportTheme.cardGradientStart, sportTheme.cardGradientEnd]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.headerGroupIcon}
-            >
+            <View style={[styles.headerGroupIcon, { backgroundColor: sc }]}>
               <Ionicons name="people" size={20} color="#fff" />
-            </LinearGradient>
+            </View>
             <View style={styles.headerGroupText}>
               <Text style={[styles.headerGroupName, { color: colors.onSurface }]} numberOfLines={1}>
                 {groupSafe.name}
@@ -560,7 +556,7 @@ export default function GroupDetailScreen() {
             <View style={[styles.nextActivityAccent, { backgroundColor: colors.mutedForeground + "50" }]} />
             <View style={[styles.nextActivityContent, { alignItems: "center", justifyContent: "center", paddingVertical: 8 }]}>
               <Ionicons name="calendar-outline" size={24} color={colors.mutedForeground} />
-              <Text style={{ fontFamily: "Cairo_600SemiBold", fontSize: 14, color: colors.mutedForeground, marginTop: 6 }}>
+              <Text style={{ fontFamily: typography.bodyLg.fontFamily, fontSize: 14, color: colors.mutedForeground, marginTop: 6 }}>
                 لا توجد مباريات قادمة
               </Text>
             </View>
@@ -833,7 +829,7 @@ export default function GroupDetailScreen() {
                       )}
                     </Pressable>
                     <TextInput
-                      style={[styles.chatInput, { color: colors.onSurface, fontFamily: "Cairo_400Regular", backgroundColor: colors.background, borderColor: colors.border, borderWidth: 1, borderRadius: 20 }]}
+                      style={[styles.chatInput, { color: colors.onSurface, fontFamily: typography.body.fontFamily, backgroundColor: colors.background, borderColor: colors.border, borderWidth: 1, borderRadius: 20 }]}
                       value={chatInput}
                       onChangeText={setChatInput}
                       placeholder="اكتب رسالة..."
@@ -1023,7 +1019,7 @@ const styles = StyleSheet.create({
   },
   headerGroupName: {
     fontSize: 17,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "right",
   },
   headerBadgesRow: {
@@ -1040,7 +1036,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 50,
   },
-  headerPillText: { fontSize: 10, fontFamily: "Cairo_600SemiBold" },
+  headerPillText: { fontSize: 10, fontFamily: typography.bodyLg.fontFamily },
   headerActions: { flexDirection: "row", gap: 8, alignItems: "center" },
   headerActionBtn: {
     width: 36,
@@ -1072,7 +1068,7 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     zIndex: 1,
   },
-  tabText: { fontSize: 13, fontFamily: "Cairo_700Bold" },
+  tabText: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily },
   tabCountBadge: {
     minWidth: 20,
     height: 20,
@@ -1081,7 +1077,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 5,
   },
-  tabCountText: { fontSize: 11, fontFamily: "Cairo_700Bold" },
+  tabCountText: { fontSize: 11, fontFamily: typography.headlineSm.fontFamily },
 
   scroll: { paddingHorizontal: 16, gap: 14, paddingTop: 16 },
 
@@ -1113,14 +1109,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   nextActivityInfo: { flex: 1, alignItems: "flex-end", gap: 2 },
-  nextActivityLabel: { fontSize: 11, fontFamily: "Cairo_400Regular" },
-  nextActivityTitle: { fontSize: 16, fontFamily: "Cairo_700Bold", textAlign: "right" },
+  nextActivityLabel: { fontSize: 11, fontFamily: typography.body.fontFamily },
+  nextActivityTitle: { fontSize: 16, fontFamily: typography.headlineSm.fontFamily, textAlign: "right" },
   nextActivityDateBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 50,
   },
-  nextActivityDateText: { fontSize: 12, fontFamily: "Cairo_700Bold" },
+  nextActivityDateText: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily },
   nextActivityMeta: {
     flexDirection: "row",
     alignItems: "center",
@@ -1128,7 +1124,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   nextActivityMetaItem: { flexDirection: "row", alignItems: "center", gap: 3 },
-  nextActivityMetaText: { fontSize: 12, fontFamily: "Cairo_400Regular" },
+  nextActivityMetaText: { fontSize: 12, fontFamily: typography.body.fontFamily },
   nextActivityPlayerPill: {
     flexDirection: "row",
     alignItems: "center",
@@ -1137,7 +1133,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 50,
   },
-  nextActivityPlayerText: { fontSize: 12, fontFamily: "Cairo_700Bold" },
+  nextActivityPlayerText: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily },
   nextActivityCountdownRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -1146,10 +1142,10 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 10,
   },
-  nextActivityCountdownText: { fontSize: 13, fontFamily: "Cairo_700Bold" },
+  nextActivityCountdownText: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily },
 
   section: { borderRadius: 22, padding: 16, gap: 12 },
-  sectionTitle: { fontSize: 16, fontFamily: "Cairo_700Bold", textAlign: "right" },
+  sectionTitle: { fontSize: 16, fontFamily: typography.headlineSm.fontFamily, textAlign: "right" },
   sectionHeaderRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -1169,14 +1165,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  memberInitial: { fontSize: 18, fontFamily: "Cairo_700Bold" },
+  memberInitial: { fontSize: 18, fontFamily: typography.headlineSm.fontFamily },
   memberInfo: { flex: 1, alignItems: "flex-end", gap: 4 },
   memberNameRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
   },
-  memberName: { fontSize: 15, fontFamily: "Cairo_600SemiBold" },
+  memberName: { fontSize: 15, fontFamily: typography.bodyLg.fontFamily },
   adminBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -1185,13 +1181,13 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 50,
   },
-  adminBadgeText: { fontSize: 10, fontFamily: "Cairo_700Bold" },
+  adminBadgeText: { fontSize: 10, fontFamily: typography.headlineSm.fontFamily },
   youBadge: {
     paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 50,
   },
-  youBadgeText: { fontSize: 10, fontFamily: "Cairo_700Bold" },
+  youBadgeText: { fontSize: 10, fontFamily: typography.headlineSm.fontFamily },
   relPill: {
     flexDirection: "row",
     alignItems: "center",
@@ -1205,7 +1201,7 @@ const styles = StyleSheet.create({
     height: 7,
     borderRadius: 4,
   },
-  relPillText: { fontSize: 11, fontFamily: "Cairo_700Bold" },
+  relPillText: { fontSize: 11, fontFamily: typography.headlineSm.fontFamily },
   removeBtn: {
     width: 34,
     height: 34,
@@ -1213,7 +1209,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  moreMembers: { fontSize: 13, fontFamily: "Cairo_400Regular", textAlign: "center" },
+  moreMembers: { fontSize: 13, fontFamily: typography.body.fontFamily, textAlign: "center" },
 
   addBtn: {
     flexDirection: "row",
@@ -1223,10 +1219,10 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 50,
   },
-  addBtnText: { fontSize: 13, fontFamily: "Cairo_700Bold" },
+  addBtnText: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily },
 
   emptyState: { alignItems: "center", gap: 10, paddingVertical: 24 },
-  emptyStateText: { fontSize: 13, fontFamily: "Cairo_400Regular" },
+  emptyStateText: { fontSize: 13, fontFamily: typography.body.fontFamily },
 
   groupMatchItem: {
     gap: 8,
@@ -1240,11 +1236,11 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 50,
   },
-  joinedPillText: { fontSize: 11, fontFamily: "Cairo_700Bold" },
+  joinedPillText: { fontSize: 11, fontFamily: typography.headlineSm.fontFamily },
 
   desc: {
     fontSize: 14,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "right",
     lineHeight: 22,
   },
@@ -1254,7 +1250,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-end",
   },
-  adminText: { fontSize: 13, fontFamily: "Cairo_400Regular" },
+  adminText: { fontSize: 13, fontFamily: typography.body.fontFamily },
 
   footer: { paddingHorizontal: 16, paddingTop: 10 },
 
@@ -1270,7 +1266,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     zIndex: 999,
   },
-  toastText: { color: "#fff", fontFamily: "Cairo_700Bold", fontSize: 14, textAlign: "center" },
+  toastText: { color: "#fff", fontFamily: typography.headlineSm.fontFamily, fontSize: 14, textAlign: "center" },
 
   modalOverlay: {
     flex: 1,
@@ -1290,9 +1286,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 4,
   },
-  modalTitle: { fontSize: 18, fontFamily: "Cairo_700Bold" },
+  modalTitle: { fontSize: 18, fontFamily: typography.headlineSm.fontFamily },
   modalEmpty: { alignItems: "center", gap: 12, paddingVertical: 40 },
-  modalEmptyText: { fontSize: 14, fontFamily: "Cairo_400Regular" },
+  modalEmptyText: { fontSize: 14, fontFamily: typography.body.fontFamily },
   modalList: { maxHeight: 400 },
   invitePlayerRow: {
     flexDirection: "row",
@@ -1309,7 +1305,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   invitePlayerInfo: { flex: 1, alignItems: "flex-end", gap: 4 },
-  invitePlayerName: { fontSize: 15, fontFamily: "Cairo_600SemiBold" },
+  invitePlayerName: { fontSize: 15, fontFamily: typography.bodyLg.fontFamily },
 
   shareLinkBtn: {
     flexDirection: "row",
@@ -1320,8 +1316,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
   },
-  shareLinkBtnText: { fontSize: 15, fontFamily: "Cairo_700Bold" },
-  shareLinkBtnSub: { fontSize: 11, fontFamily: "Cairo_400Regular" },
+  shareLinkBtnText: { fontSize: 15, fontFamily: typography.headlineSm.fontFamily },
+  shareLinkBtnSub: { fontSize: 11, fontFamily: typography.body.fontFamily },
   modalDivider: {
     flexDirection: "row",
     alignItems: "center",
@@ -1330,23 +1326,23 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: "center",
   },
-  modalDividerText: { fontSize: 12, fontFamily: "Cairo_400Regular" },
+  modalDividerText: { fontSize: 12, fontFamily: typography.body.fontFamily },
 
   chatLockIcon: { width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center" },
   chatEmpty: { alignItems: "center", gap: 12, paddingVertical: 32 },
-  chatEmptyText: { fontSize: 13, fontFamily: "Cairo_400Regular", textAlign: "center", lineHeight: 22, maxWidth: "80%" },
+  chatEmptyText: { fontSize: 13, fontFamily: typography.body.fontFamily, textAlign: "center", lineHeight: 22, maxWidth: "80%" },
   chatBubbleRow: { flexDirection: "row", alignItems: "flex-end", gap: 8 },
   chatBubbleRowMe: { flexDirection: "row-reverse" },
   chatAvatar: { width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center" },
-  chatAvatarText: { fontSize: 14, fontFamily: "Cairo_700Bold" },
+  chatAvatarText: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily },
   chatBubble: { maxWidth: "75%", borderRadius: 18, paddingHorizontal: 14, paddingVertical: 10, gap: 3 },
-  chatSender: { fontSize: 11, fontFamily: "Cairo_700Bold" },
-  chatText: { fontSize: 14, fontFamily: "Cairo_400Regular", lineHeight: 20, textAlign: "right" },
-  chatTime: { fontSize: 10, fontFamily: "Cairo_400Regular" },
+  chatSender: { fontSize: 11, fontFamily: typography.headlineSm.fontFamily },
+  chatText: { fontSize: 14, fontFamily: typography.body.fontFamily, lineHeight: 20, textAlign: "right" },
+  chatTime: { fontSize: 10, fontFamily: typography.body.fontFamily },
   chatInputRow: { flexDirection: "row", alignItems: "center", borderRadius: 28, paddingHorizontal: 8, paddingVertical: 6, gap: 8, marginTop: 8 },
   chatInput: { flex: 1, fontSize: 14, paddingHorizontal: 12, paddingVertical: 8 },
   chatSendBtn: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },
 
   expandChatBtn: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 50 },
-  expandChatBtnText: { fontFamily: "Cairo_600SemiBold", fontSize: 12 },
+  expandChatBtnText: { fontFamily: typography.bodyLg.fontFamily, fontSize: 12 },
 });

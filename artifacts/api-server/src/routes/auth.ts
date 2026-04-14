@@ -83,6 +83,7 @@ router.post("/auth/request-otp", async (req: Request, res: Response) => {
       logger.info({ phone }, "OTP sent via Twilio SMS");
     } else if (isDev) {
       logger.info({ phone, otp }, "OTP generated (Twilio not configured - dev console only)");
+      logger.info("TEST MODE: You can use any 6-digit code to log in in dev mode.");
     } else {
       logger.error({ phone }, "SMS cannot be sent: Twilio not configured in production");
       res.status(503).json({ success: false, error: "خدمة الرسائل غير متاحة حالياً" });
@@ -118,8 +119,8 @@ router.post("/auth/verify-otp", async (req: Request, res: Response) => {
     }
 
     const now = new Date();
-    const allowDevBypass = process.env["ALLOW_DEV_OTP_BYPASS"] === "true";
-    const isDevBypass = allowDevBypass && otp === "123456";
+    const allowDevBypass = process.env["ALLOW_DEV_OTP_BYPASS"] === "true" || process.env["NODE_ENV"] === "development";
+    const isDevBypass = allowDevBypass && /^\d{6}$/.test(otp);
 
     const validOtp = isDevBypass ? null : await db.query.otpCodesTable.findFirst({
       where: and(

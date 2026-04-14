@@ -17,6 +17,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useApp } from "@/context/AppContext";
+import { typography } from "@/constants/typography";
+
 
 interface ChatMessage {
   id: string;
@@ -392,19 +394,19 @@ const styles = StyleSheet.create({
   },
   headerTextGroup: { alignItems: "center", gap: 1 },
   headerTitle: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     fontSize: 17,
     color: "#fff",
     textAlign: "center",
   },
   headerSub: {
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     fontSize: 12,
     color: "#ffffffb0",
   },
 
   centered: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
-  loadingText: { fontFamily: "Cairo_400Regular", fontSize: 14 },
+  loadingText: { fontFamily: typography.body.fontFamily, fontSize: 14 },
 
   messageList: {
     flexGrow: 1,
@@ -421,8 +423,8 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingTop: 60,
   },
-  emptyText: { fontFamily: "Cairo_700Bold", fontSize: 16 },
-  emptySubText: { fontFamily: "Cairo_400Regular", fontSize: 13 },
+  emptyText: { fontFamily: typography.headlineSm.fontFamily, fontSize: 16 },
+  emptySubText: { fontFamily: typography.body.fontFamily, fontSize: 13 },
 
   bubbleRow: {
     flexDirection: "row",
@@ -443,7 +445,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexShrink: 0,
   },
-  avatarText: { fontFamily: "Cairo_700Bold", fontSize: 13 },
+  avatarText: { fontFamily: typography.headlineSm.fontFamily, fontSize: 13 },
 
   bubble: {
     borderRadius: 18,
@@ -453,11 +455,11 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   bubbleSender: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     fontSize: 12,
   },
   bubbleText: {
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     fontSize: 15,
     textAlign: "right",
     flexWrap: "wrap",
@@ -469,7 +471,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   bubbleTime: {
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     fontSize: 10,
   },
 
@@ -496,7 +498,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 11,
     paddingBottom: 11,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     fontSize: 15,
     maxHeight: 120,
     textAlignVertical: "top",
@@ -508,7 +510,7 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     borderRadius: 50,
   },
-  joinHintBtnText: { fontFamily: "Cairo_700Bold", fontSize: 14, color: "#fff" },
+  joinHintBtnText: { fontFamily: typography.headlineSm.fontFamily, fontSize: 14, color: "#fff" },
 
   toastBar: {
     position: "absolute",
@@ -520,5 +522,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: "center",
   },
-  toastBarText: { fontFamily: "Cairo_600SemiBold", fontSize: 14, color: "#fff" },
+  toastBarText: { fontFamily: typography.bodyLg.fontFamily, fontSize: 14, color: "#fff" },
 });

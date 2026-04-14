@@ -12,7 +12,6 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
-  I18nManager,
   Platform,
   Pressable,
   StyleSheet,
@@ -20,6 +19,9 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "@/i18n";
+import { typography } from "@/constants/typography";
+
 
 const SPORT_COLORS: Record<SportType, string> = {
   football: "#2E7D32",
@@ -34,9 +36,9 @@ const SPORT_BG: Record<SportType, string> = {
 };
 
 const SPORT_LABELS: Record<SportType, string> = {
-  football: "كرة القدم",
-  padel: "بادل",
-  tennis: "تنس",
+  football: "sports.football",
+  padel: "sports.padel",
+  tennis: "sports.tennis",
 };
 
 const SPORT_ICONS: Record<SportType, React.FC<{ color?: string; size?: number }>> = {
@@ -53,18 +55,18 @@ interface PositionDef {
 
 const POSITIONS: Record<SportType, PositionDef[]> = {
   football: [
-    { key: "حارس", label: "حارس المرمى", icon: "shield-outline" },
-    { key: "مدافع", label: "مدافع", icon: "body-outline" },
-    { key: "وسط", label: "لاعب وسط", icon: "swap-horizontal-outline" },
-    { key: "مهاجم", label: "مهاجم", icon: "flash-outline" },
+    { key: "gk", label: "positions.footballPositions.gk", icon: "shield-outline" },
+    { key: "def", label: "positions.footballPositions.def", icon: "body-outline" },
+    { key: "mid", label: "positions.footballPositions.mid", icon: "swap-horizontal-outline" },
+    { key: "att", label: "positions.footballPositions.att", icon: "flash-outline" },
   ],
   padel: [
-    { key: "يمين", label: "الجانب الأيمن" },
-    { key: "يسار", label: "الجانب الأيسر" },
+    { key: "right", label: "positions.padelPositions.right" },
+    { key: "left", label: "positions.padelPositions.left" },
   ],
   tennis: [
-    { key: "خط الخلفية", label: "خط الخلفية", icon: "arrow-back-outline" },
-    { key: "الشبكة", label: "لاعب الشبكة", icon: "grid-outline" },
+    { key: "baseline", label: "positions.tennisPositions.baseline", icon: "arrow-back-outline" },
+    { key: "net", label: "positions.tennisPositions.net", icon: "grid-outline" },
   ],
 };
 
@@ -79,8 +81,9 @@ function PadelCourt({
   color: string;
   colors: ReturnType<typeof useColors>;
 }) {
-  const rightSelected = selectedPositions.includes("يمين");
-  const leftSelected = selectedPositions.includes("يسار");
+  const { t } = useTranslation();
+  const rightSelected = selectedPositions.includes("right");
+  const leftSelected = selectedPositions.includes("left");
 
   return (
     <View style={courtStyles.wrapper}>
@@ -88,7 +91,7 @@ function PadelCourt({
         <View style={[courtStyles.opponentHalf, { backgroundColor: colors.surfaceContainer }]}>
           <View style={[courtStyles.opponentNet, { backgroundColor: colors.border }]} />
           <View style={[courtStyles.opponentDivider, { backgroundColor: colors.border }]} />
-          <Text style={[courtStyles.opponentLabel, { color: colors.mutedForeground }]}>الخصم</Text>
+          <Text style={[courtStyles.opponentLabel, { color: colors.mutedForeground }]}>{t('positions.opponent')}</Text>
         </View>
 
         <View style={[courtStyles.netRow, { backgroundColor: color }]}>
@@ -107,7 +110,7 @@ function PadelCourt({
                 ? { backgroundColor: color + "28", borderColor: color, borderWidth: 2.5 }
                 : { backgroundColor: colors.background, borderColor: colors.border, borderWidth: 1.5 },
             ]}
-            onPress={() => onToggle("يسار")}
+            onPress={() => onToggle("left")}
           >
             {leftSelected && (
               <View style={[courtStyles.checkBadge, { backgroundColor: color }]}>
@@ -120,7 +123,7 @@ function PadelCourt({
               color={leftSelected ? color : colors.mutedForeground}
             />
             <Text style={[courtStyles.zoneLabel, { color: leftSelected ? color : colors.mutedForeground }]}>
-              الأيسر
+              {t('positions.leftSide')}
             </Text>
           </Pressable>
 
@@ -134,7 +137,7 @@ function PadelCourt({
                 ? { backgroundColor: color + "28", borderColor: color, borderWidth: 2.5 }
                 : { backgroundColor: colors.background, borderColor: colors.border, borderWidth: 1.5 },
             ]}
-            onPress={() => onToggle("يمين")}
+            onPress={() => onToggle("right")}
           >
             {rightSelected && (
               <View style={[courtStyles.checkBadge, { backgroundColor: color }]}>
@@ -147,12 +150,12 @@ function PadelCourt({
               color={rightSelected ? color : colors.mutedForeground}
             />
             <Text style={[courtStyles.zoneLabel, { color: rightSelected ? color : colors.mutedForeground }]}>
-              الأيمن
+              {t('positions.rightSide')}
             </Text>
           </Pressable>
         </View>
       </View>
-      <Text style={[courtStyles.hint, { color: colors.mutedForeground }]}>اضغط لاختيار جانبك — يمكن اختيار الاثنين</Text>
+      <Text style={[courtStyles.hint, { color: colors.mutedForeground }]}>{t('positions.tapToPickSide')}</Text>
     </View>
   );
 }
@@ -188,7 +191,7 @@ const courtStyles = StyleSheet.create({
   },
   opponentLabel: {
     fontSize: 12,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
   netRow: {
     height: 14,
@@ -223,7 +226,7 @@ const courtStyles = StyleSheet.create({
   },
   zoneLabel: {
     fontSize: 13,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   checkBadge: {
     position: "absolute",
@@ -237,7 +240,7 @@ const courtStyles = StyleSheet.create({
   },
   hint: {
     fontSize: 12,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "center",
   },
 });
@@ -245,6 +248,7 @@ const courtStyles = StyleSheet.create({
 export default function PositionSelectorScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
+  const { t, isRTL } = useTranslation();
   const { user, completeOnboarding } = useApp();
   const sports = user?.sports ?? [];
   const [step, setStep] = useState(0);
@@ -344,7 +348,7 @@ export default function PositionSelectorScreen() {
       saved = false;
     }
     if (!saved) {
-      setSaveError("تعذّر حفظ البيانات على الخادم. ستُحفظ محلياً.");
+      setSaveError(t('common.connectionError') + " " + t('common.tryAgain'));
       setFinishing(false);
       await completeOnboarding(updatedUser);
       setTimeout(() => navigateAfterOnboarding(), 1500);
@@ -395,12 +399,16 @@ export default function PositionSelectorScreen() {
   function getConfirmBtnText() {
     if (finishing) return "";
     if (selectedCount === 0) {
-      return "متابعة بدون مركز";
+      return t('positions.continueNoPos');
     }
     if (isLast) {
-      return `تأكيد ${selectedCount} ${selectedCount === 1 ? "مركز" : "مراكز"} والبدء`;
+      return selectedCount === 1 
+        ? t('positions.confirmPosAndStart', { count: selectedCount.toString() }) || `Confirm ${selectedCount} position and start`
+        : t('positions.confirmPosPluralAndStart', { count: selectedCount.toString() }) || `Confirm ${selectedCount} positions and start`;
     }
-    return `تأكيد ${selectedCount} ${selectedCount === 1 ? "مركز" : "مراكز"}`;
+    return selectedCount === 1 
+      ? t('positions.confirmPos', { count: selectedCount.toString() }) || `Confirm ${selectedCount} position`
+      : t('positions.confirmPosPlural', { count: selectedCount.toString() }) || `Confirm ${selectedCount} positions`;
   }
 
   return (
@@ -425,7 +433,7 @@ export default function PositionSelectorScreen() {
           style={[styles.backBtn, { borderColor: sc + "40", backgroundColor: colors.background }]}
         >
           <Ionicons
-            name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"}
+            name={isRTL ? "chevron-forward" : "chevron-back"}
             size={20}
             color={sc}
           />
@@ -451,14 +459,14 @@ export default function PositionSelectorScreen() {
             color: sc,
           })}
           <Text style={[styles.sportStep, { color: sc }]}>
-            {SPORT_LABELS[currentSport]}
+            {t(SPORT_LABELS[currentSport] as any)}
           </Text>
         </View>
         <Text style={[styles.sportTitle, { color: colors.onSurface }]}>
-          ما مركزك في {SPORT_LABELS[currentSport]}؟
+          {t('positions.titleSport', { sport: t(`sports.${currentSport}`) })}
         </Text>
         <Text style={[styles.sportSub, { color: colors.mutedForeground }]}>
-          اختر مركزاً أو أكثر — يساعدك في إيجاد المباريات المناسبة
+          {t('positions.subtitleSport')}
         </Text>
       </Animated.View>
 
@@ -513,7 +521,7 @@ export default function PositionSelectorScreen() {
                         { color: selected ? sc : colors.onSurface, flex: 1, textAlign: "right" },
                       ]}
                     >
-                      {pos.label}
+                      {t(pos.label as any)}
                     </Text>
                     {selected && (
                       <View
@@ -587,7 +595,7 @@ export default function PositionSelectorScreen() {
             finishing && { opacity: 0.5 },
           ]}
         >
-          تخطي — يمكنك التحديث لاحقاً
+          {t('positions.skipNow')}
         </Text>
       </Pressable>
     </View>
@@ -634,15 +642,15 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     alignSelf: "flex-end",
   },
-  sportStep: { fontSize: 13, fontFamily: "Cairo_600SemiBold" },
+  sportStep: { fontSize: 13, fontFamily: typography.bodyLg.fontFamily },
   sportTitle: {
     fontSize: 22,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "right",
   },
   sportSub: {
     fontSize: 13,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "right",
   },
   positionsList: { gap: 10 },
@@ -657,7 +665,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   posIndicator: { width: 11, height: 11, borderRadius: 5.5 },
-  posLabel: { fontSize: 15, fontFamily: "Cairo_600SemiBold" },
+  posLabel: { fontSize: 15, fontFamily: typography.bodyLg.fontFamily },
   checkCircle: {
     width: 22,
     height: 22,
@@ -674,13 +682,13 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 4,
   },
-  nextBtnText: { fontSize: 17, fontFamily: "Cairo_700Bold" },
+  nextBtnText: { fontSize: 17, fontFamily: typography.headlineSm.fontFamily },
   skipBtn: {
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 8,
   },
-  skipText: { fontSize: 13, fontFamily: "Cairo_600SemiBold" },
+  skipText: { fontSize: 13, fontFamily: typography.bodyLg.fontFamily },
   saveErrorBox: {
     flexDirection: "row",
     alignItems: "center",
@@ -692,7 +700,7 @@ const styles = StyleSheet.create({
   saveErrorText: {
     flex: 1,
     fontSize: 12,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
     textAlign: "right",
   },
 });

@@ -15,12 +15,15 @@ import React, {
   useCallback, useEffect, useRef, useState,
 } from "react";
 import {
-  ActivityIndicator, Animated, FlatList, I18nManager, Modal, PanResponder,
-  Platform, Pressable, ScrollView, StyleSheet, Text,
-  TextInput, View, KeyboardAvoidingView,
+  ActivityIndicator, Alert, Animated, FlatList, I18nManager, KeyboardAvoidingView,
+  Linking, Modal, PanResponder, Platform, Pressable, ScrollView, StyleSheet, Text,
+  TextInput, View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "@/i18n";
 import type { Match } from "@/context/AppContext";
+import { typography } from "@/constants/typography";
+
 
 type Tab = "players" | "gatta" | "settings";
 
@@ -43,6 +46,7 @@ function ConfirmDialog({
   onCancel: () => void;
   colors: ReturnType<typeof useColors>;
 }) {
+  const { t } = useTranslation();
   const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
@@ -73,7 +77,7 @@ function ConfirmDialog({
               onPress={onCancel}
               disabled={confirming}
             >
-              <Text style={[dlgStyles.btnText, { color: colors.mutedForeground }]}>تراجع</Text>
+              <Text style={[dlgStyles.btnText, { color: colors.mutedForeground }]}>{t("matchDetails.back")}</Text>
             </Pressable>
             <Pressable
               style={[
@@ -115,13 +119,13 @@ const dlgStyles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 8,
   },
-  title: { fontSize: 17, fontFamily: "Cairo_700Bold", textAlign: "right" },
-  message: { fontSize: 14, fontFamily: "Cairo_400Regular", textAlign: "right", lineHeight: 22 },
+  title: { fontSize: 17, fontFamily: typography.headlineSm.fontFamily, textAlign: "right" },
+  message: { fontSize: 14, fontFamily: typography.body.fontFamily, textAlign: "right", lineHeight: 22 },
   buttons: { flexDirection: "row", gap: 10, marginTop: 4 },
   btn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   cancelBtn: { borderWidth: 1 },
   confirmBtn: {},
-  btnText: { fontSize: 14, fontFamily: "Cairo_700Bold" },
+  btnText: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily },
 });
 
 type ToastType = "success" | "error" | "warning";
@@ -162,6 +166,7 @@ function SwipeablePlayerRow({
   onTogglePayment: (s: PaymentStatus) => void;
   onRemovePlayer: () => void;
 }) {
+  const { t } = useTranslation();
   const colors = useColors();
   const translateX = useRef(new Animated.Value(0)).current;
   const swipeDirRef = useRef<"left" | "right" | null>(null);
@@ -211,8 +216,8 @@ function SwipeablePlayerRow({
   const attendanceBg = player.attendance === "present" ? colors.success + "18"
     : player.attendance === "absent" ? colors.destructive + "18"
     : colors.surfaceContainerLow;
-  const attendanceLabel = player.attendance === "present" ? "حضر"
-    : player.attendance === "absent" ? "غاب" : "معلق";
+  const attendanceLabel = player.attendance === "present" ? t("manageMatch.actions.present")
+    : player.attendance === "absent" ? t("manageMatch.actions.absent") : t("manageMatch.actions.pending");
   const attendanceIcon: keyof typeof Ionicons.glyphMap = player.attendance === "present"
     ? "checkmark-circle" : player.attendance === "absent" ? "close-circle" : "time-outline";
 
@@ -224,7 +229,7 @@ function SwipeablePlayerRow({
           onPress={() => { onToggleAttendance("present"); closeSwipe(); }}
         >
           <Ionicons name="checkmark-circle-outline" size={22} color={colors.success} />
-          <Text style={[styles.swipeActionText, { color: colors.success }]}>حضر</Text>
+          <Text style={[styles.swipeActionText, { color: colors.success }]}>{t("manageMatch.actions.present")}</Text>
         </Pressable>
       </View>
       <View style={[styles.swipeActions, { backgroundColor: colors.surfaceContainerHigh }]}>
@@ -233,7 +238,7 @@ function SwipeablePlayerRow({
           onPress={() => { onToggleAttendance("absent"); closeSwipe(); }}
         >
           <Ionicons name="close-circle-outline" size={18} color={colors.destructive} />
-          <Text style={[styles.swipeActionText, { color: colors.destructive }]}>غاب</Text>
+          <Text style={[styles.swipeActionText, { color: colors.destructive }]}>{t("manageMatch.actions.absent")}</Text>
         </Pressable>
         <Pressable
           style={[styles.swipeActionBtn, { backgroundColor: player.paymentStatus === "paid" ? colors.success + "22" : colors.reliabilityLow + "22" }]}
@@ -245,7 +250,7 @@ function SwipeablePlayerRow({
             color={player.paymentStatus === "paid" ? colors.success : colors.reliabilityLow}
           />
           <Text style={[styles.swipeActionText, { color: player.paymentStatus === "paid" ? colors.success : colors.reliabilityLow }]}>
-            {player.paymentStatus === "paid" ? "دفع" : "لم يدفع"}
+            {player.paymentStatus === "paid" ? t("manageMatch.actions.paid") : t("manageMatch.actions.unpaid")}
           </Text>
         </Pressable>
         {!isOrganizerPlayer && (
@@ -254,14 +259,13 @@ function SwipeablePlayerRow({
             onPress={() => { onRemovePlayer(); closeSwipe(); }}
           >
             <Ionicons name="person-remove-outline" size={18} color={colors.destructive} />
-            <Text style={[styles.swipeActionText, { color: colors.destructive }]}>إزالة</Text>
+            <Text style={[styles.swipeActionText, { color: colors.destructive }]}>{t("manageMatch.actions.remove")}</Text>
           </Pressable>
         )}
       </View>
       <Animated.View
         style={[
           styles.playerRowInner,
-          { borderWidth: 1, borderColor: colors.border },
           { backgroundColor: colors.surfaceContainerLowest ?? colors.surfaceContainerLow, transform: [{ translateX }] },
         ]}
         {...panResponder.panHandlers}
@@ -274,7 +278,7 @@ function SwipeablePlayerRow({
             <Text style={[styles.playerName, { color: colors.onSurface }]}>{player.nickname}</Text>
             {isOrganizerPlayer && (
               <View style={[styles.organizerTag, { backgroundColor: sc + "20" }]}>
-                <Text style={[styles.organizerTagText, { color: sc }]}>منظّم</Text>
+                <Text style={[styles.organizerTagText, { color: sc }]}>{t("matchDetails.organizer")}</Text>
               </View>
             )}
           </View>
@@ -288,14 +292,12 @@ function SwipeablePlayerRow({
               </Text>
             </View>
           )}
-          <View style={[styles.attendancePill, { backgroundColor: attendanceBg, borderWidth: 1, borderColor: attendanceColor + "30" }]}>
+          <View style={[styles.attendancePill, { backgroundColor: attendanceBg }]}>
             <Ionicons name={attendanceIcon} size={13} color={attendanceColor} />
             <Text style={[styles.pillText, { color: attendanceColor }]}>{attendanceLabel}</Text>
           </View>
           <View style={[styles.attendancePill, {
             backgroundColor: player.paymentStatus === "paid" ? colors.success + "18" : colors.warning + "18",
-            borderWidth: 1,
-            borderColor: player.paymentStatus === "paid" ? colors.success + "30" : colors.warning + "30",
           }]}>
             <Ionicons
               name={player.paymentStatus === "paid" ? "checkmark-circle" : "time-outline"}
@@ -303,7 +305,7 @@ function SwipeablePlayerRow({
               color={player.paymentStatus === "paid" ? colors.success : colors.warning}
             />
             <Text style={[styles.pillText, { color: player.paymentStatus === "paid" ? colors.success : colors.warning }]}>
-              {player.paymentStatus === "paid" ? "دفع" : "لم يدفع"}
+              {player.paymentStatus === "paid" ? t("manageMatch.actions.paid") : t("manageMatch.actions.unpaid")}
             </Text>
           </View>
         </View>
@@ -323,6 +325,7 @@ function todayAtMidnight(): Date {
 }
 
 export default function ManageMatchScreen() {
+  const { t, locale } = useTranslation();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -446,9 +449,9 @@ export default function ManageMatchScreen() {
       return (
         <View style={[styles.loading, { backgroundColor: colors.background, gap: 16 }]}>
           <Ionicons name="wifi-outline" size={48} color={colors.mutedForeground} />
-          <Text style={{ color: colors.onSurface, fontFamily: "Cairo_700Bold", fontSize: 16, textAlign: "center" }}>تعذّر تحميل البيانات</Text>
+          <Text style={{ color: colors.onSurface, fontFamily: typography.headlineSm.fontFamily, fontSize: 16, textAlign: "center" }}>{t("matchDetails.loadingError")}</Text>
           <Pressable onPress={() => router.back()}>
-            <Text style={{ color: sc, fontFamily: "Cairo_700Bold", fontSize: 14 }}>العودة</Text>
+            <Text style={{ color: sc, fontFamily: typography.headlineSm.fontFamily, fontSize: 14 }}>{t("matchDetails.back")}</Text>
           </Pressable>
         </View>
       );
@@ -461,7 +464,7 @@ export default function ManageMatchScreen() {
     return (
       <View style={[styles.loading, { backgroundColor: colors.background }]}>
         <Ionicons name="lock-closed-outline" size={48} color={colors.mutedForeground} />
-        <Text style={{ color: colors.onSurface, fontFamily: "Cairo_700Bold", fontSize: 16, marginTop: 12 }}>غير مخوّل</Text>
+        <Text style={{ color: colors.onSurface, fontFamily: typography.headlineSm.fontFamily, fontSize: 16, marginTop: 12 }}>{t("manageMatch.messages.unauthorized")}</Text>
       </View>
     );
   }
@@ -495,23 +498,23 @@ export default function ManageMatchScreen() {
     if (sendingReminder || !match) return;
     const unpaidCount = match.players.filter((p) => p.paymentStatus !== "paid" && p.id !== match.organizerId).length;
     if (unpaidCount === 0) {
-      showToast("جميع اللاعبين دفعوا بالفعل", "warning");
+      showToast(t("manageMatch.messages.allPlayersPaid"), "warning");
       return;
     }
     showConfirm({
-      title: "إرسال تذكير بالدفع",
-      message: `سيتلقى ${unpaidCount} لاعب/لاعبين إشعاراً بتذكيرهم بدفع حصتهم (${match.cost} ر.س). هل تريد المتابعة؟`,
-      confirmText: "إرسال",
+      title: t("manageMatch.dialogs.sendReminder.title"),
+      message: t("manageMatch.dialogs.sendReminder.message", { count: unpaidCount, amount: match.cost, currency: t("common.currency") }),
+      confirmText: t("manageMatch.actions.sendReminder"),
       onConfirm: async () => {
         hideConfirm();
         setSendingReminder(true);
         try {
           const res = await api.sendPaymentReminder(match.id);
           if (res.success) {
-            showToast(res.notified > 0 ? `تم إرسال التذكير لـ ${res.notified} لاعب` : "لا يوجد لاعبون غير دافعين", "success");
+            showToast(res.notified > 0 ? t("manageMatch.messages.reminderSent", { count: res.notified }) : t("manageMatch.messages.allPlayersPaid"), "success");
           }
         } catch {
-          showToast("تعذّر إرسال التذكير", "error");
+          showToast(t("manageMatch.errors.updateFailed"), "error");
         } finally {
           setSendingReminder(false);
         }
@@ -525,24 +528,24 @@ export default function ManageMatchScreen() {
       (p) => p.attendance === "present" && p.paymentStatus !== "paid"
     ).length;
     if (eligibleCount === 0) {
-      showToast("لا يوجد حاضرون غير دافعين", "warning");
+      showToast(t("manageMatch.messages.noUnpaidAttendees"), "warning");
       return;
     }
     showConfirm({
-      title: "تسديد الحاضرين",
-      message: `هل تريد تسجيل دفع جميع الحاضرين (${eligibleCount} لاعب)؟`,
-      confirmText: "تأكيد",
+      title: t("manageMatch.dialogs.markPaid.title"),
+      message: t("manageMatch.dialogs.markPaid.message", { count: eligibleCount }),
+      confirmText: t("common.confirm"),
       onConfirm: async () => {
         hideConfirm();
         setMarkingPaid(true);
         try {
           const res = await api.markAttendeesPaid(match.id);
           if (res.success) {
-            showToast(`تم تسجيل دفع ${res.marked} لاعب`, "success");
+            showToast(t("manageMatch.messages.markedPaidSuccess", { count: res.marked }), "success");
             refetchMatch();
           }
         } catch {
-          showToast("تعذّر تحديث المدفوعات", "error");
+          showToast(t("manageMatch.errors.updateFailed"), "error");
         } finally {
           setMarkingPaid(false);
         }
@@ -552,9 +555,9 @@ export default function ManageMatchScreen() {
 
   function validate(): boolean {
     const e: Record<string, string> = {};
-    if (title.trim().length < 3) e.title = "العنوان يجب أن يكون 3 أحرف على الأقل";
-    if (venue.trim().length < 3) e.venue = "اسم الملعب يجب أن يكون 3 أحرف على الأقل";
-    if (isNaN(Number(cost)) || Number(cost) < 0) e.cost = "أدخل مبلغ صحيح";
+    if (title.trim().length < 3) e.title = t("manageMatch.errors.titleMinLength");
+    if (venue.trim().length < 3) e.venue = t("manageMatch.errors.venueMinLength");
+    if (isNaN(Number(cost)) || Number(cost) < 0) e.cost = t("manageMatch.errors.feeInvalid");
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -579,28 +582,28 @@ export default function ManageMatchScreen() {
     });
     setSaving(false);
     if (ok) {
-      showToast("تم حفظ التعديلات بنجاح", "success");
+      showToast(t("manageMatch.messages.saveSuccess"), "success");
       refetchMatch();
     } else {
-      showToast("تعذّر تحديث التفاصيل", "error");
+      showToast(t("manageMatch.errors.updateFailed"), "error");
     }
   }
 
   function handleCancel() {
     showConfirm({
-      title: "إلغاء المباراة",
-      message: "هل أنت متأكد من إلغاء هذه المباراة؟ سيتلقى جميع اللاعبين إشعاراً بالإلغاء.",
-      confirmText: "إلغاء المباراة",
+      title: t("manageMatch.dialogs.cancelMatch.title"),
+      message: t("manageMatch.dialogs.cancelMatch.message"),
+      confirmText: t("manageMatch.actions.cancelMatch"),
       destructive: true,
       onConfirm: async () => {
         hideConfirm();
         const matchId = match!.id;
         const ok = await cancelMatch(matchId);
         if (ok) {
-          showToast("تم إلغاء المباراة بنجاح", "success");
+          showToast(t("manageMatch.messages.cancelSuccess"), "success");
           router.dismissAll();
         } else {
-          showToast("تعذّر إلغاء المباراة", "error");
+          showToast(t("manageMatch.errors.cancelFailed"), "error");
         }
       },
     });
@@ -608,9 +611,9 @@ export default function ManageMatchScreen() {
 
   function handleCompleteMatch() {
     showConfirm({
-      title: "إنهاء المباراة",
-      message: 'هل أنت متأكد من إنهاء هذه المباراة؟ سيتم تغيير حالته إلى "مكتمل".',
-      confirmText: "إنهاء",
+      title: t("manageMatch.dialogs.completeMatch.title"),
+      message: t("manageMatch.dialogs.completeMatch.message"),
+      confirmText: t("common.confirm"),
       destructive: true,
       onConfirm: async () => {
         hideConfirm();
@@ -618,11 +621,11 @@ export default function ManageMatchScreen() {
         setCompleting(true);
         try {
           await api.completeMatch(match!.id);
-          showToast("تم إنهاء المباراة بنجاح", "success");
+          showToast(t("manageMatch.messages.completeSuccess"), "success");
           router.back();
           refreshMatches().catch(() => {});
         } catch {
-          showToast("تعذّر إنهاء المباراة", "error");
+          showToast(t("manageMatch.errors.completeFailed"), "error");
         } finally {
           setCompleting(false);
         }
@@ -631,9 +634,9 @@ export default function ManageMatchScreen() {
   }
 
   const TABS: { key: Tab; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-    { key: "players", label: "اللاعبون", icon: "people-outline" },
-    { key: "gatta", label: "الغطّة", icon: "wallet-outline" },
-    { key: "settings", label: "الإعدادات", icon: "settings-outline" },
+    { key: "players", label: t("manageMatch.tabs.players"), icon: "people-outline" },
+    { key: "gatta", label: t("manageMatch.tabs.gatta"), icon: "wallet-outline" },
+    { key: "settings", label: t("manageMatch.tabs.settings"), icon: "settings-outline" },
   ];
 
   return (
@@ -650,13 +653,13 @@ export default function ManageMatchScreen() {
                   <Ionicons name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"} size={22} color="#fff" />
                 </View>
               </Pressable>
-              <Text style={styles.heroTitle}>إدارة المباراة</Text>
+              <Text style={styles.heroTitle}>{t("manageMatch.title")}</Text>
               <View style={{ width: 44 }} />
             </View>
             <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12, justifyContent: "flex-end" }}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.matchTitle} numberOfLines={2}>{match.title}</Text>
-                <Text style={{ color: "rgba(255,255,255,0.75)", fontFamily: "Cairo_600SemiBold", fontSize: 12, textAlign: "right", marginTop: 2 }}>{sportLabel(match.sport)}</Text>
+                <Text style={{ color: "rgba(255,255,255,0.75)", fontFamily: typography.bodyLg.fontFamily, fontSize: 12, textAlign: "right", marginTop: 2 }}>{t(`common.sports.${match.sport}`)}</Text>
               </View>
               <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <ManageSportIcon color="#fff" size={26} />
@@ -669,7 +672,7 @@ export default function ManageMatchScreen() {
               </View>
               <View style={styles.heroBadge}>
                 <Ionicons name="calendar-outline" size={13} color="#ffffffCC" />
-                <Text style={styles.heroBadgeText}>{formatDate(match.date)}</Text>
+                <Text style={styles.heroBadgeText}>{formatDate(match.date, t, locale)}</Text>
               </View>
               <View style={styles.heroBadge}>
                 <Ionicons name="location-outline" size={13} color="#ffffffCC" />
@@ -678,9 +681,9 @@ export default function ManageMatchScreen() {
             </View>
             <View style={[styles.heroProgressWrap, { backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 14, padding: 10 }]}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
-                <Text style={{ color: "#fff", fontFamily: "Cairo_700Bold", fontSize: 12 }}>{match.players.length}/{match.maxPlayers} لاعب</Text>
-                <Text style={{ color: "rgba(255,255,255,0.8)", fontFamily: "Cairo_600SemiBold", fontSize: 12 }}>
-                  {match.maxPlayers - match.players.length > 0 ? `${match.maxPlayers - match.players.length} مكان متبقي` : "مكتمل"}
+                <Text style={{ color: "#fff", fontFamily: typography.headlineSm.fontFamily, fontSize: 12 }}>{match.players.length}/{match.maxPlayers} {t("common.player_count")}</Text>
+                <Text style={{ color: "rgba(255,255,255,0.8)", fontFamily: typography.bodyLg.fontFamily, fontSize: 12 }}>
+                  {match.maxPlayers - match.players.length > 0 ? t("manageMatch.hints.emptySlots", { count: match.maxPlayers - match.players.length }) : t("common.full")}
                 </Text>
               </View>
               <LiquidProgressBar progress={fillPct} sport={match.sport} height={5} overrideColor={progressColor} />
@@ -688,17 +691,17 @@ export default function ManageMatchScreen() {
             <View style={styles.heroStats}>
               <View style={styles.heroStatItem}>
                 <Text style={styles.heroStatNum}>{presentPlayers}</Text>
-                <Text style={styles.heroStatLbl}>حضروا</Text>
+                <Text style={styles.heroStatLbl}>{t("manageMatch.stats.present")}</Text>
               </View>
               <View style={styles.heroStatDivider} />
               <View style={styles.heroStatItem}>
                 <Text style={styles.heroStatNum}>{paidPlayers}</Text>
-                <Text style={styles.heroStatLbl}>دفعوا</Text>
+                <Text style={styles.heroStatLbl}>{t("manageMatch.stats.paid")}</Text>
               </View>
               <View style={styles.heroStatDivider} />
               <View style={styles.heroStatItem}>
                 <Text style={[styles.heroStatNum, { color: totalCollected > 0 ? "#A7F3D0" : "#fff" }]}>{totalCollected}</Text>
-                <Text style={styles.heroStatLbl}>ر.س جُمع</Text>
+                <Text style={styles.heroStatLbl}>{t("manageMatch.stats.collected", { currency: t("common.currency") })}</Text>
               </View>
             </View>
           </View>
@@ -732,9 +735,9 @@ export default function ManageMatchScreen() {
               <View style={styles.sectionHeader}>
                 <Ionicons name="people-outline" size={18} color={sc} />
                 <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
-                  اللاعبون ({match.players.length}/{match.maxPlayers})
+                  {t("manageMatch.tabs.players")} ({match.players.length}/{match.maxPlayers})
                 </Text>
-                <Text style={[styles.swipeHint, { color: colors.mutedForeground }]}>اسحب لليسار للخيارات</Text>
+                <Text style={[styles.swipeHint, { color: colors.mutedForeground }]}>{t("manageMatch.hints.swipeOptions")}</Text>
               </View>
               <LiquidProgressBar
                 progress={match.maxPlayers > 0 ? match.players.length / match.maxPlayers : 0}
@@ -750,7 +753,7 @@ export default function ManageMatchScreen() {
                 initialNumToRender={8}
                 removeClippedSubviews={Platform.OS === "android"}
                 ListEmptyComponent={
-                  <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>لا يوجد لاعبون مسجلون بعد</Text>
+                  <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>{t("manageMatch.messages.noPlayers") || "No players yet"}</Text>
                 }
                 renderItem={({ item: player }) => (
                   <SwipeablePlayerRow
@@ -776,17 +779,17 @@ export default function ManageMatchScreen() {
                     onRemovePlayer={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                       showConfirm({
-                        title: "إزالة لاعب",
-                        message: `هل أنت متأكد من إزالة "${player.nickname}" من المباراة؟`,
-                        confirmText: "إزالة",
+                        title: t("manageMatch.dialogs.removePlayer.title"),
+                        message: t("manageMatch.dialogs.removePlayer.message", { name: player.nickname }),
+                        confirmText: t("manageMatch.actions.remove"),
                         destructive: true,
                         onConfirm: async () => {
                           hideConfirm();
                           const prev = apiMatch;
                           setApiMatch((p) => p ? { ...p, players: p.players.filter((pl) => pl.id !== player.id) } : p);
                           const ok = await removeMatchPlayer(match.id, player.id);
-                          if (ok) { showToast(`تم إزالة ${player.nickname}`, "success"); refetchMatch(); }
-                          else { setApiMatch(prev); showToast("تعذّر إزالة اللاعب", "error"); }
+                          if (ok) { showToast(t("manageMatch.messages.playerRemoved", { name: player.nickname }), "success"); refetchMatch(); }
+                          else { setApiMatch(prev); showToast(t("manageMatch.errors.removeFailed"), "error"); }
                         },
                       });
                     }}
@@ -797,7 +800,7 @@ export default function ManageMatchScreen() {
                 <View style={[styles.emptySlots, { backgroundColor: colors.surfaceContainerHigh }]}>
                   <Ionicons name="person-add-outline" size={16} color={colors.mutedForeground} />
                   <Text style={[styles.emptySlotsText, { color: colors.mutedForeground }]}>
-                    {match.maxPlayers - match.players.length} مكان متبقٍ
+                    {t("manageMatch.hints.emptySlots", { count: match.maxPlayers - match.players.length })}
                   </Text>
                 </View>
               )}
@@ -817,7 +820,7 @@ export default function ManageMatchScreen() {
                 ) : (
                   <Ionicons name="flag-outline" size={20} color="rgba(255,255,255,1)" />
                 )}
-                <Text style={styles.completeMatchBtnText}>إنهاء المباراة</Text>
+                <Text style={styles.completeMatchBtnText}>{t("manageMatch.actions.completeMatch")}</Text>
               </Pressable>
             )}
           </View>
@@ -828,36 +831,36 @@ export default function ManageMatchScreen() {
             <GlassCard variant="medium" sport={match.sport} style={{ gap: 14 }}>
               <View style={styles.sectionHeader}>
                 <Ionicons name="wallet-outline" size={18} color={sc} />
-                <Text style={[styles.sectionTitle, { color: sc }]}>دفتر الغطّة</Text>
+                <Text style={[styles.sectionTitle, { color: sc }]}>{t("manageMatch.tabs.gatta")}</Text>
               </View>
 
               <View style={[styles.gattaSummary, { backgroundColor: colors.surfaceContainer }]}>
                 <View style={styles.gattaStatItem}>
                   <Text style={[styles.gattaStatVal, { color: colors.success }]}>{totalCollected}</Text>
-                  <Text style={[styles.gattaStatUnit, { color: colors.success }]}>ر.س</Text>
-                  <Text style={[styles.gattaStatLbl, { color: colors.mutedForeground }]}>تم جمعه</Text>
+                  <Text style={[styles.gattaStatUnit, { color: colors.success }]}>{t("common.currency")}</Text>
+                  <Text style={[styles.gattaStatLbl, { color: colors.mutedForeground }]}>{t("manageMatch.stats.collected", { currency: "" }).trim()}</Text>
                 </View>
                 <View style={[styles.gattaDivider, { backgroundColor: colors.onSurface + "15" }]} />
                 <View style={styles.gattaStatItem}>
                   <Text style={[styles.gattaStatVal, { color: colors.onSurface }]}>{totalExpected}</Text>
-                  <Text style={[styles.gattaStatUnit, { color: colors.mutedForeground }]}>ر.س</Text>
-                  <Text style={[styles.gattaStatLbl, { color: colors.mutedForeground }]}>الإجمالي</Text>
+                  <Text style={[styles.gattaStatUnit, { color: colors.mutedForeground }]}>{t("common.currency")}</Text>
+                  <Text style={[styles.gattaStatLbl, { color: colors.mutedForeground }]}>{t("manageMatch.stats.total")}</Text>
                 </View>
                 <View style={[styles.gattaDivider, { backgroundColor: colors.onSurface + "15" }]} />
                 <View style={styles.gattaStatItem}>
                   <Text style={[styles.gattaStatVal, { color: colors.tertiary }]}>{totalRemaining}</Text>
-                  <Text style={[styles.gattaStatUnit, { color: colors.tertiary }]}>ر.س</Text>
-                  <Text style={[styles.gattaStatLbl, { color: colors.mutedForeground }]}>متبقي</Text>
+                  <Text style={[styles.gattaStatUnit, { color: colors.tertiary }]}>{t("common.currency")}</Text>
+                  <Text style={[styles.gattaStatLbl, { color: colors.mutedForeground }]}>{t("manageMatch.stats.remaining")}</Text>
                 </View>
               </View>
 
               <View style={{ gap: 8 }}>
                 <View style={styles.progressLabelRow}>
                   <Text style={[styles.progressLabel, { color: colors.mutedForeground }]}>
-                    نسبة التحصيل {Math.round(collectionPct * 100)}%
+                    {t("manageMatch.stats.collectionRate", { percent: Math.round(collectionPct * 100) })}
                   </Text>
                   <Text style={[styles.progressLabel, { color: colors.mutedForeground }]}>
-                    {paidPlayers}/{match.players.length} دفعوا
+                    {paidPlayers}/{match.players.length} {t("manageMatch.stats.paid")}
                   </Text>
                 </View>
                 <LiquidProgressBar progress={collectionPct} sport={match.sport} height={10} />
@@ -866,9 +869,9 @@ export default function ManageMatchScreen() {
               {match.cost > 0 && (
                 <View style={{ gap: 8 }}>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                    <Text style={[styles.subSectionTitle, { color: colors.onSurface }]}>حالة الدفع</Text>
-                    <Text style={{ color: colors.mutedForeground, fontFamily: "Cairo_400Regular", fontSize: 12 }}>
-                      اضغط لتغيير الحالة
+                    <Text style={[styles.subSectionTitle, { color: colors.onSurface }]}>{t("manageMatch.labels.paymentStatus")}</Text>
+                    <Text style={{ color: colors.mutedForeground, fontFamily: typography.body.fontFamily, fontSize: 12 }}>
+                      {t("manageMatch.hints.clickToChange")}
                     </Text>
                   </View>
                   {match.players.map((player) => {
@@ -886,14 +889,14 @@ export default function ManageMatchScreen() {
                         ]}
                         onPress={() => {
                           const newStatus: PaymentStatus = isPaid ? "pending" : "paid";
-                          const actionLabel = newStatus === "paid" ? "تأكيد الدفع" : "إلغاء الدفع";
+                          const actionLabel = newStatus === "paid" ? t("manageMatch.actions.confirmPayment") : t("manageMatch.actions.cancelPayment");
                           const actionMsg = newStatus === "paid"
-                            ? `هل تريد تسجيل دفع "${player.nickname}"؟`
-                            : `هل تريد إلغاء دفع "${player.nickname}"؟`;
+                            ? t("manageMatch.dialogs.confirmPayment.message", { name: player.nickname })
+                            : t("manageMatch.dialogs.cancelPayment.message", { name: player.nickname });
                           showConfirm({
                             title: actionLabel,
                             message: actionMsg,
-                            confirmText: "تأكيد",
+                            confirmText: t("common.confirm"),
                             destructive: newStatus === "pending",
                             onConfirm: () => {
                               hideConfirm();
@@ -916,7 +919,7 @@ export default function ManageMatchScreen() {
                           { backgroundColor: isPaid ? colors.success : colors.warning },
                         ]}>
                           <Text style={styles.paymentStatusPillText}>
-                            {isPaid ? `${match.cost} ر.س ✓` : "لم يدفع"}
+                            {isPaid ? `${match.cost} ${t("common.currency")} ✓` : t("manageMatch.actions.unpaid")}
                           </Text>
                         </View>
                       </Pressable>
@@ -927,7 +930,7 @@ export default function ManageMatchScreen() {
               {match.cost === 0 && (
                 <View style={[styles.freeBadge, { backgroundColor: colors.success + "15" }]}>
                   <Ionicons name="gift-outline" size={18} color={colors.success} />
-                  <Text style={{ color: colors.success, fontFamily: "Cairo_700Bold", fontSize: 14 }}>هذه الجلسة مجانية</Text>
+                  <Text style={{ color: colors.success, fontFamily: typography.headlineSm.fontFamily, fontSize: 14 }}>{t("manageMatch.messages.freeMatch")}</Text>
                 </View>
               )}
 
@@ -941,7 +944,7 @@ export default function ManageMatchScreen() {
                     {markingPaid
                       ? <ActivityIndicator size="small" color="rgba(255,255,255,1)" />
                       : <Ionicons name="checkmark-done-outline" size={18} color="rgba(255,255,255,1)" />}
-                    <Text style={styles.gattaActionBtnText}>تسديد الحاضرين دفعة واحدة</Text>
+                    <Text style={styles.gattaActionBtnText}>{t("manageMatch.actions.markAllPaidLong")}</Text>
                   </Pressable>
                   <Pressable
                     style={[styles.gattaActionBtn, { backgroundColor: sc, opacity: sendingReminder ? 0.7 : 1 }]}
@@ -951,7 +954,7 @@ export default function ManageMatchScreen() {
                     {sendingReminder
                       ? <ActivityIndicator size="small" color="rgba(255,255,255,1)" />
                       : <Ionicons name="notifications-outline" size={18} color="rgba(255,255,255,1)" />}
-                    <Text style={styles.gattaActionBtnText}>إرسال تذكير بالدفع</Text>
+                    <Text style={styles.gattaActionBtnText}>{t("manageMatch.actions.sendReminder")}</Text>
                   </Pressable>
                 </View>
               )}
@@ -960,7 +963,7 @@ export default function ManageMatchScreen() {
             <GlassCard variant="medium" sport={match.sport} style={{ gap: 14 }}>
               <View style={styles.sectionHeader}>
                 <Ionicons name="stats-chart-outline" size={18} color={sc} />
-                <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>إحصائيات الحضور</Text>
+                <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t("manageMatch.stats.attendanceStats")}</Text>
               </View>
               <View style={styles.attendanceStats}>
                 <View style={[styles.attendanceStatItem, { backgroundColor: colors.success + "15" }]}>
@@ -968,27 +971,27 @@ export default function ManageMatchScreen() {
                   <Text style={[styles.attendanceStatNum, { color: colors.success }]}>
                     {match.players.filter((p) => p.attendance === "present").length}
                   </Text>
-                  <Text style={[styles.attendanceStatLbl, { color: colors.mutedForeground }]}>حضر</Text>
+                  <Text style={[styles.attendanceStatLbl, { color: colors.mutedForeground }]}>{t("manageMatch.actions.present")}</Text>
                 </View>
                 <View style={[styles.attendanceStatItem, { backgroundColor: colors.destructive + "15" }]}>
                   <Ionicons name="close-circle" size={22} color={colors.destructive} />
                   <Text style={[styles.attendanceStatNum, { color: colors.destructive }]}>
                     {match.players.filter((p) => p.attendance === "absent").length}
                   </Text>
-                  <Text style={[styles.attendanceStatLbl, { color: colors.mutedForeground }]}>غاب</Text>
+                  <Text style={[styles.attendanceStatLbl, { color: colors.mutedForeground }]}>{t("manageMatch.actions.absent")}</Text>
                 </View>
                 <View style={[styles.attendanceStatItem, { backgroundColor: colors.surfaceContainerHigh }]}>
                   <Ionicons name="time-outline" size={22} color={colors.mutedForeground} />
                   <Text style={[styles.attendanceStatNum, { color: colors.onSurface }]}>
                     {match.players.filter((p) => p.attendance === "pending").length}
                   </Text>
-                  <Text style={[styles.attendanceStatLbl, { color: colors.mutedForeground }]}>معلق</Text>
+                  <Text style={[styles.attendanceStatLbl, { color: colors.mutedForeground }]}>{t("manageMatch.actions.pending")}</Text>
                 </View>
               </View>
               {match.players.length > 0 && (
                 <View style={{ gap: 6 }}>
                   <View style={styles.progressLabelRow}>
-                    <Text style={[styles.progressLabel, { color: colors.mutedForeground }]}>نسبة الحضور</Text>
+                    <Text style={[styles.progressLabel, { color: colors.mutedForeground }]}>{t("manageMatch.stats.attendanceRate")}</Text>
                     <Text style={[styles.progressLabel, { color: colors.mutedForeground }]}>{Math.round(attendancePct * 100)}%</Text>
                   </View>
                   <LiquidProgressBar progress={attendancePct} sport={match.sport} height={8} />
@@ -1003,17 +1006,17 @@ export default function ManageMatchScreen() {
             <GlassCard variant="medium" sport={match.sport} style={{ gap: 16 }}>
               <View style={styles.sectionHeader}>
                 <Ionicons name="create-outline" size={18} color={sc} />
-                <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>تعديل التفاصيل</Text>
+                <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t("manageMatch.labels.editDetails")}</Text>
               </View>
 
               <View style={{ gap: 6 }}>
-                <Text style={[styles.label, { color: colors.onSurface }]}>العنوان</Text>
+                <Text style={[styles.label, { color: colors.onSurface }]}>{t("manageMatch.labels.title")}</Text>
                 <View style={[styles.inputWrap, { backgroundColor: colors.surfaceContainerHigh, borderBottomColor: errors.title ? colors.destructive : sc }]}>
                   <TextInput
                     style={[styles.input, { color: colors.onSurface }]}
                     value={title}
                     onChangeText={(v) => { setTitle(v); if (v.trim()) setErrors((e) => ({ ...e, title: "" })); }}
-                    placeholder="عنوان المباراة"
+                    placeholder={t("manageMatch.placeholders.matchTitle")}
                     placeholderTextColor={colors.mutedForeground}
                     textAlign="right"
                   />
@@ -1022,13 +1025,13 @@ export default function ManageMatchScreen() {
               </View>
 
               <View style={{ gap: 6 }}>
-                <Text style={[styles.label, { color: colors.onSurface }]}>الوصف (اختياري)</Text>
+                <Text style={[styles.label, { color: colors.onSurface }]}>{t("manageMatch.labels.description")}</Text>
                 <View style={[styles.inputWrap, { backgroundColor: colors.surfaceContainerHigh, borderBottomColor: sc }]}>
                   <TextInput
                     style={[styles.input, { color: colors.onSurface, minHeight: 70 }]}
                     value={description}
                     onChangeText={setDescription}
-                    placeholder="أضف وصفاً..."
+                    placeholder={t("manageMatch.placeholders.description")}
                     placeholderTextColor={colors.mutedForeground}
                     textAlign="right"
                     multiline
@@ -1037,7 +1040,7 @@ export default function ManageMatchScreen() {
               </View>
 
               <View style={{ gap: 6 }}>
-                <Text style={[styles.label, { color: colors.onSurface }]}>التاريخ</Text>
+                <Text style={[styles.label, { color: colors.onSurface }]}>{t("manageMatch.labels.date")}</Text>
                 <DatePickerField
                   value={selectedDate ?? todayAtMidnight()}
                   onChange={setSelectedDate}
@@ -1046,7 +1049,7 @@ export default function ManageMatchScreen() {
               </View>
 
               <View style={{ gap: 6 }}>
-                <Text style={[styles.label, { color: colors.onSurface }]}>الوقت</Text>
+                <Text style={[styles.label, { color: colors.onSurface }]}>{t("manageMatch.labels.time")}</Text>
                 <View style={styles.timesGrid}>
                   {TIMES.map((t) => (
                     <Pressable
@@ -1064,14 +1067,14 @@ export default function ManageMatchScreen() {
               </View>
 
               <View style={{ gap: 6 }}>
-                <Text style={[styles.label, { color: colors.onSurface }]}>الملعب</Text>
+                <Text style={[styles.label, { color: colors.onSurface }]}>{t("manageMatch.labels.venue")}</Text>
                 <View style={[styles.inputWrap, { backgroundColor: colors.surfaceContainerHigh, borderBottomColor: errors.venue ? colors.destructive : sc }]}>
                   <TextInput
                     style={[styles.input, { color: colors.onSurface }]}
                     value={venue}
                     onChangeText={(v) => { setVenue(v); setShowVenueSuggestions(v.length > 0); if (v.trim()) setErrors((e) => ({ ...e, venue: "" })); }}
-                    onBlur={() => { if (!venue.trim()) setErrors((e) => ({ ...e, venue: "أدخل اسم الملعب" })); }}
-                    placeholder="اسم الملعب"
+                    onBlur={() => { if (!venue.trim()) setErrors((e) => ({ ...e, venue: t("manageMatch.errors.venueRequired") || "Venue required" })); }}
+                    placeholder={t("manageMatch.placeholders.venueName")}
                     placeholderTextColor={colors.mutedForeground}
                     textAlign="right"
                   />
@@ -1091,7 +1094,7 @@ export default function ManageMatchScreen() {
 
               {match.sport === "football" && (
                 <View style={{ gap: 6 }}>
-                  <Text style={[styles.label, { color: colors.onSurface }]}>عدد اللاعبين</Text>
+                  <Text style={[styles.label, { color: colors.onSurface }]}>{t("manageMatch.labels.playerCount")}</Text>
                   <View style={[styles.counterRow, { backgroundColor: colors.surfaceContainerHigh }]}>
                     <Pressable style={[styles.counterBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]} onPress={() => setMaxPlayers((p) => Math.max(2, p - 2))}>
                       <Ionicons name="remove" size={20} color={colors.onSurface} />
@@ -1105,7 +1108,7 @@ export default function ManageMatchScreen() {
               )}
 
               <View style={{ gap: 6 }}>
-                <Text style={[styles.label, { color: colors.onSurface }]}>التكلفة للفرد (ر.س)</Text>
+                <Text style={[styles.label, { color: colors.onSurface }]}>{t("manageMatch.labels.costPerPerson", { currency: t("common.currency") })}</Text>
                 <View style={[styles.inputWrap, { backgroundColor: colors.surfaceContainerHigh, borderBottomColor: errors.cost ? colors.destructive : sc }]}>
                   <TextInput
                     style={[styles.input, { color: colors.onSurface }]}
@@ -1126,7 +1129,7 @@ export default function ManageMatchScreen() {
                 disabled={saving}
               >
                 <Ionicons name={saving ? "time-outline" : "checkmark-circle-outline"} size={20} color="rgba(255,255,255,1)" />
-                <Text style={styles.saveBtnText}>{saving ? "جاري الحفظ..." : "حفظ التعديلات"}</Text>
+                <Text style={styles.saveBtnText}>{saving ? t("manageMatch.actions.saving") : t("manageMatch.actions.save")}</Text>
               </Pressable>
             </GlassCard>
 
@@ -1134,13 +1137,13 @@ export default function ManageMatchScreen() {
               <GlassCard variant="medium" sport={match.sport} style={{ gap: 12 }}>
                 <View style={styles.sectionHeader}>
                   <Ionicons name="warning-outline" size={18} color={colors.destructive} />
-                  <Text style={[styles.sectionTitle, { color: colors.destructive }]}>منطقة الخطر</Text>
+                  <Text style={[styles.sectionTitle, { color: colors.destructive }]}>{t("manageMatch.labels.dangerZone")}</Text>
                 </View>
                 <Pressable style={[styles.cancelBtn, { backgroundColor: colors.destructive + "15", borderColor: colors.destructive + "40" }]} onPress={handleCancel}>
                   <Ionicons name="trash-outline" size={20} color={colors.destructive} />
                   <View style={{ alignItems: "flex-end" }}>
-                    <Text style={[styles.cancelBtnTitle, { color: colors.destructive }]}>إلغاء المباراة</Text>
-                    <Text style={[styles.cancelBtnSub, { color: colors.mutedForeground }]}>سيتلقى اللاعبون إشعاراً بالإلغاء</Text>
+                    <Text style={[styles.cancelBtnTitle, { color: colors.destructive }]}>{t("manageMatch.actions.cancelMatch")}</Text>
+                    <Text style={[styles.cancelBtnSub, { color: colors.mutedForeground }]}>{t("manageMatch.dialogs.cancelMatch.subtext")}</Text>
                   </View>
                 </Pressable>
               </GlassCard>
@@ -1168,27 +1171,27 @@ const styles = StyleSheet.create({
   heroHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 2 },
   backBtn: { padding: 4 },
   backBtnInner: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#ffffff25", alignItems: "center", justifyContent: "center" },
-  heroTitle: { fontSize: 15, fontFamily: "Cairo_600SemiBold", color: "#fff", opacity: 0.9 },
-  matchTitle: { fontSize: 22, fontFamily: "Cairo_700Bold", color: "#fff", textAlign: "right", lineHeight: 34 },
+  heroTitle: { fontSize: 15, fontFamily: typography.bodyLg.fontFamily, color: "#fff", opacity: 0.9 },
+  matchTitle: { fontSize: 22, fontFamily: typography.headlineSm.fontFamily, color: "#fff", textAlign: "right", lineHeight: 34 },
   heroMeta: { flexDirection: "row", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" },
   heroBadge: { flexDirection: "row", gap: 4, alignItems: "center", backgroundColor: "#ffffff18", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  heroBadgeText: { fontSize: 12, color: "#fff", fontFamily: "Cairo_400Regular" },
+  heroBadgeText: { fontSize: 12, color: "#fff", fontFamily: typography.body.fontFamily },
   heroProgressWrap: { gap: 0 },
   heroStats: { flexDirection: "row", alignItems: "center", justifyContent: "space-around", backgroundColor: "#ffffff15", borderRadius: 16, padding: 12, marginTop: 4 },
   heroStatItem: { alignItems: "center", gap: 2, flex: 1 },
-  heroStatNum: { fontSize: 18, fontFamily: "Cairo_700Bold", color: "#fff" },
-  heroStatLbl: { fontSize: 11, fontFamily: "Cairo_400Regular", color: "#ffffffCC" },
+  heroStatNum: { fontSize: 18, fontFamily: typography.headlineSm.fontFamily, color: "#fff" },
+  heroStatLbl: { fontSize: 11, fontFamily: typography.body.fontFamily, color: "#ffffffCC" },
   heroStatDivider: { width: 1, height: 30, backgroundColor: "#ffffff30" },
 
   tabBar: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: "#00000010" },
   tabItem: { flex: 1, flexDirection: "column", alignItems: "center", justifyContent: "center", paddingVertical: 10, gap: 4, borderBottomWidth: 2, borderBottomColor: "transparent" },
-  tabLabel: { fontSize: 12, fontFamily: "Cairo_700Bold" },
+  tabLabel: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily },
 
   scroll: { paddingHorizontal: 16, gap: 0, paddingTop: 14 },
 
   sectionHeader: { flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "flex-end" },
-  sectionTitle: { fontSize: 17, fontFamily: "Cairo_700Bold", lineHeight: 26, flex: 1, textAlign: "right" },
-  swipeHint: { fontSize: 11, fontFamily: "Cairo_400Regular" },
+  sectionTitle: { fontSize: 17, fontFamily: typography.headlineSm.fontFamily, lineHeight: 26, flex: 1, textAlign: "right" },
+  swipeHint: { fontSize: 11, fontFamily: typography.body.fontFamily },
 
   swipeContainer: { position: "relative", overflow: "hidden", borderRadius: 18, marginBottom: 8 },
   swipeActions: {
@@ -1202,81 +1205,81 @@ const styles = StyleSheet.create({
     paddingLeft: 8, gap: 6,
   },
   swipeActionBtn: { alignItems: "center", justifyContent: "center", paddingHorizontal: 10, paddingVertical: 8, borderRadius: 14, gap: 3 },
-  swipeActionText: { fontSize: 11, fontFamily: "Cairo_700Bold" },
+  swipeActionText: { fontSize: 11, fontFamily: typography.headlineSm.fontFamily },
 
   playerRowInner: {
     flexDirection: "row", alignItems: "center", gap: 10, padding: 10,
     borderRadius: 18, backgroundColor: "#fff",
   },
   playerAvatar: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  playerInitial: { fontSize: 16, fontFamily: "Cairo_700Bold" },
+  playerInitial: { fontSize: 16, fontFamily: typography.headlineSm.fontFamily },
   playerInfo: { flex: 1, alignItems: "flex-end", gap: 2 },
-  playerName: { fontSize: 14, fontFamily: "Cairo_700Bold" },
-  playerPos: { fontSize: 12, fontFamily: "Cairo_400Regular" },
+  playerName: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily },
+  playerPos: { fontSize: 12, fontFamily: typography.body.fontFamily },
   organizerTag: { paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8 },
-  organizerTagText: { fontSize: 10, fontFamily: "Cairo_700Bold" },
+  organizerTagText: { fontSize: 10, fontFamily: typography.headlineSm.fontFamily },
   relPill: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 24 },
-  relPillText: { fontSize: 11, fontFamily: "Cairo_700Bold" },
+  relPillText: { fontSize: 11, fontFamily: typography.headlineSm.fontFamily },
   attendancePill: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 20 },
-  pillText: { fontSize: 11, fontFamily: "Cairo_700Bold" },
+  pillText: { fontSize: 11, fontFamily: typography.headlineSm.fontFamily },
 
-  emptyText: { fontSize: 13, fontFamily: "Cairo_400Regular", textAlign: "center", paddingVertical: 10 },
+  emptyText: { fontSize: 13, fontFamily: typography.body.fontFamily, textAlign: "center", paddingVertical: 10 },
   emptySlots: { flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center", paddingVertical: 12, borderRadius: 14 },
-  emptySlotsText: { fontSize: 14, fontFamily: "Cairo_400Regular" },
+  emptySlotsText: { fontSize: 14, fontFamily: typography.body.fontFamily },
 
   gattaSummary: { flexDirection: "row", borderRadius: 16, padding: 14, alignItems: "center" },
   gattaStatItem: { flex: 1, alignItems: "center", gap: 2 },
-  gattaStatVal: { fontSize: 20, fontFamily: "Cairo_700Bold" },
-  gattaStatUnit: { fontSize: 11, fontFamily: "Cairo_400Regular", marginTop: -2 },
-  gattaStatLbl: { fontSize: 11, fontFamily: "Cairo_400Regular", marginTop: 2 },
+  gattaStatVal: { fontSize: 20, fontFamily: typography.headlineSm.fontFamily },
+  gattaStatUnit: { fontSize: 11, fontFamily: typography.body.fontFamily, marginTop: -2 },
+  gattaStatLbl: { fontSize: 11, fontFamily: typography.body.fontFamily, marginTop: 2 },
   gattaDivider: { width: 1, height: 44, marginHorizontal: 4 },
 
   progressLabelRow: { flexDirection: "row", justifyContent: "space-between" },
-  progressLabel: { fontSize: 12, fontFamily: "Cairo_600SemiBold" },
+  progressLabel: { fontSize: 12, fontFamily: typography.bodyLg.fontFamily },
 
-  subSectionTitle: { fontSize: 14, fontFamily: "Cairo_700Bold", textAlign: "right" },
+  subSectionTitle: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily, textAlign: "right" },
   paymentRow: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: 14 },
-  paymentRowName: { flex: 1, fontSize: 14, fontFamily: "Cairo_600SemiBold", textAlign: "right" },
-  paymentRowAmount: { fontSize: 13, fontFamily: "Cairo_700Bold" },
+  paymentRowName: { flex: 1, fontSize: 14, fontFamily: typography.bodyLg.fontFamily, textAlign: "right" },
+  paymentRowAmount: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily },
   paymentStatusPill: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100 },
-  paymentStatusPillText: { color: "#fff", fontFamily: "Cairo_700Bold", fontSize: 12 },
+  paymentStatusPillText: { color: "#fff", fontFamily: typography.headlineSm.fontFamily, fontSize: 12 },
 
   freeBadge: { flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center", paddingVertical: 14, borderRadius: 14 },
   gattaActionBtn: { flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center", paddingVertical: 13, borderRadius: 14 },
-  gattaActionBtnText: { fontFamily: "Cairo_700Bold", fontSize: 14, color: "#fff" },
+  gattaActionBtnText: { fontFamily: typography.headlineSm.fontFamily, fontSize: 14, color: "#fff" },
 
   attendanceStats: { flexDirection: "row", gap: 10 },
   attendanceStatItem: { flex: 1, alignItems: "center", gap: 6, paddingVertical: 12, borderRadius: 16 },
-  attendanceStatNum: { fontSize: 24, fontFamily: "Cairo_700Bold" },
-  attendanceStatLbl: { fontSize: 12, fontFamily: "Cairo_600SemiBold" },
+  attendanceStatNum: { fontSize: 24, fontFamily: typography.headlineSm.fontFamily },
+  attendanceStatLbl: { fontSize: 12, fontFamily: typography.bodyLg.fontFamily },
 
-  label: { fontSize: 14, fontFamily: "Cairo_700Bold", textAlign: "right" },
+  label: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily, textAlign: "right" },
   inputWrap: { borderRadius: 14, borderBottomWidth: 2, overflow: "hidden" },
-  input: { paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, fontFamily: "Cairo_600SemiBold" },
-  errorText: { fontSize: 12, fontFamily: "Cairo_400Regular", textAlign: "right" },
+  input: { paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, fontFamily: typography.bodyLg.fontFamily },
+  errorText: { fontSize: 12, fontFamily: typography.body.fontFamily, textAlign: "right" },
 
 
   timesGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "flex-end" },
   timeChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 24 },
-  timeText: { fontSize: 14, fontFamily: "Cairo_600SemiBold" },
+  timeText: { fontSize: 14, fontFamily: typography.bodyLg.fontFamily },
 
   suggestions: { marginTop: 4, borderRadius: 14, overflow: "hidden" },
   suggestion: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 14, paddingVertical: 10, justifyContent: "flex-end" },
-  suggestionText: { fontSize: 14, fontFamily: "Cairo_400Regular" },
+  suggestionText: { fontSize: 14, fontFamily: typography.body.fontFamily },
 
   counterRow: { flexDirection: "row", alignItems: "center", gap: 16, justifyContent: "center", borderRadius: 16, padding: 10 },
   counterBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  counterVal: { fontSize: 22, fontFamily: "Cairo_700Bold", minWidth: 40, textAlign: "center" },
+  counterVal: { fontSize: 22, fontFamily: typography.headlineSm.fontFamily, minWidth: 40, textAlign: "center" },
 
   saveBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, paddingVertical: 16, borderRadius: 24 },
-  saveBtnText: { color: "#fff", fontSize: 16, fontFamily: "Cairo_700Bold" },
+  saveBtnText: { color: "#fff", fontSize: 16, fontFamily: typography.headlineSm.fontFamily },
 
   cancelBtn: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 16, paddingHorizontal: 16, borderRadius: 16, borderWidth: 1 },
-  cancelBtnTitle: { fontSize: 15, fontFamily: "Cairo_700Bold" },
-  cancelBtnSub: { fontSize: 12, fontFamily: "Cairo_400Regular" },
+  cancelBtnTitle: { fontSize: 15, fontFamily: typography.headlineSm.fontFamily },
+  cancelBtnSub: { fontSize: 12, fontFamily: typography.body.fontFamily },
 
   completeMatchBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, paddingVertical: 16, borderRadius: 24, marginTop: 4 },
-  completeMatchBtnText: { color: "#fff", fontSize: 16, fontFamily: "Cairo_700Bold" },
+  completeMatchBtnText: { color: "#fff", fontSize: 16, fontFamily: typography.headlineSm.fontFamily },
 
   toast: {
     position: "absolute", bottom: 30, left: 20, right: 20,
@@ -1289,5 +1292,5 @@ const styles = StyleSheet.create({
       web: { boxShadow: "0px 4px 16px rgba(0,0,0,0.15)" },
     }),
   },
-  toastText: { color: "#fff", fontFamily: "Cairo_700Bold", fontSize: 14, textAlign: "center", flex: 1 },
+  toastText: { color: "#fff", fontFamily: typography.headlineSm.fontFamily, fontSize: 14, textAlign: "center", flex: 1 },
 });

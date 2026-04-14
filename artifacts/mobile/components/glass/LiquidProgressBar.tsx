@@ -14,7 +14,7 @@ import type { SportType } from "@/context/AppContext";
 
 interface LiquidProgressBarProps {
   progress: number;
-  sport: SportType;
+  sport: SportType | null;
   height?: number;
   showShimmer?: boolean;
   overrideColor?: string;

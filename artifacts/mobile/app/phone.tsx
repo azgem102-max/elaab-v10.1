@@ -15,11 +15,15 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "@/i18n";
+import { typography } from "@/constants/typography";
+
 
 export default function PhoneScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { prefill } = useLocalSearchParams<{ prefill?: string }>();
+  const { t, isRTL } = useTranslation();
   const [phone, setPhone] = useState(() => {
     if (!prefill) return "";
     if (prefill.startsWith("+966")) return `0${prefill.substring(4)}`;
@@ -48,9 +52,9 @@ export default function PhoneScreen() {
 
   function getValidationHint(): string {
     if (!cleanPhone) return "";
-    if (!cleanPhone.startsWith("05")) return "يجب أن يبدأ الرقم بـ 05";
-    if (cleanPhone.length < 10) return `أدخل ${10 - cleanPhone.length} أرقام إضافية`;
-    if (cleanPhone.length > 10) return "الرقم طويل جداً";
+    if (!cleanPhone.startsWith("05")) return t('phone.mustStart05');
+    if (cleanPhone.length < 10) return t('phone.enterMoreDigits', { count: String(10 - cleanPhone.length) });
+    if (cleanPhone.length > 10) return t('phone.tooLong');
     return "";
   }
 
@@ -68,7 +72,7 @@ export default function PhoneScreen() {
       const msg =
         err instanceof Error
           ? err.message
-          : "تعذّر الاتصال بالخادم. تحقق من اتصالك بالإنترنت.";
+          : t('phone.connectionError');
       setError(msg);
     } finally {
       setLoading(false);
@@ -93,7 +97,7 @@ export default function PhoneScreen() {
           style={[styles.backBtn, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.border }]}
         >
           <Ionicons
-            name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"}
+            name={isRTL ? "chevron-forward" : "chevron-back"}
             size={22}
             color={colors.onSurface}
           />
@@ -107,9 +111,9 @@ export default function PhoneScreen() {
               color={colors.primary}
             />
           </View>
-          <Text style={[styles.title, { color: colors.onSurface }]}>رقم الجوال</Text>
+          <Text style={[styles.title, { color: colors.onSurface }]}>{t('phone.title')}</Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-            سنرسل لك رمز التحقق على هذا الرقم
+            {t('phone.subtitle')}
           </Text>
         </View>
 
@@ -127,12 +131,12 @@ export default function PhoneScreen() {
               setPhone(formatSaudiPhone(digits));
               setError("");
             }}
-            placeholder="05X XXX XXXX"
+            placeholder={t('phone.placeholder')}
             keyboardType="phone-pad"
             maxLength={12}
             textAlign="right"
             editable={!loading}
-            style={[styles.glassInput, { fontSize: 20, fontFamily: "Cairo_600SemiBold" }]}
+            style={[styles.glassInput, { fontSize: 20, fontFamily: typography.bodyLg.fontFamily }]}
           />
         </View>
 
@@ -143,7 +147,7 @@ export default function PhoneScreen() {
             color={colors.mutedForeground}
           />
           <Text style={[styles.noteText, { color: colors.mutedForeground }]}>
-            أدخل رقم الجوال بدون رمز الدولة (مثال: 0512345678)
+            {t('phone.hint')}
           </Text>
         </View>
 
@@ -174,7 +178,7 @@ export default function PhoneScreen() {
         )}
 
         <GlassButton
-          label="إرسال الرمز"
+          label={t('phone.sendCode')}
           sport="football"
           onPress={handleSend}
           disabled={!isValid}
@@ -233,12 +237,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontFamily: "Cairo_900Black",
+    fontFamily: typography.displaySm.fontFamily,
     textAlign: "right",
   },
   subtitle: {
     fontSize: 14,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "right",
     lineHeight: 22,
   },
@@ -254,7 +258,7 @@ const styles = StyleSheet.create({
   },
   prefixText: {
     fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
   glassInput: { width: "100%" },
   note: {
@@ -265,7 +269,7 @@ const styles = StyleSheet.create({
   },
   noteText: {
     fontSize: 12,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "right",
   },
   errorBox: {
@@ -278,7 +282,7 @@ const styles = StyleSheet.create({
   errorText: {
     flex: 1,
     fontSize: 13,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
     textAlign: "right",
   },
   sendBtn: {

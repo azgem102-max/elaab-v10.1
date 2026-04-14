@@ -20,7 +20,10 @@ import {
   Platform, Pressable, ScrollView, Share, StyleSheet, Text, View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "@/i18n";
 import type { Match } from "@/context/AppContext";
+import { typography } from "@/constants/typography";
+
 
 type ToastType = "success" | "error" | "warning";
 
@@ -49,6 +52,7 @@ function ConfirmDialog({
   onCancel: () => void;
   colors: ReturnType<typeof useColors>;
 }) {
+  const { t } = useTranslation();
   const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
@@ -74,12 +78,12 @@ function ConfirmDialog({
           <Text style={[dlgStyles.title, { color: colors.onSurface }]}>{config.title}</Text>
           <Text style={[dlgStyles.message, { color: colors.mutedForeground }]}>{config.message}</Text>
           <View style={dlgStyles.buttons}>
-            <Pressable
+             <Pressable
               style={[dlgStyles.btn, dlgStyles.cancelBtn, { borderColor: colors.border, opacity: confirming ? 0.5 : 1 }]}
               onPress={onCancel}
               disabled={confirming}
             >
-              <Text style={[dlgStyles.btnText, { color: colors.mutedForeground }]}>تراجع</Text>
+              <Text style={[dlgStyles.btnText, { color: colors.mutedForeground }]}>{t("matchDetails.back")}</Text>
             </Pressable>
             <Pressable
               style={[
@@ -121,13 +125,13 @@ const dlgStyles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 8,
   },
-  title: { fontSize: 17, fontFamily: "Cairo_700Bold", textAlign: "right" },
-  message: { fontSize: 14, fontFamily: "Cairo_400Regular", textAlign: "right", lineHeight: 22 },
+  title: { fontSize: 17, fontFamily: typography.headlineSm.fontFamily, textAlign: "right" },
+  message: { fontSize: 14, fontFamily: typography.body.fontFamily, textAlign: "right", lineHeight: 22 },
   buttons: { flexDirection: "row", gap: 10, marginTop: 4 },
   btn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   cancelBtn: { borderWidth: 1 },
   confirmBtn: {},
-  btnText: { fontSize: 14, fontFamily: "Cairo_700Bold" },
+  btnText: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily },
 });
 
 function Toast({ toast }: { toast: ToastState }) {
@@ -185,6 +189,7 @@ function Toast({ toast }: { toast: ToastState }) {
 }
 
 export default function MatchDetailsScreen() {
+  const { t } = useTranslation();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -316,17 +321,17 @@ export default function MatchDetailsScreen() {
       return (
         <View style={[styles.loading, { backgroundColor: colors.background, gap: 16 }]}>
           <Ionicons name="wifi-outline" size={48} color={colors.mutedForeground} />
-          <Text style={{ color: colors.onSurface, fontFamily: "Cairo_700Bold", fontSize: 16, textAlign: "center" }}>
-            تعذّر تحميل بيانات المباراة
+          <Text style={{ color: colors.onSurface, fontFamily: typography.headlineSm.fontFamily, fontSize: 16, textAlign: "center" }}>
+            {t("matchDetails.loadingError")}
           </Text>
-          <Text style={{ color: colors.mutedForeground, fontFamily: "Cairo_400Regular", fontSize: 13, textAlign: "center" }}>
-            تحقق من اتصالك بالإنترنت وحاول مجدداً
+          <Text style={{ color: colors.mutedForeground, fontFamily: typography.body.fontFamily, fontSize: 13, textAlign: "center" }}>
+            {t("matchDetails.connectionError")}
           </Text>
           <Pressable
             style={{ borderRadius: 20, overflow: "hidden", backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12 }}
             onPress={() => router.back()}
           >
-            <Text style={{ color: colors.primaryForeground, fontFamily: "Cairo_700Bold", fontSize: 14 }}>العودة</Text>
+            <Text style={{ color: colors.primaryForeground, fontFamily: typography.headlineSm.fontFamily, fontSize: 14 }}>{t("matchDetails.back")}</Text>
           </Pressable>
         </View>
       );
@@ -390,9 +395,14 @@ export default function MatchDetailsScreen() {
     if (!match) return;
     const domain = process.env.EXPO_PUBLIC_DOMAIN;
     const matchLink = domain ? `https://${domain}/api/match/${match.id}` : null;
+    const detailsStr = t("matchDetails.shareDetails", {
+      date: formatDate(match.date),
+      time: match.time,
+      venue: match.venue
+    });
     const shareText = matchLink
-      ? `انضم معي في مباراة «${match.title}»\n📅 ${formatDate(match.date)} الساعة ${match.time}\n📍 ${match.venue}\n\n${matchLink}`
-      : `انضم معي في مباراة «${match.title}»\n📅 ${formatDate(match.date)} الساعة ${match.time}\n📍 ${match.venue}\nحمّل تطبيق العب للانضمام`;
+      ? `${t("matchDetails.shareMessage", { title: match.title })}\n${detailsStr}\n\n${matchLink}`
+      : `${t("matchDetails.shareMessage", { title: match.title })}\n${detailsStr}\n${t("matchDetails.downloadApp")}`;
     try {
       await Share.share({ message: shareText, title: match.title });
     } catch {}
@@ -407,11 +417,16 @@ export default function MatchDetailsScreen() {
     }
     const domain = process.env.EXPO_PUBLIC_DOMAIN;
     const inviteLink = domain ? `https://${domain}/api/invite/${token}` : null;
+    const detailsStr = t("matchDetails.shareDetails", {
+      date: formatDate(match.date),
+      time: match.time,
+      venue: match.venue
+    });
     const shareText = inviteLink
-      ? `دعوة للانضمام إلى مباراة «${match.title}»\n📅 ${formatDate(match.date)} الساعة ${match.time}\n📍 ${match.venue}\n\n${inviteLink}`
-      : `دعوة للانضمام إلى مباراة «${match.title}»\n📅 ${formatDate(match.date)} الساعة ${match.time}\n📍 ${match.venue}\nحمّل تطبيق العب للانضمام`;
+      ? `${t("matchDetails.inviteTitle", { title: match.title })}\n${detailsStr}\n\n${inviteLink}`
+      : `${t("matchDetails.inviteTitle", { title: match.title })}\n${detailsStr}\n${t("matchDetails.downloadApp")}`;
     try {
-      await Share.share({ message: shareText, title: `دعوة: ${match.title}` });
+      await Share.share({ message: shareText, title: `${t("matchDetails.inviteTitle", { title: match.title })}` });
     } catch {}
   }
 
@@ -422,14 +437,14 @@ export default function MatchDetailsScreen() {
     setJoiningLoading(false);
     if (result.success) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      showToast(`تم تسجيلك في ${match.title} ✓`, "success");
+      showToast(t("matchDetails.joinSuccess", { title: match.title }), "success");
       refetchMatch();
     } else if (result.alreadyJoined) {
-      showToast("أنت مسجل بالفعل في هذه المباراة", "warning");
+      showToast(t("matchDetails.alreadyJoined"), "warning");
     } else if (result.isFull) {
-      showToast("المباراة مكتملة، لا توجد أماكن متاحة", "error");
+      showToast(t("matchDetails.matchFull"), "error");
     } else if (result.conflict) {
-      showToast(`تعارض في المواعيد مع: ${result.conflict.title}`, "warning");
+      showToast(t("matchDetails.timeConflict", { title: result.conflict.title }), "warning");
     } else if (result.error) {
       showToast(result.error, "error");
     }
@@ -459,14 +474,14 @@ export default function MatchDetailsScreen() {
           </Pressable>
           <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
             {match.status === "completed" && (
-              <GlassBadge label="منتهية" variant="success" size="sm" />
+              <GlassBadge label={t("matchDetails.status.completed")} variant="success" size="sm" />
             )}
             {match.status === "cancelled" && (
-              <GlassBadge label="ملغاة" variant="error" size="sm" />
+              <GlassBadge label={t("matchDetails.status.cancelled")} variant="error" size="sm" />
             )}
             {(match.sport === "padel" || match.sport === "tennis") && match.matchFormat && (
               <GlassBadge
-                label={match.matchFormat === "single" ? "فردي" : "مزدوج"}
+                label={match.matchFormat === "single" ? t("matchDetails.format.single") : t("matchDetails.format.double")}
                 variant="default"
                 size="sm"
               />
@@ -476,7 +491,7 @@ export default function MatchDetailsScreen() {
               onPress={handleShareMatch}
             >
               <Ionicons name="share-outline" size={14} color="#fff" />
-              <Text style={styles.sportTagText}>شارك</Text>
+              <Text style={styles.sportTagText}>{t("matchDetails.share")}</Text>
             </Pressable>
           </View>
         </View>
@@ -488,10 +503,10 @@ export default function MatchDetailsScreen() {
           <View style={{ flex: 1 }}>
             <Text style={styles.matchTitle} numberOfLines={2}>{match.title}</Text>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6, justifyContent: "flex-end", marginTop: 2 }}>
-              <Text style={[styles.sportTagText, { color: "rgba(255,255,255,0.85)", fontSize: 13 }]}>{sportLabel(match.sport)}</Text>
+              <Text style={[styles.sportTagText, { color: "rgba(255,255,255,0.85)", fontSize: 13 }]}>{t(`sports.${match.sport}`)}</Text>
               {match.sessionType === "training" && (
                 <View style={[styles.sessionBadge, { backgroundColor: "#ffffff22" }]}>
-                  <Text style={styles.sessionBadgeText}>تدريب</Text>
+                  <Text style={styles.sessionBadgeText}>{t("matchDetails.training")}</Text>
                 </View>
               )}
             </View>
@@ -519,12 +534,12 @@ export default function MatchDetailsScreen() {
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
               <View style={[styles.heroSlotsIndicator, { backgroundColor: slotsColor }]} />
-              <Text style={{ color: "#fff", fontFamily: "Cairo_700Bold", fontSize: 13 }}>
-                {isFull ? "مكتملة" : `${availableSlots} مكان متبقي`}
+              <Text style={{ color: "#fff", fontFamily: typography.headlineSm.fontFamily, fontSize: 13 }}>
+                {isFull ? t("matchDetails.spotsFull") : t("matchDetails.spotsRemaining", { count: availableSlots })}
               </Text>
             </View>
-            <Text style={{ color: "rgba(255,255,255,0.85)", fontFamily: "Cairo_600SemiBold", fontSize: 13 }}>
-              {filledCount}/{match.maxPlayers} لاعب
+            <Text style={{ color: "rgba(255,255,255,0.85)", fontFamily: typography.bodyLg.fontFamily, fontSize: 13 }}>
+              {filledCount}/{match.maxPlayers} {t("matchDetails.players")}
             </Text>
           </View>
           <LiquidProgressBar progress={progressPct} sport={match.sport} height={6} overrideColor={progressBarColor} />
@@ -532,19 +547,22 @@ export default function MatchDetailsScreen() {
 
         <View style={styles.heroStatsBar}>
           <View style={styles.heroStatItem}>
-            <Text style={styles.heroStatNum}>{costPerPlayer > 0 ? `${costPerPlayer}` : "مجاني"}</Text>
-            {costPerPlayer > 0 && <Text style={styles.heroStatLbl}>ر.س للفرد</Text>}
-            {costPerPlayer === 0 && <Text style={styles.heroStatLbl}>الدخول</Text>}
+            <Text style={styles.heroStatNum}>{costPerPlayer > 0 ? `${costPerPlayer}` : t("matchDetails.entry")}</Text>
+            {costPerPlayer > 0 ? (
+              <Text style={styles.heroStatLbl}>{t("matchDetails.perPlayer")}</Text>
+            ) : (
+              <Text style={styles.heroStatLbl}>{t("matchDetails.entry")}</Text>
+            )}
           </View>
           <View style={styles.heroStatDivider} />
           <View style={styles.heroStatItem}>
             <Text style={styles.heroStatNum}>{paidPlayers}</Text>
-            <Text style={styles.heroStatLbl}>دفعوا</Text>
+            <Text style={styles.heroStatLbl}>{t("matchDetails.paid")}</Text>
           </View>
           <View style={styles.heroStatDivider} />
           <View style={styles.heroStatItem}>
             <Text style={styles.heroStatNum}>{match.players.filter((p) => p.attendance === "present").length}</Text>
-            <Text style={styles.heroStatLbl}>حضروا</Text>
+            <Text style={styles.heroStatLbl}>{t("matchDetails.present")}</Text>
           </View>
         </View>
       </View>
@@ -558,14 +576,14 @@ export default function MatchDetailsScreen() {
           <GlassCard variant="medium" sport={match.sport}>
             <View style={[styles.sectionHeader, { marginBottom: 10 }]}>
               <Ionicons name="map-outline" size={18} color={sc} />
-              <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>الموقع</Text>
+              <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t("matchDetails.location")}</Text>
             </View>
             <Pressable
               style={[styles.openLocationBtn, { backgroundColor: sc + "18", borderColor: sc + "30" }]}
               onPress={() => Linking.openURL(match.location!)}
             >
               <Ionicons name="location" size={20} color={sc} />
-              <Text style={[styles.openLocationText, { color: sc }]}>📍 افتح الموقع</Text>
+              <Text style={[styles.openLocationText, { color: sc }]}>📍 {t("matchDetails.openLocation")}</Text>
               <Ionicons name="open-outline" size={16} color={sc + "99"} />
             </Pressable>
           </GlassCard>
@@ -575,7 +593,7 @@ export default function MatchDetailsScreen() {
           <GlassCard variant="medium" sport={match.sport}>
             <View style={styles.sectionHeader}>
               <Ionicons name="document-text-outline" size={18} color={sc} />
-              <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>الوصف</Text>
+              <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t("matchDetails.description")}</Text>
             </View>
             <Text style={[styles.descriptionText, { color: colors.onSurfaceVariant }]}>{match.description}</Text>
           </GlassCard>
@@ -584,7 +602,7 @@ export default function MatchDetailsScreen() {
         <GlassCard variant="medium" sport={match.sport}>
           <View style={styles.sectionHeader}>
             <Ionicons name="person-circle-outline" size={18} color={sc} />
-            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>المنظّم</Text>
+            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t("matchDetails.organizer")}</Text>
           </View>
           <View style={[styles.organizerRow, { marginTop: 8 }]}>
             <View style={[styles.avatarMed, { backgroundColor: colors.surfaceContainer, borderWidth: 1, borderColor: colors.border }]}>
@@ -614,7 +632,7 @@ export default function MatchDetailsScreen() {
           <GlassCard variant="medium" sport={match.sport}>
             <View style={styles.sectionHeader}>
               <Ionicons name="wallet-outline" size={18} color={sc} />
-              <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>الغطّة</Text>
+              <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t("matchDetails.matchFee")}</Text>
             </View>
             {(() => {
               const myPayment = match.players.find((p) => p.id === currentUserId)?.paymentStatus;
@@ -624,18 +642,18 @@ export default function MatchDetailsScreen() {
                   <View style={[styles.playerShareBox, { backgroundColor: isPaid ? colors.success + "12" : colors.surfaceContainerLow, marginTop: 8, borderWidth: 1, borderColor: isPaid ? colors.success + "30" : colors.border }]}>
                     <Ionicons name={isPaid ? "checkmark-circle" : "cash-outline"} size={28} color={isPaid ? colors.success : sc} />
                     <View style={{ flex: 1, alignItems: "flex-end", gap: 2 }}>
-                      <Text style={[styles.playerShareLabel, { color: colors.mutedForeground }]}>نصيبك من الغطّة</Text>
-                      <Text style={[styles.playerShareAmount, { color: isPaid ? colors.success : colors.onSurface }]}>{costPerPlayer} <Text style={{ fontSize: 14, color: colors.mutedForeground }}>ر.س</Text></Text>
+                      <Text style={[styles.playerShareLabel, { color: colors.mutedForeground }]}>{t("matchDetails.yourShare")}</Text>
+                      <Text style={[styles.playerShareAmount, { color: isPaid ? colors.success : colors.onSurface }]}>{costPerPlayer} <Text style={{ fontSize: 14, color: colors.mutedForeground }}>{t("createMatch.currencySymbol")}</Text></Text>
                     </View>
                     <View style={[styles.gattaStatusPill, { backgroundColor: isPaid ? colors.success : colors.warning }]}>
-                      <Text style={styles.gattaStatusPillText}>{isPaid ? "دفعت ✓" : "لم تدفع"}</Text>
+                      <Text style={styles.gattaStatusPillText}>{isPaid ? t("matchDetails.hasPaid") : t("matchDetails.notPaid")}</Text>
                     </View>
                   </View>
                   {!isPaid && (
                     <View style={[styles.playerShareStatusRow, { backgroundColor: colors.warning + "20", borderWidth: 1, borderColor: colors.warning + "40" }]}>
                       <Ionicons name="information-circle-outline" size={16} color={colors.warning} />
                       <Text style={[styles.playerShareStatusText, { color: colors.warning }]}>
-                        تواصل مع المنظّم لتأكيد دفع حصتك
+                        {t("matchDetails.paymentHint")}
                       </Text>
                     </View>
                   )}
@@ -649,7 +667,7 @@ export default function MatchDetailsScreen() {
           <View style={styles.sectionHeader}>
             <Ionicons name="people-outline" size={18} color={colors.onSurface} />
             <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
-              اللاعبون ({filledCount}/{match.maxPlayers})
+              {t("matchDetails.players")} ({filledCount}/{match.maxPlayers})
             </Text>
           </View>
 
@@ -659,7 +677,7 @@ export default function MatchDetailsScreen() {
             <View style={styles.playerGroup}>
               <View style={styles.playerGroupHeader}>
                 <Ionicons name="checkmark-circle" size={14} color={colors.success} />
-                <Text style={[styles.playerGroupLabel, { color: colors.success }]}>سيلعبون ({presentPlayers.length})</Text>
+                <Text style={[styles.playerGroupLabel, { color: colors.success }]}>{t("matchDetails.willPlay", { count: presentPlayers.length })}</Text>
               </View>
               {presentPlayers.map((player) => (
                 <PlayerRow
@@ -681,7 +699,7 @@ export default function MatchDetailsScreen() {
             <View style={styles.playerGroup}>
               <View style={styles.playerGroupHeader}>
                 <Ionicons name="time-outline" size={14} color={colors.warning} />
-                <Text style={[styles.playerGroupLabel, { color: colors.warning }]}>بانتظار التأكيد ({pendingPlayers.length})</Text>
+                <Text style={[styles.playerGroupLabel, { color: colors.warning }]}>{t("matchDetails.waitingConfirm", { count: pendingPlayers.length })}</Text>
               </View>
               {pendingPlayers.map((player) => (
                 <PlayerRow
@@ -721,7 +739,7 @@ export default function MatchDetailsScreen() {
             <View style={styles.playerGroup}>
               <Pressable style={styles.playerGroupHeader} onPress={() => setShowAbsent((v) => !v)}>
                 <Ionicons name="close-circle" size={14} color={colors.destructive} />
-                <Text style={[styles.playerGroupLabel, { color: colors.destructive, flex: 1 }]}>غائبون ({absentPlayers.length})</Text>
+                <Text style={[styles.playerGroupLabel, { color: colors.destructive, flex: 1 }]}>{t("matchDetails.absent", { count: absentPlayers.length })}</Text>
                 <Ionicons name={showAbsent ? "chevron-up" : "chevron-down"} size={14} color={colors.mutedForeground} />
               </Pressable>
               {showAbsent && absentPlayers.map((player) => (
@@ -742,14 +760,14 @@ export default function MatchDetailsScreen() {
 
           {match.players.length === 0 && (
             <Text style={[styles.noPlayersText, { color: colors.mutedForeground }]}>
-              لا يوجد لاعبون مسجلون بعد
+              {t("matchDetails.noPlayers")}
             </Text>
           )}
           {availableSlots > 0 && match.players.length > 0 && (
             <View style={[styles.emptySlots, { backgroundColor: slotsColor + "12", borderRadius: 14, borderWidth: 1, borderColor: slotsColor + "25" }]}>
               <Ionicons name="person-add-outline" size={18} color={slotsColor} />
               <Text style={[styles.emptySlotsText, { color: slotsColor }]}>
-                {availableSlots} مكان متبقي
+                {t("matchDetails.spotsRemaining", { count: availableSlots })}
               </Text>
             </View>
           )}
@@ -759,38 +777,38 @@ export default function MatchDetailsScreen() {
           <GlassCard variant="sport" sport={match.sport} style={styles.organizerToolsSection}>
             <View style={styles.organizerToolsHeader}>
               <Ionicons name="shield-checkmark" size={16} color={sc} />
-              <Text style={[styles.organizerToolsTitle, { color: sc }]}>أدوات المنظّم</Text>
+              <Text style={[styles.organizerToolsTitle, { color: sc }]}>{t("matchDetails.organizerTools")}</Text>
             </View>
 
             {match.status !== "completed" && match.status !== "cancelled" && (
               <GlassCard variant="light" sport={match.sport}>
                 <View style={styles.sectionHeader}>
                   <Ionicons name="wallet-outline" size={18} color={sc} />
-                  <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>مراقبة المدفوعات</Text>
+                  <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t("matchDetails.paymentMonitoring")}</Text>
                 </View>
                 <View style={[styles.gattaBox, { backgroundColor: colors.surfaceContainer, marginTop: 8 }]}>
                   <View style={styles.gattaRow}>
                     <Text style={[styles.gattaVal, { color: colors.success }]}>{totalCollected}</Text>
-                    <Text style={[styles.gattaUnit, { color: colors.success }]}>ر.س</Text>
-                    <Text style={[styles.gattaLbl, { color: colors.mutedForeground }]}>تم جمعه</Text>
+                    <Text style={[styles.gattaUnit, { color: colors.success }]}>{t("createMatch.currencySymbol")}</Text>
+                    <Text style={[styles.gattaLbl, { color: colors.mutedForeground }]}>{t("matchDetails.collected")}</Text>
                   </View>
                   <View style={[styles.gattaDivider, { backgroundColor: colors.onSurface + "10" }]} />
                   <View style={styles.gattaRow}>
                     <Text style={[styles.gattaVal, { color: colors.onSurface }]}>{totalExpected}</Text>
-                    <Text style={[styles.gattaUnit, { color: colors.mutedForeground }]}>ر.س</Text>
-                    <Text style={[styles.gattaLbl, { color: colors.mutedForeground }]}>الإجمالي</Text>
+                    <Text style={[styles.gattaUnit, { color: colors.mutedForeground }]}>{t("createMatch.currencySymbol")}</Text>
+                    <Text style={[styles.gattaLbl, { color: colors.mutedForeground }]}>{t("matchDetails.total")}</Text>
                   </View>
                   <View style={[styles.gattaDivider, { backgroundColor: colors.onSurface + "10" }]} />
                   <View style={styles.gattaRow}>
                     <Text style={[styles.gattaVal, { color: colors.tertiary }]}>{Math.round((totalExpected - totalCollected) * 100) / 100}</Text>
-                    <Text style={[styles.gattaUnit, { color: colors.tertiary }]}>ر.س</Text>
-                    <Text style={[styles.gattaLbl, { color: colors.mutedForeground }]}>متبقي</Text>
+                    <Text style={[styles.gattaUnit, { color: colors.tertiary }]}>{t("createMatch.currencySymbol")}</Text>
+                    <Text style={[styles.gattaLbl, { color: colors.mutedForeground }]}>{t("matchDetails.remaining")}</Text>
                   </View>
                 </View>
                 <View style={styles.progressBarWrap}>
                   <LiquidProgressBar progress={collectedPct} sport={match.sport} height={8} />
                   <Text style={[styles.progressPct, { color: colors.mutedForeground }]}>
-                    {Math.round(totalCollected)} من {Math.round(totalExpected)} ر.س
+                    {t("matchDetails.paymentProgress", { collected: Math.round(totalCollected), total: Math.round(totalExpected), currency: t("createMatch.currencySymbol") })}
                   </Text>
                 </View>
               </GlassCard>
@@ -1290,11 +1308,11 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   sessionBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  sessionBadgeText: { color: "#fff", fontFamily: "Cairo_700Bold", fontSize: 11 },
+  sessionBadgeText: { color: "#fff", fontFamily: typography.headlineSm.fontFamily, fontSize: 11 },
 
   sportTag: { flexDirection: "row", gap: 4, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 24, alignItems: "center" },
-  sportTagText: { fontSize: 12, fontFamily: "Cairo_700Bold", color: "#fff" },
-  matchTitle: { fontSize: 22, fontFamily: "Cairo_700Bold", color: "#fff", textAlign: "right", lineHeight: 34 },
+  sportTagText: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily, color: "#fff" },
+  matchTitle: { fontSize: 22, fontFamily: typography.headlineSm.fontFamily, color: "#fff", textAlign: "right", lineHeight: 34 },
 
   heroMetaRow: { flexDirection: "row", gap: 8, justifyContent: "flex-end", alignItems: "center", flexWrap: "wrap" },
   heroMetaBadge: {
@@ -1302,7 +1320,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff18", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20,
   },
   heroMetaBadgeMap: { flex: 1, maxWidth: 160 },
-  heroMetaText: { fontSize: 12, color: "#fff", fontFamily: "Cairo_400Regular" },
+  heroMetaText: { fontSize: 12, color: "#fff", fontFamily: typography.body.fontFamily },
 
   heroProgressWrap: { gap: 0 },
   heroSlotsIndicator: { width: 8, height: 8, borderRadius: 4 },
@@ -1312,8 +1330,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff15", borderRadius: 18, padding: 10, marginTop: 2,
   },
   heroStatItem: { alignItems: "center", gap: 2, flex: 1 },
-  heroStatNum: { fontSize: 18, fontFamily: "Cairo_700Bold", color: "#fff" },
-  heroStatLbl: { fontSize: 11, fontFamily: "Cairo_400Regular", color: "#ffffffCC" },
+  heroStatNum: { fontSize: 18, fontFamily: typography.headlineSm.fontFamily, color: "#fff" },
+  heroStatLbl: { fontSize: 11, fontFamily: typography.body.fontFamily, color: "#ffffffCC" },
   heroStatDivider: { width: 1, height: 30, backgroundColor: "#ffffff30" },
   heroFillDot: { width: 8, height: 8, borderRadius: 4, marginBottom: 2 },
 
@@ -1321,14 +1339,14 @@ const styles = StyleSheet.create({
     flex: 1, alignItems: "center", paddingVertical: 6, borderRadius: 12, borderWidth: 1,
     marginHorizontal: 4,
   },
-  heroSlotsNum: { fontSize: 20, fontFamily: "Cairo_700Bold" },
-  heroSlotsLbl: { fontSize: 10, fontFamily: "Cairo_400Regular", color: "#ffffffCC" },
+  heroSlotsNum: { fontSize: 20, fontFamily: typography.headlineSm.fontFamily },
+  heroSlotsLbl: { fontSize: 10, fontFamily: typography.body.fontFamily, color: "#ffffffCC" },
 
   scroll: { paddingHorizontal: 16, gap: 14, paddingTop: 14 },
 
   section: { borderRadius: 24, padding: 16, gap: 12 },
   sectionHeader: { flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "flex-end" },
-  sectionTitle: { fontSize: 17, fontFamily: "Cairo_700Bold", lineHeight: 26 },
+  sectionTitle: { fontSize: 17, fontFamily: typography.headlineSm.fontFamily, lineHeight: 26 },
 
   openLocationBtn: {
     flexDirection: "row",
@@ -1340,69 +1358,69 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
   },
-  openLocationText: { fontSize: 16, fontFamily: "Cairo_700Bold" },
+  openLocationText: { fontSize: 16, fontFamily: typography.headlineSm.fontFamily },
 
-  descriptionText: { fontSize: 14, fontFamily: "Cairo_400Regular", textAlign: "right", lineHeight: 22 },
+  descriptionText: { fontSize: 14, fontFamily: typography.body.fontFamily, textAlign: "right", lineHeight: 22 },
 
   organizerRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  organizerName: { fontSize: 16, fontFamily: "Cairo_700Bold", textAlign: "right", lineHeight: 26 },
+  organizerName: { fontSize: 16, fontFamily: typography.headlineSm.fontFamily, textAlign: "right", lineHeight: 26 },
   relBadgeRow: { flexDirection: "row", gap: 4, alignItems: "center", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 24 },
-  relText: { fontSize: 12, fontFamily: "Cairo_600SemiBold" },
+  relText: { fontSize: 12, fontFamily: typography.bodyLg.fontFamily },
   avatarMed: { width: 52, height: 52, borderRadius: 26, alignItems: "center", justifyContent: "center" },
-  avatarInitial: { fontSize: 22, fontFamily: "Cairo_700Bold" },
+  avatarInitial: { fontSize: 22, fontFamily: typography.headlineSm.fontFamily },
   contactBtn: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },
 
   gattaBox: { flexDirection: "row", borderRadius: 16, padding: 14, alignItems: "center" },
   gattaRow: { flex: 1, alignItems: "center", gap: 2 },
-  gattaVal: { fontSize: 18, fontFamily: "Cairo_700Bold" },
-  gattaUnit: { fontSize: 11, fontFamily: "Cairo_400Regular", marginTop: -2 },
-  gattaLbl: { fontSize: 11, fontFamily: "Cairo_400Regular", marginTop: 2 },
+  gattaVal: { fontSize: 18, fontFamily: typography.headlineSm.fontFamily },
+  gattaUnit: { fontSize: 11, fontFamily: typography.body.fontFamily, marginTop: -2 },
+  gattaLbl: { fontSize: 11, fontFamily: typography.body.fontFamily, marginTop: 2 },
   gattaDivider: { width: 1, height: 40, marginHorizontal: 4 },
 
   playerShareBox: {
     flexDirection: "row", alignItems: "center", gap: 12,
     borderRadius: 16, padding: 16,
   },
-  playerShareLabel: { fontSize: 13, fontFamily: "Cairo_400Regular" },
-  playerShareAmount: { fontSize: 24, fontFamily: "Cairo_700Bold" },
+  playerShareLabel: { fontSize: 13, fontFamily: typography.body.fontFamily },
+  playerShareAmount: { fontSize: 24, fontFamily: typography.headlineSm.fontFamily },
   gattaStatusPill: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 100 },
-  gattaStatusPillText: { color: "#fff", fontFamily: "Cairo_700Bold", fontSize: 12 },
+  gattaStatusPillText: { color: "#fff", fontFamily: typography.headlineSm.fontFamily, fontSize: 12 },
   playerShareStatusRow: {
     flexDirection: "row", alignItems: "center",
     gap: 6, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14,
     marginTop: 8,
   },
-  playerShareStatusText: { fontSize: 13, fontFamily: "Cairo_700Bold", flex: 1, textAlign: "right" },
+  playerShareStatusText: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily, flex: 1, textAlign: "right" },
 
   progressBarWrap: { gap: 6 },
   progressBarBg: { height: 8, borderRadius: 8, overflow: "hidden" },
   progressBarFill: { height: "100%", borderRadius: 8 },
-  progressPct: { fontSize: 11, fontFamily: "Cairo_600SemiBold", textAlign: "right" },
+  progressPct: { fontSize: 11, fontFamily: typography.bodyLg.fontFamily, textAlign: "right" },
 
   playersProgressBarBg: { height: 6, borderRadius: 6, overflow: "hidden", marginBottom: 4 },
   playersProgressBarFill: { height: "100%", borderRadius: 6 },
 
   playerGroup: { gap: 4 },
   playerGroupHeader: { flexDirection: "row", alignItems: "center", gap: 6, justifyContent: "flex-end", marginBottom: 4, paddingRight: 4 },
-  playerGroupLabel: { fontSize: 13, fontFamily: "Cairo_700Bold" },
+  playerGroupLabel: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily },
 
   playerRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 6, padding: 12 },
   playerAvatar: { width: 46, height: 46, borderRadius: 23, alignItems: "center", justifyContent: "center", position: "relative" },
-  playerInitial: { fontSize: 19, fontFamily: "Cairo_700Bold" },
+  playerInitial: { fontSize: 19, fontFamily: typography.headlineSm.fontFamily },
   reliabilityBadge: {
     position: "absolute", bottom: -2, right: -2,
     width: 16, height: 16, borderRadius: 8,
     alignItems: "center", justifyContent: "center",
     borderWidth: 1.5, borderColor: "#fff",
   },
-  reliabilityBadgeText: { fontSize: 8, fontFamily: "Cairo_700Bold", color: "#fff" },
+  reliabilityBadgeText: { fontSize: 8, fontFamily: typography.headlineSm.fontFamily, color: "#fff" },
   playerInfo: { flex: 1, alignItems: "flex-end", gap: 2 },
-  playerName: { fontSize: 14, fontFamily: "Cairo_700Bold" },
-  playerPos: { fontSize: 12, fontFamily: "Cairo_400Regular" },
+  playerName: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily },
+  playerPos: { fontSize: 12, fontFamily: typography.body.fontFamily },
   organizerTag: { paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8 },
-  organizerTagText: { fontSize: 10, fontFamily: "Cairo_700Bold" },
+  organizerTagText: { fontSize: 10, fontFamily: typography.headlineSm.fontFamily },
   relPill: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 24 },
-  relPillText: { fontSize: 11, fontFamily: "Cairo_700Bold" },
+  relPillText: { fontSize: 11, fontFamily: typography.headlineSm.fontFamily },
 
   organizerControls: { flexDirection: "column", gap: 5, alignItems: "flex-end" },
   glassPill: {
@@ -1410,11 +1428,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9, paddingVertical: 5, borderRadius: 100,
     borderWidth: 1,
   },
-  glassPillText: { fontSize: 11, fontFamily: "Cairo_700Bold" },
+  glassPillText: { fontSize: 11, fontFamily: typography.headlineSm.fontFamily },
 
-  noPlayersText: { fontSize: 13, fontFamily: "Cairo_400Regular", textAlign: "center", paddingVertical: 10, lineHeight: 20 },
+  noPlayersText: { fontSize: 13, fontFamily: typography.body.fontFamily, textAlign: "center", paddingVertical: 10, lineHeight: 20 },
   emptySlots: { flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center", paddingVertical: 14 },
-  emptySlotsText: { fontSize: 14, fontFamily: "Cairo_400Regular" },
+  emptySlotsText: { fontSize: 14, fontFamily: typography.body.fontFamily },
 
   organizerToolsSection: {
     gap: 12,
@@ -1423,15 +1441,15 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center", gap: 8, justifyContent: "flex-end",
     paddingBottom: 4,
   },
-  organizerToolsTitle: { fontSize: 15, fontFamily: "Cairo_700Bold" },
+  organizerToolsTitle: { fontSize: 15, fontFamily: typography.headlineSm.fontFamily },
 
   organizerActionBtn: { borderRadius: 18 },
   organizerActionBtnInner: { paddingVertical: 13, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
-  organizerActionBtnText: { fontSize: 15, fontFamily: "Cairo_700Bold" },
+  organizerActionBtnText: { fontSize: 15, fontFamily: typography.headlineSm.fontFamily },
 
   dangerCancelBtn: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 16, paddingHorizontal: 16, borderRadius: 16, borderWidth: 1 },
-  dangerCancelBtnTitle: { fontSize: 15, fontFamily: "Cairo_700Bold" },
-  dangerCancelBtnSub: { fontSize: 12, fontFamily: "Cairo_400Regular" },
+  dangerCancelBtnTitle: { fontSize: 15, fontFamily: typography.headlineSm.fontFamily },
+  dangerCancelBtnSub: { fontSize: 12, fontFamily: typography.body.fontFamily },
 
   stickyFooter: {
     paddingHorizontal: 16,
@@ -1450,7 +1468,7 @@ const styles = StyleSheet.create({
   footerBtnLeave: { overflow: "hidden" },
   footerBtnGradient: { paddingVertical: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   footerBtnGradientJoin: { paddingVertical: 18 },
-  footerBtnText: { fontSize: 17, fontFamily: "Cairo_700Bold" },
+  footerBtnText: { fontSize: 17, fontFamily: typography.headlineSm.fontFamily },
   footerBtnTextJoin: { fontSize: 18 },
 
   toast: {
@@ -1464,7 +1482,7 @@ const styles = StyleSheet.create({
       web: { boxShadow: "0px 4px 16px rgba(0,0,0,0.15)" },
     }),
   },
-  toastText: { color: "#fff", fontFamily: "Cairo_700Bold", fontSize: 14, textAlign: "center", flex: 1 },
+  toastText: { color: "#fff", fontFamily: typography.headlineSm.fontFamily, fontSize: 14, textAlign: "center", flex: 1 },
 
   contactOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
   contactSheet: {
@@ -1482,10 +1500,10 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center", justifyContent: "center",
     gap: 10, paddingVertical: 15, borderRadius: 20,
   },
-  contactActionBtnText: { color: "rgba(255,255,255,1)", fontFamily: "Cairo_700Bold", fontSize: 16 },
+  contactActionBtnText: { color: "rgba(255,255,255,1)", fontFamily: typography.headlineSm.fontFamily, fontSize: 16 },
   contactNoPhone: {
     flexDirection: "row", alignItems: "center", justifyContent: "center",
     gap: 10, paddingVertical: 20, borderRadius: 16,
   },
-  contactNoPhoneText: { fontFamily: "Cairo_400Regular", fontSize: 14 },
+  contactNoPhoneText: { fontFamily: typography.body.fontFamily, fontSize: 14 },
 });

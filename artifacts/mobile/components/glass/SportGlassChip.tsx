@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { Pressable, StyleSheet, Text, View, ViewStyle } from "react-native";
+import { Pressable, StyleSheet, Text, View, ViewStyle, StyleProp } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -22,7 +22,7 @@ interface SportGlassChipProps {
   selected?: boolean;
   onPress?: () => void;
   emoji?: string;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);

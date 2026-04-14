@@ -20,6 +20,9 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "@/i18n";
+import { typography } from "@/constants/typography";
+
 
 const COUNTDOWN_SECONDS = 60;
 
@@ -120,6 +123,7 @@ export default function OtpScreen() {
   const insets = useSafeAreaInsets();
   const { phone } = useLocalSearchParams<{ phone?: string }>();
   const { completeOnboarding, refreshProfile } = useApp();
+  const { t, isRTL } = useTranslation();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [focusedIdx, setFocusedIdx] = useState(-1);
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
@@ -243,7 +247,7 @@ export default function OtpScreen() {
             );
             await completeOnboarding({
               id: u.id,
-              nickname: u.name ?? "مستخدم",
+              nickname: u.name ?? t('common.user'),
               phone: u.phone,
               avatarUri: u.avatarUrl ?? null,
               sports: validSports,
@@ -255,7 +259,7 @@ export default function OtpScreen() {
           } catch {
             await completeOnboarding({
               id: result.userId ?? "",
-              nickname: "مستخدم",
+              nickname: t('common.user'),
               phone: phone ?? undefined,
               sports: [],
               sportProfiles: {},
@@ -277,13 +281,13 @@ export default function OtpScreen() {
           }
         }
       } else {
-        setError("الرمز غير صحيح. حاول مرة أخرى.");
+        setError(t('otp.wrongCode'));
         setOtp(["", "", "", "", "", ""]);
         setTimeout(() => refs[0].current?.focus(), 50);
       }
     } catch (err) {
       const msg =
-        err instanceof Error ? err.message : "تعذّر التحقق من الرمز";
+        err instanceof Error ? err.message : t('otp.verifyError');
       setError(msg);
       setOtp(["", "", "", "", "", ""]);
       setTimeout(() => refs[0].current?.focus(), 50);
@@ -304,7 +308,7 @@ export default function OtpScreen() {
       startTimer();
     } catch (err) {
       const msg =
-        err instanceof Error ? err.message : "تعذّر إعادة الإرسال";
+        err instanceof Error ? err.message : t('otp.resendError');
       setError(msg);
     } finally {
       setResending(false);
@@ -334,7 +338,7 @@ export default function OtpScreen() {
           style={[styles.backBtn, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.border }]}
         >
           <Ionicons
-            name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"}
+            name={isRTL ? "chevron-forward" : "chevron-back"}
             size={22}
             color={colors.onSurface}
           />
@@ -349,8 +353,8 @@ export default function OtpScreen() {
                 color={colors.primary}
               />
             </View>
-            <Text style={[styles.title, { color: colors.onSurface }]}>رمز التحقق</Text>
-            <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>أدخل الرمز المرسل إلى</Text>
+            <Text style={[styles.title, { color: colors.onSurface }]}>{t('otp.title')}</Text>
+            <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>{t('otp.subtitle')}</Text>
             <Text style={[styles.phoneHint, { color: colors.primary }]}>{displayPhone}</Text>
           </View>
         </GlassCard>
@@ -395,7 +399,7 @@ export default function OtpScreen() {
             <ActivityIndicator size="small" color={colors.primaryForeground} />
           ) : (
             <Text style={[styles.verifyBtnText, { color: isComplete ? colors.primaryForeground : colors.mutedForeground }]}>
-              تحقق من الرمز
+              {t('otp.verify')}
             </Text>
           )}
         </Pressable>
@@ -409,7 +413,7 @@ export default function OtpScreen() {
                 />
               </View>
               <Text style={[styles.timerText, { color: colors.mutedForeground }]}>
-                إعادة الإرسال بعد {countdown} ثانية
+                {t('otp.resendAfter', { seconds: String(countdown) })}
               </Text>
             </>
           ) : (
@@ -421,7 +425,7 @@ export default function OtpScreen() {
               {resending ? (
                 <ActivityIndicator size="small" color={colors.primary} />
               ) : (
-                <Text style={[styles.resendLink, { color: colors.primary }]}>إعادة إرسال الرمز</Text>
+                <Text style={[styles.resendLink, { color: colors.primary }]}>{t('otp.resendCode')}</Text>
               )}
             </Pressable>
           )}
@@ -436,7 +440,7 @@ export default function OtpScreen() {
             })
           }
         >
-          <Text style={[styles.changePhoneText, { color: colors.primary }]}>تغيير رقم الجوال</Text>
+          <Text style={[styles.changePhoneText, { color: colors.primary }]}>{t('otp.changePhone')}</Text>
         </Pressable>
 
         {__DEV__ && (
@@ -447,7 +451,7 @@ export default function OtpScreen() {
               setError("");
             }}
           >
-            <Text style={[styles.devBtnText, { color: colors.warning }]}>⚡ Dev: ملء 123456 تلقائياً</Text>
+            <Text style={[styles.devBtnText, { color: colors.warning }]}>⚡ Dev: Auto-fill 123456</Text>
           </Pressable>
         )}
       </View>
@@ -497,11 +501,11 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  title: { fontSize: 28, fontFamily: "Cairo_700Bold", textAlign: "center" },
-  subtitle: { fontSize: 14, fontFamily: "Cairo_400Regular", textAlign: "center" },
+  title: { fontSize: 28, fontFamily: typography.headlineSm.fontFamily, textAlign: "center" },
+  subtitle: { fontSize: 14, fontFamily: typography.body.fontFamily, textAlign: "center" },
   phoneHint: {
     fontSize: 18,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "center",
     letterSpacing: 0.5,
   },
@@ -517,7 +521,7 @@ const styles = StyleSheet.create({
     width: 46,
     height: 56,
     fontSize: 22,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "center",
   },
   errorBox: {
@@ -528,7 +532,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: "100%",
   },
-  errorText: { flex: 1, fontSize: 14, fontFamily: "Cairo_600SemiBold", textAlign: "center" },
+  errorText: { flex: 1, fontSize: 14, fontFamily: typography.bodyLg.fontFamily, textAlign: "center" },
   verifyBtn: {
     width: "100%",
     paddingVertical: 16,
@@ -546,7 +550,7 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  verifyBtnText: { fontSize: 17, fontFamily: "Cairo_700Bold" },
+  verifyBtnText: { fontSize: 17, fontFamily: typography.headlineSm.fontFamily },
   timerSection: { alignItems: "center", gap: 10, width: "100%" },
   timerBar: {
     width: "100%",
@@ -555,16 +559,16 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   timerFill: { height: 6, borderRadius: 3 },
-  timerText: { fontSize: 13, fontFamily: "Cairo_400Regular" },
+  timerText: { fontSize: 13, fontFamily: typography.body.fontFamily },
   resendBtn: {
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 50,
     borderWidth: 1,
   },
-  resendLink: { fontSize: 14, fontFamily: "Cairo_700Bold" },
+  resendLink: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily },
   changePhone: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 50 },
-  changePhoneText: { fontSize: 14, fontFamily: "Cairo_600SemiBold" },
+  changePhoneText: { fontSize: 14, fontFamily: typography.bodyLg.fontFamily },
   devBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 50 },
-  devBtnText: { fontSize: 13, fontFamily: "Cairo_700Bold" },
+  devBtnText: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily },
 });

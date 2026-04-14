@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
   },
   primaryBtnText: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     fontSize: 15,
   },
   secondaryBtn: {
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   secondaryBtnText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
     fontSize: 14,
   },
 });

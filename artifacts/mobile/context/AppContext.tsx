@@ -1204,7 +1204,8 @@ export function sportColor(sport: SportType, colors: Record<string, unknown>): s
   return String(colors.tennis);
 }
 
-export function sportLabel(sport: SportType): string {
+export function sportLabel(sport: SportType, t?: (key: string) => string): string {
+  if (t) return t(`sports.${sport}`);
   if (sport === "football") return "كرة القدم";
   if (sport === "padel") return "بادل";
   return "تنس";
@@ -1219,11 +1220,18 @@ export function reliabilityColor(score: number | null, colors: Record<string, un
   return String(colors.reliabilityLow);
 }
 
-export function reliabilityLabel(score: number | null): string {
+export function reliabilityLabel(score: number | null, t?: (key: string) => string): string {
+  if (t) {
+    if (score === null) return t("reliability.newPlayer");
+    if (score >= 90) return t("reliability.excellent");
+    if (score >= 70) return t("reliability.good"); 
+    if (score >= 50) return t("reliability.needsWork"); // Mapping medium to needsWork or adding a new one
+    return t("reliability.weak");
+  }
   if (score === null) return "جديد";
   if (score >= 90) return "ممتاز";
   if (score >= 70) return "جيد";
-  if (score >= 50) return "متوسط";
+  if (score >= 50) return "متوسط"; // Fallback to "متوسط" / "يحتاج تطوير"
   return "ضعيف";
 }
 
@@ -1232,18 +1240,31 @@ export function formatReliability(score: number | null, matchesPlayed?: number):
   return `${score}%`;
 }
 
-export function formatDate(date: Date): string {
+export function formatDate(date: Date, t?: (key: string, params?: any) => string, locale: string = "ar"): string {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
   const diff = Math.round((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  if (diff === 0) return "اليوم";
-  if (diff === 1) return "غداً";
-  if (diff === -1) return "أمس";
-  if (diff > 1 && diff <= 7) return `بعد ${diff} أيام`;
-  if (diff < -1 && diff >= -7) return `منذ ${Math.abs(diff)} أيام`;
-  return d.toLocaleDateString("ar-SA", { month: "short", day: "numeric" });
+  
+  if (t) {
+    if (diff === 0) return t("common.today");
+    if (diff === 1) return t("common.tomorrow");
+    if (diff === -1) return t("common.yesterday"); 
+    if (diff > 1 && diff <= 7) return t("notifications.daysAgo", { count: diff }).replace("ago", "later"); // Rough mapping
+    if (diff < -1 && diff >= -7) return t("notifications.daysAgo", { count: Math.abs(diff) });
+  }
+
+  if (locale === "ar") {
+    if (diff === 0) return "اليوم";
+    if (diff === 1) return "غداً";
+    if (diff === -1) return "أمس";
+    if (diff > 1 && diff <= 7) return `بعد ${diff} أيام`;
+    if (diff < -1 && diff >= -7) return `منذ ${Math.abs(diff)} أيام`;
+    return d.toLocaleDateString("ar-SA", { month: "short", day: "numeric" });
+  }
+  
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 export function initials(name: string): string {

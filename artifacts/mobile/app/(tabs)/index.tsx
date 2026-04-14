@@ -21,48 +21,94 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import { useTranslation } from "@/i18n";
+import { getTypography, typography } from "@/constants/typography";
 
-function getGreeting(): string {
+function getGreeting(locale: string): string {
   const hour = new Date().getHours();
+  if (locale === 'en') {
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }
   if (hour < 12) return "صباح الخير";
   if (hour < 17) return "مساء الخير";
   return "مساء النور";
 }
-
-const QUICK_ACTIONS = [
-  { icon: "football-outline" as const, label: "مبارياتي", route: "/(tabs)/my-matches" as const },
-  { icon: "people-outline" as const, label: "مجموعاتي", route: "/(tabs)/groups" as const },
-  { icon: "compass-outline" as const, label: "استكشف", route: "/(tabs)/explore" as const },
-  { icon: "add-circle-outline" as const, label: "أنشئ مباراة", route: "/create-match" as const },
-];
-
-function QuickActionsRow() {
+function QuickActionsScroll() {
   const colors = useColors();
+  const { t } = useTranslation();
+
+  const QUICK_ACTIONS = [
+    { 
+      icon: "add-outline", 
+      label: t('home.quickActions.createMatch'), 
+      subItem: "استضافة",
+      route: "/create-match",
+      isPrimary: true 
+    },
+    { 
+      icon: "search-outline", 
+      label: t('home.quickActions.explore'), 
+      subItem: "البحث",
+      route: "/(tabs)/explore",
+      isPrimary: false 
+    },
+    { 
+      icon: "people-outline", 
+      label: t('home.quickActions.myGroups'), 
+      subItem: "مجموعاتي",
+      route: "/(tabs)/groups",
+      isPrimary: false 
+    },
+    { 
+      icon: "calendar-outline", 
+      label: t('home.quickActions.myMatches'), 
+      subItem: "مبارياتي",
+      route: "/(tabs)/my-matches",
+      isPrimary: false 
+    },
+  ];
+
   return (
-    <View style={styles.quickActionsRow}>
-      {QUICK_ACTIONS.map((action, index) => {
-        const isCreate = index === 3;
-        return (
-          <Pressable
-            key={action.label}
-            style={({ pressed }) => [styles.quickActionItem, { opacity: pressed ? 0.75 : 1 }]}
-            onPress={() => router.push(action.route as never)}
-          >
-            <View style={[
-              styles.quickActionCircle,
-              { backgroundColor: isCreate ? colors.accent : colors.primaryContainer },
-            ]}>
-              <Ionicons
-                name={action.icon}
-                size={24}
-                color={isCreate ? colors.accentForeground : colors.primary}
-              />
-            </View>
-            <Text style={[styles.quickActionLabel, { color: colors.onSurface }]}>{action.label}</Text>
-          </Pressable>
-        );
-      })}
-    </View>
+    <ScrollView 
+      horizontal 
+      showsHorizontalScrollIndicator={false} 
+      contentContainerStyle={styles.quickActionsScroll}
+    >
+      {QUICK_ACTIONS.map((action, index) => (
+        <Pressable
+          key={index}
+          style={({ pressed }) => [
+            styles.quickActionCard,
+            { 
+              backgroundColor: action.isPrimary ? colors.primary : colors.surface,
+              opacity: pressed ? 0.8 : 1 
+            }
+          ]}
+          onPress={() => router.push(action.route as never)}
+        >
+          <View style={[
+            styles.quickActionIconWrap, 
+            { backgroundColor: action.isPrimary ? 'rgba(255,255,255,0.2)' : colors.primaryContainer }
+          ]}>
+            <Ionicons
+              name={action.icon as any}
+              size={20}
+              color={action.isPrimary ? '#fff' : colors.primary}
+            />
+          </View>
+          <View style={{ gap: 2 }}>
+            <Text style={[styles.quickActionLabel, { color: action.isPrimary ? '#fff' : colors.onSurface }]}>
+               {action.label}
+            </Text>
+            <Text style={[{ fontSize: 11, fontFamily: typography.body.fontFamily }, { color: action.isPrimary ? 'rgba(255,255,255,0.8)' : colors.mutedForeground }]}>
+               {action.subItem}
+            </Text>
+          </View>
+        </Pressable>
+      ))}
+    </ScrollView>
   );
 }
 
@@ -78,6 +124,7 @@ function UpcomingMatchCard({
   onLeave: () => void;
 }) {
   const colors = useColors();
+  const { t, locale } = useTranslation();
   const sportTheme = getSportTheme(match.sport);
   const SportIcon = getSportIcon(match.sport);
 
@@ -87,7 +134,7 @@ function UpcomingMatchCard({
   const isFull = filled >= total;
 
   const dateStr = match.date
-    ? new Date(match.date).toLocaleDateString("ar-SA", {
+    ? new Date(match.date).toLocaleDateString(locale === 'ar' ? "ar-SA" : "en-US", {
         weekday: "long",
         month: "short",
         day: "numeric",
@@ -95,37 +142,32 @@ function UpcomingMatchCard({
     : "";
 
   const sportLabels: Record<string, string> = {
-    football: "كرة القدم",
-    padel: "بادل",
-    tennis: "تنس",
+    football: t('sports.football'),
+    padel: t('sports.padel'),
+    tennis: t('sports.tennis'),
   };
 
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.upcomingCard, { backgroundColor: colors.surface, opacity: pressed ? 0.95 : 1 }]}
+      style={({ pressed }) => [styles.upcomingCard, { backgroundColor: colors.card, opacity: pressed ? 0.95 : 1 }]}
     >
-      <LinearGradient
-        colors={sportTheme.gradientColors}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.upcomingCardHeader}
-      >
+      <View style={[styles.upcomingCardHeader]}>
         <View style={styles.upcomingCardHeaderContent}>
           <View style={styles.upcomingCardSportRow}>
-            <SportIcon color="rgba(255,255,255,0.9)" size={16} />
-            <Text style={styles.upcomingCardSport}>{sportLabels[match.sport] ?? match.sport}</Text>
+            <SportIcon color={sportTheme.primary} size={16} />
+            <Text style={[styles.upcomingCardSport, { color: colors.onSurface }]}>{sportLabels[match.sport] ?? match.sport}</Text>
           </View>
           <View style={styles.upcomingCardDateRow}>
-            <Ionicons name="calendar-outline" size={13} color="rgba(255,255,255,0.85)" />
-            <Text style={styles.upcomingCardDate}>{dateStr}</Text>
+            <Ionicons name="calendar-outline" size={13} color={colors.mutedForeground} />
+            <Text style={[styles.upcomingCardDate, { color: colors.onSurface }]}>{dateStr}</Text>
           </View>
         </View>
-        <View style={styles.upcomingCardTimeBadge}>
-          <Ionicons name="time-outline" size={13} color="rgba(255,255,255,0.9)" />
-          <Text style={styles.upcomingCardTime}>{match.time}</Text>
+        <View style={[styles.upcomingCardTimeBadge, { backgroundColor: colors.surfaceVariant }]}>
+          <Ionicons name="time-outline" size={13} color={colors.onSurface} />
+          <Text style={[styles.upcomingCardTime, { color: colors.onSurface }]}>{match.time}</Text>
         </View>
-      </LinearGradient>
+      </View>
 
       <View style={styles.upcomingCardBody}>
         <Text style={[styles.upcomingCardTitle, { color: colors.onSurface }]} numberOfLines={2}>
@@ -141,7 +183,7 @@ function UpcomingMatchCard({
           </View>
           <View style={styles.upcomingCardMetaRow}>
             <Text style={[styles.upcomingCardMetaText, { color: isFull ? colors.destructive : colors.success }]}>
-              {isFull ? "المباراة مكتملة" : `${remaining} مكان متبقي`}
+              {isFull ? t('home.matchFull') : t('home.spotsRemaining', { count: remaining })}
             </Text>
             <Ionicons
               name="people-outline"
@@ -160,10 +202,10 @@ function UpcomingMatchCard({
         <View style={styles.upcomingCardActions}>
           {match.joinedByCurrentUser ? (
             <Pressable
-              style={[styles.upcomingCardBtn, { backgroundColor: colors.destructive + "15", borderColor: colors.destructive + "40", borderWidth: 1 }]}
+              style={[styles.upcomingCardBtn, { backgroundColor: colors.destructive + "15" }]}
               onPress={onLeave}
             >
-              <Text style={[styles.upcomingCardBtnText, { color: colors.destructive }]}>إلغاء تسجيلي</Text>
+              <Text style={[styles.upcomingCardBtnText, { color: colors.destructive }]}>{t('home.leave')}</Text>
             </Pressable>
           ) : (
             <Pressable
@@ -172,15 +214,15 @@ function UpcomingMatchCard({
               disabled={isFull}
             >
               <Text style={[styles.upcomingCardBtnText, { color: colors.accentForeground }]}>
-                {isFull ? "مكتملة" : "انضم الآن"}
+                {isFull ? t('home.matchFull') : t('home.joined')}
               </Text>
             </Pressable>
           )}
           <Pressable
-            style={[styles.upcomingCardSecBtn, { backgroundColor: sportTheme.primaryContainer, borderColor: `${sportTheme.primary}30`, borderWidth: 1 }]}
+            style={[styles.upcomingCardSecBtn, { backgroundColor: sportTheme.primaryContainer }]}
             onPress={onPress}
           >
-            <Text style={[styles.upcomingCardBtnText, { color: sportTheme.primary }]}>التفاصيل</Text>
+            <Text style={[styles.upcomingCardBtnText, { color: sportTheme.primary }]}>{locale === 'ar' ? 'التفاصيل' : 'Details'}</Text>
           </Pressable>
         </View>
       </View>
@@ -190,17 +232,18 @@ function UpcomingMatchCard({
 
 function NoUpcomingMatch() {
   const colors = useColors();
+  const { t } = useTranslation();
   return (
     <Pressable
-      style={[styles.noUpcomingCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.border, borderWidth: 1 }]}
+      style={[styles.noUpcomingCard, { backgroundColor: colors.surfaceContainerLow }]}
       onPress={() => router.push("/(tabs)/explore")}
     >
       <View style={[styles.noUpcomingIconWrap, { backgroundColor: colors.primaryContainer }]}>
         <Ionicons name="football-outline" size={36} color={colors.primary} />
       </View>
-      <Text style={[styles.noUpcomingTitle, { color: colors.onSurface }]}>لا توجد مباراة قادمة</Text>
+      <Text style={[styles.noUpcomingTitle, { color: colors.onSurface }]}>{t('home.noUpcoming')}</Text>
       <Text style={[styles.noUpcomingSubtitle, { color: colors.mutedForeground }]}>
-        انضم إلى مباراة متاحة أو أنشئ مبارتك الخاصة مع أصدقائك
+        {t('home.noUpcomingDesc')}
       </Text>
       <View style={styles.noUpcomingActionsRow}>
         <Pressable
@@ -208,14 +251,14 @@ function NoUpcomingMatch() {
           onPress={() => router.push("/(tabs)/explore")}
         >
           <Ionicons name="compass-outline" size={16} color={colors.accentForeground} />
-          <Text style={[styles.noUpcomingBtnText, { color: colors.accentForeground }]}>استكشف المباريات</Text>
+          <Text style={[styles.noUpcomingBtnText, { color: colors.accentForeground }]}>{t('home.findMatch')}</Text>
         </Pressable>
         <Pressable
-          style={[styles.noUpcomingSecBtn, { backgroundColor: colors.primaryContainer, borderColor: `${colors.primary}30`, borderWidth: 1 }]}
+          style={[styles.noUpcomingSecBtn, { backgroundColor: colors.primaryContainer }]}
           onPress={() => router.push("/create-match")}
         >
           <Ionicons name="add-circle-outline" size={16} color={colors.primary} />
-          <Text style={[styles.noUpcomingBtnText, { color: colors.primary }]}>أنشئ مباراة</Text>
+          <Text style={[styles.noUpcomingBtnText, { color: colors.primary }]}>{t('home.quickActions.createMatch')}</Text>
         </Pressable>
       </View>
     </Pressable>
@@ -224,19 +267,20 @@ function NoUpcomingMatch() {
 
 function GroupActivityCard({ group }: { group: Group }) {
   const colors = useColors();
+  const { t, locale } = useTranslation();
   const SportIcon = getSportIcon(group.sport);
   const sportTheme = getSportTheme(group.sport);
 
   const nextMatchText =
     typeof group.nextMatch === "object" && group.nextMatch
-      ? `${group.nextMatch.date ? new Date(group.nextMatch.date).toLocaleDateString("ar-SA", { weekday: "short", month: "short", day: "numeric" }) : ""} ${group.nextMatch.time ?? ""}`.trim()
+      ? `${group.nextMatch.date ? new Date(group.nextMatch.date).toLocaleDateString(locale === 'ar' ? "ar-SA" : "en-US", { weekday: "short", month: "short", day: "numeric" }) : ""} ${group.nextMatch.time ?? ""}`.trim()
       : typeof group.nextMatch === "string"
       ? group.nextMatch
       : null;
 
   return (
     <Pressable
-      style={[styles.groupActivityCard, { backgroundColor: colors.surface, borderColor: `${sportTheme.primary}20`, borderWidth: 1 }]}
+      style={[styles.groupActivityCard, { backgroundColor: colors.surface }]}
       onPress={() => router.push({ pathname: "/group-detail", params: { id: group.id } } as never)}
     >
       <View style={[styles.groupActivityAvatar, { backgroundColor: sportTheme.primaryContainer }]}>
@@ -247,33 +291,37 @@ function GroupActivityCard({ group }: { group: Group }) {
           {group.name}
         </Text>
         <Text style={[styles.groupActivitySub, { color: colors.mutedForeground }]} numberOfLines={1}>
-          {nextMatchText ? `مباراة قادمة: ${nextMatchText}` : `${group.members?.length ?? 0} عضو`}
+          {nextMatchText
+            ? (locale === 'ar' ? `مباراة قادمة: ${nextMatchText}` : `Next match: ${nextMatchText}`)
+            : `${group.members?.length ?? 0} ${t('common.member')}`
+          }
         </Text>
       </View>
-      <Ionicons name="chevron-back-outline" size={16} color={colors.mutedForeground} />
+      <Ionicons name={locale === 'ar' ? "chevron-back-outline" : "chevron-forward-outline"} size={16} color={colors.mutedForeground} />
     </Pressable>
   );
 }
 
 function EmptyGroups() {
   const colors = useColors();
+  const { t } = useTranslation();
   return (
     <Pressable
-      style={[styles.emptyGroups, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.border, borderWidth: 1 }]}
+      style={[styles.emptyGroups, { backgroundColor: colors.surfaceContainerLow }]}
       onPress={() => router.push("/(tabs)/groups")}
     >
       <View style={[styles.emptyGroupsIconWrap, { backgroundColor: colors.primaryContainer }]}>
         <Ionicons name="people-outline" size={30} color={colors.primary} />
       </View>
       <Text style={[styles.emptyGroupsTitle, { color: colors.onSurface }]}>
-        لم تنضم لأي مجموعة بعد
+        {t('home.noGroups')}
       </Text>
       <Text style={[styles.emptyGroupsText, { color: colors.mutedForeground }]}>
-        انضم إلى مجموعة رياضية وتابع نشاطها هنا
+        {t('home.noGroupsDesc')}
       </Text>
-      <View style={[styles.emptyGroupsBtn, { backgroundColor: colors.primaryContainer, borderColor: `${colors.primary}30`, borderWidth: 1 }]}>
+      <View style={[styles.emptyGroupsBtn, { backgroundColor: colors.primaryContainer }]}>
         <Ionicons name="people-circle-outline" size={16} color={colors.primary} />
-        <Text style={[styles.emptyGroupsBtnText, { color: colors.primary }]}>استعرض المجموعات</Text>
+        <Text style={[styles.emptyGroupsBtnText, { color: colors.primary }]}>{t('home.exploreGroups')}</Text>
       </View>
     </Pressable>
   );
@@ -283,6 +331,8 @@ export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { matches, user, joinMatch, leaveMatch, unreadCount, groups, matchesLoading, refreshMatches } = useApp();
+  const { t, locale } = useTranslation();
+  const typography = getTypography(locale as any);
 
   const [refreshing, setRefreshing] = useState(false);
   const [pickerMatch, setPickerMatch] = useState<Match | null>(null);
@@ -334,50 +384,40 @@ export default function HomeScreen() {
   }
 
   function handleLeaveAction(item: Match) {
-    Alert.alert("إلغاء التسجيل", `هل تريد إلغاء تسجيلك في "${item.title}"؟`, [
-      { text: "لا", style: "cancel" },
+    Alert.alert(t('home.leaveMatchTitle'), t('home.leaveMatchMsg'), [
+      { text: t('common.no'), style: "cancel" },
       {
-        text: "نعم",
+        text: t('common.yes'),
         style: "destructive",
         onPress: async () => {
           await leaveMatch(item.id);
-          showToast("تم إلغاء التسجيل");
+          showToast(locale === 'ar' ? "تم إلغاء التسجيل" : "Registration cancelled");
         },
       },
     ]);
   }
 
   return (
-    <Animated.View style={[styles.container, { opacity: fadeAnim, backgroundColor: colors.surfaceContainerLow }]}>
-      <LinearGradient
-        colors={[colors.primary, colors.primaryLight]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[styles.header, { paddingTop: topPad + 16 }]}
-      >
+    <Animated.View style={[styles.container, { opacity: fadeAnim, backgroundColor: colors.background }]}>
+      <View style={[styles.header, { paddingTop: topPad + 16, backgroundColor: colors.background }]}>
         <View style={styles.headerRow}>
-          <Pressable
-            onPress={() => router.push("/notifications")}
-            style={styles.headerIconBtn}
-          >
-            <Ionicons name="notifications-outline" size={22} color="rgba(255,255,255,1)" />
+          <Pressable onPress={() => router.push("/notifications")} style={styles.headerIconBtn}>
+            <Ionicons name="menu-outline" size={28} color={colors.onSurface} />
             {unreadCount > 0 && (
-              <View style={[styles.badge, { backgroundColor: colors.reliabilityLow }]}>
+              <View style={[styles.badge, { backgroundColor: colors.destructive }]}>
                 <Text style={styles.badgeText}>{unreadCount > 9 ? "9+" : unreadCount}</Text>
               </View>
             )}
           </Pressable>
 
           <View style={styles.headerCenter}>
-            <Text style={styles.greetingText}>{getGreeting()}</Text>
-            <Text style={styles.nameText}>{user?.nickname ?? "العب"} 👋</Text>
+            <Text style={[styles.logoText, typography.displayMd, { color: colors.onSurface }]}>ARENA</Text>
           </View>
-
-          <Pressable onPress={() => router.push("/(tabs)/profile")} style={styles.headerIconBtn}>
-            <Ionicons name="person-circle-outline" size={26} color="rgba(255,255,255,1)" />
-          </Pressable>
+          
+          {/* Empty view to balance the header (since profile icon was removed) */}
+          <View style={{ width: 40 }} />
         </View>
-      </LinearGradient>
+      </View>
 
       <ScrollView
         style={styles.scroll}
@@ -392,16 +432,14 @@ export default function HomeScreen() {
           />
         }
       >
-        <View style={[styles.section, { backgroundColor: colors.surface }]}>
-          <QuickActionsRow />
-        </View>
+        <QuickActionsScroll />
 
-        <View style={styles.section}>
+        <View style={[styles.section, { paddingTop: 8 }]}>
           <View style={styles.sectionHeaderRow}>
             <Pressable onPress={() => router.push("/(tabs)/my-matches")}>
-              <Text style={[styles.seeAllText, { color: colors.primary }]}>عرض الكل</Text>
+              <Text style={[styles.seeAllText, { color: colors.primary }]}>{t('home.viewAll')}</Text>
             </Pressable>
-            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>مبارتك القادمة</Text>
+            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t('home.upcomingMatches')}</Text>
           </View>
 
           {matchesLoading && !upcomingMatch ? (
@@ -421,9 +459,9 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeaderRow}>
             <Pressable onPress={() => router.push("/(tabs)/groups")}>
-              <Text style={[styles.seeAllText, { color: colors.primary }]}>عرض الكل</Text>
+              <Text style={[styles.seeAllText, { color: colors.primary }]}>{t('home.viewAll')}</Text>
             </Pressable>
-            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>نشاط مجموعاتي</Text>
+            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t('home.groupActivity')}</Text>
           </View>
 
           {myGroups.length === 0 ? (
@@ -511,12 +549,12 @@ const styles = StyleSheet.create({
   greetingText: {
     fontSize: 12,
     color: "rgba(255,255,255,0.8)",
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
   },
   nameText: {
     fontSize: 18,
     color: "rgba(255,255,255,1)",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   badge: {
     position: "absolute",
@@ -531,7 +569,7 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 8,
     color: "rgba(255,255,255,1)",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
 
   scroll: { flex: 1 },
@@ -550,45 +588,54 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 17,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "right",
   },
   seeAllText: {
     fontSize: 13,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
 
-  quickActionsRow: {
+  quickActionsScroll: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 24,
+    gap: 12,
+  },
+  quickActionCard: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 18,
-    paddingHorizontal: 8,
-  },
-  quickActionItem: {
     alignItems: "center",
-    gap: 8,
-    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 24,
+    gap: 10,
+    minWidth: 130,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 1,
   },
-  quickActionCircle: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+  quickActionIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
   },
   quickActionLabel: {
-    fontSize: 11,
-    fontFamily: "Cairo_600SemiBold",
-    textAlign: "center",
+    fontSize: 14,
+    fontFamily: typography.headlineSm.fontFamily,
   },
 
+
   upcomingCard: {
-    borderRadius: 18,
+    borderRadius: 24,
     overflow: "hidden",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 20,
+    elevation: 2,
+    marginBottom: 8,
   },
   upcomingCardHeader: {
     flexDirection: "row",
@@ -606,7 +653,7 @@ const styles = StyleSheet.create({
   upcomingCardSport: {
     fontSize: 12,
     color: "rgba(255,255,255,0.9)",
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
   upcomingCardDateRow: {
     flexDirection: "row",
@@ -616,7 +663,7 @@ const styles = StyleSheet.create({
   upcomingCardDate: {
     fontSize: 14,
     color: "rgba(255,255,255,1)",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   upcomingCardTimeBadge: {
     backgroundColor: "rgba(255,255,255,0.22)",
@@ -630,7 +677,7 @@ const styles = StyleSheet.create({
   upcomingCardTime: {
     fontSize: 16,
     color: "rgba(255,255,255,1)",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   upcomingCardBody: {
     padding: 16,
@@ -638,7 +685,7 @@ const styles = StyleSheet.create({
   },
   upcomingCardTitle: {
     fontSize: 16,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "right",
   },
   upcomingCardMeta: { gap: 6 },
@@ -650,7 +697,7 @@ const styles = StyleSheet.create({
   },
   upcomingCardMetaText: {
     fontSize: 13,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "right",
   },
   upcomingCardActions: {
@@ -674,14 +721,14 @@ const styles = StyleSheet.create({
   },
   upcomingCardBtnText: {
     fontSize: 14,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
 
   noUpcomingCard: {
-    borderRadius: 18,
-    padding: 24,
+    borderRadius: 24,
+    padding: 32,
     alignItems: "center",
-    gap: 12,
+    gap: 16,
   },
   noUpcomingIconWrap: {
     width: 72,
@@ -693,12 +740,12 @@ const styles = StyleSheet.create({
   },
   noUpcomingTitle: {
     fontSize: 16,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "center",
   },
   noUpcomingSubtitle: {
     fontSize: 13,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "center",
     lineHeight: 20,
   },
@@ -730,16 +777,16 @@ const styles = StyleSheet.create({
   },
   noUpcomingBtnText: {
     fontSize: 13,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
 
   groupsList: { gap: 10 },
   groupActivityCard: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 16,
-    padding: 14,
-    gap: 12,
+    borderRadius: 20,
+    padding: 16,
+    gap: 16,
   },
   groupActivityAvatar: {
     width: 44,
@@ -751,20 +798,20 @@ const styles = StyleSheet.create({
   groupActivityInfo: { flex: 1, gap: 2 },
   groupActivityName: {
     fontSize: 14,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "right",
   },
   groupActivitySub: {
     fontSize: 12,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "right",
   },
 
   emptyGroups: {
-    borderRadius: 16,
-    padding: 24,
+    borderRadius: 24,
+    padding: 32,
     alignItems: "center",
-    gap: 10,
+    gap: 16,
   },
   emptyGroupsIconWrap: {
     width: 64,
@@ -776,12 +823,12 @@ const styles = StyleSheet.create({
   },
   emptyGroupsTitle: {
     fontSize: 15,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "center",
   },
   emptyGroupsText: {
     fontSize: 13,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "center",
     lineHeight: 20,
   },
@@ -796,7 +843,7 @@ const styles = StyleSheet.create({
   },
   emptyGroupsBtnText: {
     fontSize: 13,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
 
   fab: {
@@ -828,8 +875,14 @@ const styles = StyleSheet.create({
   },
   toastText: {
     color: "rgba(255,255,255,1)",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     fontSize: 14,
     textAlign: "center",
+  },
+  logoText: {
+    fontFamily: "SpaceMono-Regular", // Or any distinctive font
+    letterSpacing: 4,
+    fontSize: 20,
+    fontWeight: "800",
   },
 });

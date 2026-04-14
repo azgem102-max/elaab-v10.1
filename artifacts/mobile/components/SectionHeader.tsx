@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   badgeText: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     fontSize: 12,
   },
 });

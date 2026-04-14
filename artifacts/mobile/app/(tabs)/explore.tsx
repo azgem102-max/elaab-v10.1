@@ -30,31 +30,15 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "@/i18n";
+import { typography } from "@/constants/typography";
 
 type Sport = "all" | SportType;
 type VisibilityFilter = "all" | "public" | "private";
 type DateFilter = "all" | "today" | "tomorrow" | "thisWeek";
 type ViewMode = "list" | "map";
 
-const SPORT_FILTERS: { key: Sport; label: string; icon: React.FC<{ color?: string; size?: number }> }[] = [
-  { key: "all", label: "الكل", icon: AllSportsIcon },
-  { key: "football", label: "كرة القدم", icon: FootballIcon },
-  { key: "padel", label: "بادل", icon: PadelIcon },
-  { key: "tennis", label: "تنس", icon: TennisIcon },
-];
-
-const DATE_FILTERS: { key: DateFilter; label: string; icon: React.ComponentProps<typeof Ionicons>["name"] }[] = [
-  { key: "all", label: "كل الأوقات", icon: "calendar-outline" },
-  { key: "today", label: "اليوم", icon: "today-outline" },
-  { key: "tomorrow", label: "غداً", icon: "sunny-outline" },
-  { key: "thisWeek", label: "هذا الأسبوع", icon: "calendar-clear-outline" },
-];
-
-const VISIBILITY_FILTERS: { key: VisibilityFilter; label: string }[] = [
-  { key: "all", label: "الكل" },
-  { key: "public", label: "عامة" },
-  { key: "private", label: "خاصة" },
-];
+// Filter arrays are now built dynamically inside the component using t()
 
 
 function toArabicNumeral(n: number): string {
@@ -140,6 +124,27 @@ export default function ExploreScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { matches: localMatches, joinMatch, refreshMatches, user } = useApp();
+  const { t, locale, isRTL } = useTranslation();
+
+  const SPORT_FILTERS: { key: Sport; label: string; icon: React.FC<{ color?: string; size?: number }> }[] = [
+    { key: "all", label: t('common.all'), icon: AllSportsIcon },
+    { key: "football", label: t('sports.football'), icon: FootballIcon },
+    { key: "padel", label: t('sports.padel'), icon: PadelIcon },
+    { key: "tennis", label: t('sports.tennis'), icon: TennisIcon },
+  ];
+
+  const DATE_FILTERS: { key: DateFilter; label: string; icon: React.ComponentProps<typeof Ionicons>["name"] }[] = [
+    { key: "all", label: t('common.allTimes'), icon: "calendar-outline" },
+    { key: "today", label: t('common.today'), icon: "today-outline" },
+    { key: "tomorrow", label: t('common.tomorrow'), icon: "sunny-outline" },
+    { key: "thisWeek", label: t('common.thisWeek'), icon: "calendar-clear-outline" },
+  ];
+
+  const VISIBILITY_FILTERS: { key: VisibilityFilter; label: string }[] = [
+    { key: "all", label: t('common.all') },
+    { key: "public", label: t('common.public') },
+    { key: "private", label: t('common.private') },
+  ];
   const [search, setSearch] = useState("");
   const [sportFilter, setSportFilter] = useState<Sport>("all");
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -262,7 +267,7 @@ export default function ExploreScreen() {
           params.radius = advancedFilters.distanceRadius;
         } else {
           setAdvancedFilters((f) => ({ ...f, distanceRadius: null }));
-          showToast("تعذّر تحديد موقعك — تم إلغاء فلتر المسافة", false);
+          showToast(t('explore.locationFilterRemoved'), false);
         }
       }
       const { matches } = await api.listMatches(params);
@@ -474,7 +479,7 @@ export default function ExploreScreen() {
             </Pressable>
           </View>
 
-          <Text style={[styles.title, { color: colors.onSurface }]}>استكشاف</Text>
+          <Text style={[styles.title, { color: colors.onSurface }]}>{t('explore.title')}</Text>
           <Pressable
             style={[
               styles.viewToggle,
@@ -496,7 +501,7 @@ export default function ExploreScreen() {
             onChangeText={setSearch}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
-            placeholder="ابحث عن مباراة أو ملعب..."
+            placeholder={t('explore.searchPlaceholder')}
             sport={sportFilter === "all" ? "football" : sportFilter}
           />
           {search.length > 0 && (
@@ -598,7 +603,7 @@ export default function ExploreScreen() {
               color={openOnly ? "#fff" : colors.onSurfaceVariant}
             />
             <Text style={[styles.filterText, { color: openOnly ? "#fff" : colors.onSurfaceVariant }]}>
-              مفتوحة فقط
+              {t('common.openOnly')}
             </Text>
           </Pressable>
 
@@ -636,7 +641,7 @@ export default function ExploreScreen() {
                 onPress={clearAllFilters}
               >
                 <Ionicons name="close-circle-outline" size={14} color={colors.destructive} />
-                <Text style={[styles.clearFilterBtnText, { color: colors.destructive }]}>مسح الكل</Text>
+                <Text style={[styles.clearFilterBtnText, { color: colors.destructive }]}>{t('common.clearAll')}</Text>
               </Pressable>
             </>
           )}
@@ -645,13 +650,13 @@ export default function ExploreScreen() {
         {!apiLoading && (
           <View style={styles.resultCountRow}>
             <Text style={[styles.resultCount, { color: colors.onSurfaceVariant }]}>
-              {toArabicNumeral(allDisplayMatches.length)}{" "}
-              {allDisplayMatches.length === 1 ? "مباراة متاحة" : "مباريات متاحة"}
+              {locale === 'ar' ? toArabicNumeral(allDisplayMatches.length) : allDisplayMatches.length}{" "}
+              {allDisplayMatches.length === 1 ? t('explore.matchAvailable') : t('explore.matchesAvailable')}
             </Text>
             {apiError && (
               <Pressable onPress={fetchMatches} style={styles.retryBtn}>
                 <Ionicons name="refresh-outline" size={14} color={colors.warning} />
-                <Text style={[styles.retryText, { color: colors.warning }]}>إعادة المحاولة</Text>
+                <Text style={[styles.retryText, { color: colors.warning }]}>{t('common.retry')}</Text>
               </Pressable>
             )}
           </View>
@@ -686,18 +691,18 @@ export default function ExploreScreen() {
               >
                 <Ionicons name="cloud-offline-outline" size={16} color={colors.warning} />
                 <Text style={[styles.offlineBannerText, { color: colors.warning }]}>
-                  تعذّر التحديث — تعرض بيانات مخزّنة
+                  {t('explore.offlineBanner')}
                 </Text>
                 <View style={[styles.retryBannerBtn, { backgroundColor: colors.warning + "30" }]}>
                   <Ionicons name="refresh-outline" size={14} color={colors.warning} />
-                  <Text style={[styles.retryBannerBtnText, { color: colors.warning }]}>إعادة المحاولة</Text>
+                  <Text style={[styles.retryBannerBtnText, { color: colors.warning }]}>{t('explore.offlineRetry')}</Text>
                 </View>
               </Pressable>
             ) : apiError ? (
               <View style={[styles.offlineBanner, { backgroundColor: colors.warning + "20" }]}>
                 <Ionicons name="cloud-offline-outline" size={16} color={colors.warning} />
                 <Text style={[styles.offlineBannerText, { color: colors.warning }]}>
-                  تعذّر الاتصال بالخادم — عرض البيانات المحلية.
+                  {t('explore.offlineNoData')}
                 </Text>
               </View>
             ) : null
@@ -706,19 +711,19 @@ export default function ExploreScreen() {
             apiLoading ? null : (
               <EmptyState
                 icon={hasActiveFilters ? "filter-outline" : "football-outline"}
-                title={hasActiveFilters ? "لا توجد نتائج لهذه الفلاتر" : "لا توجد مباريات قادمة"}
+                title={hasActiveFilters ? t('explore.noFilterResults') : t('explore.noMatchesTitle')}
                 description={
                   hasActiveFilters
-                    ? "جرّب توسيع نطاق البحث أو مسح بعض الفلاتر"
-                    : "كن أول من ينشئ مباراة اليوم!"
+                    ? t('explore.noFilterResultsDesc')
+                    : t('explore.noMatchesDesc')
                 }
                 actions={
                   hasActiveFilters
                     ? [
-                        { label: "إعادة ضبط الفلاتر", icon: "refresh-outline", onPress: clearAllFilters, variant: "secondary" },
-                        { label: "تعديل الفلاتر", icon: "options-outline", onPress: () => setShowFilterSheet(true), variant: "secondary" },
+                        { label: t('explore.resetFilters'), icon: "refresh-outline", onPress: clearAllFilters, variant: "secondary" },
+                        { label: t('explore.editFilters'), icon: "options-outline", onPress: () => setShowFilterSheet(true), variant: "secondary" },
                       ]
-                    : [{ label: "أنشئ مباراة", icon: "add-circle-outline", onPress: () => router.push("/create-match") }]
+                    : [{ label: t('explore.createMatch'), icon: "add-circle-outline", onPress: () => router.push("/create-match") }]
                 }
               />
             )
@@ -742,10 +747,10 @@ export default function ExploreScreen() {
             <View style={[styles.locationDeniedCard, { backgroundColor: colors.surface }]}>
               <Ionicons name="location-outline" size={48} color={colors.warning} />
               <Text style={[styles.locationDeniedTitle, { color: colors.onSurface }]}>
-                لا يمكن عرض الخريطة
+                {t('explore.locationDeniedTitle')}
               </Text>
               <Text style={[styles.locationDeniedSubtitle, { color: colors.mutedForeground }]}>
-                الوصول إلى الموقع مطلوب لعرض المباريات على الخريطة. يمكنك السماح بذلك من إعدادات الجهاز.
+                {t('explore.locationDeniedDesc')}
               </Text>
               <Pressable
                 style={[styles.locationDeniedBtn, { backgroundColor: colors.primary }]}
@@ -755,7 +760,7 @@ export default function ExploreScreen() {
                 }}
               >
                 <Ionicons name="list-outline" size={16} color="#fff" />
-                <Text style={styles.locationDeniedBtnText}>عرض القائمة بدلاً من ذلك</Text>
+                <Text style={styles.locationDeniedBtnText}>{t('explore.showListInstead')}</Text>
               </Pressable>
             </View>
           </View>
@@ -806,15 +811,15 @@ export default function ExploreScreen() {
             const result = await joinMatch(match.id, position);
             setJoiningLoading(false);
             if (result.success) {
-              showToast(`تم تسجيلك في ${match.title} ✓`);
+              showToast(locale === 'ar' ? `تم تسجيلك في ${match.title} ✓` : `Joined ${match.title} ✓`);
               fetchMatches();
               refreshMatches();
             } else if (result.alreadyJoined) {
-              showToast("أنت مسجل بالفعل في هذه المباراة", false);
+              showToast(t('matchDetails.alreadyJoined'), false);
             } else if (result.isFull) {
-              showToast("المباراة مكتملة، لا توجد أماكن متاحة", false);
+              showToast(t('home.matchFull'), false);
             } else if (result.conflict) {
-              showToast(`تعارض في المواعيد مع: "${result.conflict.title}" الساعة ${result.conflict.time}`, false);
+              showToast(t('matchDetails.conflictMsg', { title: result.conflict.title }), false);
             } else if (result.error) {
               showToast(result.error, false);
             }
@@ -867,12 +872,12 @@ const styles = StyleSheet.create({
   },
   locationDeniedTitle: {
     fontSize: 18,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "center",
   },
   locationDeniedSubtitle: {
     fontSize: 14,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "center",
     lineHeight: 22,
   },
@@ -888,12 +893,12 @@ const styles = StyleSheet.create({
   locationDeniedBtnText: {
     color: "#fff",
     fontSize: 14,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   header: { paddingHorizontal: 20, gap: 10, paddingBottom: 8 },
   headerTitleRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 8 },
-  title: { fontSize: 26, fontFamily: "Cairo_700Bold", textAlign: "right", lineHeight: 36 },
+  title: { fontSize: 26, fontFamily: typography.headlineSm.fontFamily, textAlign: "right", lineHeight: 36 },
   viewToggle: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   viewToggleGroup: {
     flexDirection: "row",
@@ -928,7 +933,7 @@ const styles = StyleSheet.create({
   },
   filterBadgeText: {
     fontSize: 10,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     color: "#fff",
   },
   searchBar: {
@@ -951,7 +956,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   filterEmoji: { fontSize: 14 },
-  filterText: { fontSize: 13, fontFamily: "Cairo_600SemiBold" },
+  filterText: { fontSize: 13, fontFamily: typography.bodyLg.fontFamily },
   filterDivider: {
     width: 1,
     height: 24,
@@ -967,11 +972,11 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     borderRadius: 24,
   },
-  clearFilterBtnText: { fontSize: 13, fontFamily: "Cairo_700Bold" },
+  clearFilterBtnText: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily },
   resultCountRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  resultCount: { fontSize: 13, fontFamily: "Cairo_400Regular" },
+  resultCount: { fontSize: 13, fontFamily: typography.body.fontFamily },
   retryBtn: { flexDirection: "row", alignItems: "center", gap: 4 },
-  retryText: { fontSize: 12, fontFamily: "Cairo_600SemiBold" },
+  retryText: { fontSize: 12, fontFamily: typography.bodyLg.fontFamily },
   list: { paddingHorizontal: 16, paddingTop: 4 },
   cardSpacing: { marginBottom: 14 },
   offlineBanner: {
@@ -982,9 +987,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 8,
   },
-  offlineBannerText: { fontSize: 13, fontFamily: "Cairo_400Regular", flex: 1, textAlign: "right", lineHeight: 20 },
+  offlineBannerText: { fontSize: 13, fontFamily: typography.body.fontFamily, flex: 1, textAlign: "right", lineHeight: 20 },
   retryBannerBtn: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12 },
-  retryBannerBtnText: { fontSize: 12, fontFamily: "Cairo_600SemiBold" },
+  retryBannerBtnText: { fontSize: 12, fontFamily: typography.bodyLg.fontFamily },
   toast: {
     position: "absolute",
     bottom: 100,
@@ -993,7 +998,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 24,
   },
-  toastText: { color: "#fff", fontFamily: "Cairo_700Bold", fontSize: 14 },
+  toastText: { color: "#fff", fontFamily: typography.headlineSm.fontFamily, fontSize: 14 },
   fab: {
     position: "absolute",
     end: 20,

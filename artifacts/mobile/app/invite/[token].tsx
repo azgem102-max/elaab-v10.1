@@ -4,6 +4,7 @@ import { useColors } from "@/hooks/useColors";
 import { getSportTheme } from "@/constants/sportTheme";
 import { glassShadow } from "@/constants/glassTheme";
 
+import { typography } from "@/constants/typography";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -163,12 +164,11 @@ export default function InviteScreen() {
 
     return (
       <View style={[styles.container, { backgroundColor: "transparent", alignItems: "center", justifyContent: "center", gap: 20, paddingHorizontal: 24 }]}>
-        <LinearGradient
-          colors={[sportTheme.primary + "20", sportTheme.primaryLight + "15"]}
-          style={styles.successIcon}
+        <View
+          style={[styles.successIcon, { backgroundColor: sportTheme.primary + "20" }]}
         >
           <Ionicons name="checkmark-circle" size={64} color={colors.success} />
-        </LinearGradient>
+        </View>
         <Text style={[styles.successTitle, { color: colors.onSurface }]}>
           {isGroup ? "أهلاً بك في المجموعة!" : "تم تسجيلك في المباراة!"}
         </Text>
@@ -227,11 +227,8 @@ export default function InviteScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: "transparent" }]}>
-      <LinearGradient
-        colors={sportTheme.gradientColors}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[styles.hero, { paddingTop: topPad + 16 }]}
+      <View
+        style={[styles.hero, { paddingTop: topPad + 16, backgroundColor: sportTheme.primary }]}
       >
         <Pressable
           style={styles.backBtn}
@@ -290,7 +287,7 @@ export default function InviteScreen() {
             </>
           ) : null}
         </View>
-      </LinearGradient>
+      </View>
 
       <View style={[styles.body, { paddingBottom: botPad + 20 }]}>
         <View style={[styles.card, glassShadow.soft, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }]}>
@@ -413,7 +410,7 @@ export default function InviteScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  loadingText: { fontSize: 14, fontFamily: "Cairo_400Regular", marginTop: 12 },
+  loadingText: { fontSize: 14, fontFamily: typography.body.fontFamily, marginTop: 12 },
 
   hero: {
     paddingHorizontal: 20,
@@ -436,12 +433,12 @@ const styles = StyleSheet.create({
   },
   inviteLabel: {
     fontSize: 13,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     color: "rgba(255,255,255,0.8)",
   },
   heroName: {
     fontSize: 24,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     color: "#fff",
     textAlign: "center",
     lineHeight: 32,
@@ -461,7 +458,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 50,
   },
-  heroPillText: { fontSize: 12, fontFamily: "Cairo_600SemiBold", color: "#fff" },
+  heroPillText: { fontSize: 12, fontFamily: typography.bodyLg.fontFamily, color: "#fff" },
 
   body: {
     flex: 1,
@@ -478,8 +475,8 @@ const styles = StyleSheet.create({
     gap: 4,
     alignItems: "flex-end",
   },
-  cardLabel: { fontSize: 11, fontFamily: "Cairo_400Regular" },
-  cardValue: { fontSize: 15, fontFamily: "Cairo_600SemiBold", textAlign: "right" },
+  cardLabel: { fontSize: 11, fontFamily: typography.body.fontFamily },
+  cardValue: { fontSize: 15, fontFamily: typography.bodyLg.fontFamily, textAlign: "right" },
 
   alreadyMemberBanner: {
     flexDirection: "row",
@@ -490,7 +487,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: "flex-end",
   },
-  alreadyMemberText: { fontSize: 14, fontFamily: "Cairo_600SemiBold" },
+  alreadyMemberText: { fontSize: 14, fontFamily: typography.bodyLg.fontFamily },
 
   loginBanner: {
     flexDirection: "row",
@@ -500,7 +497,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     justifyContent: "flex-end",
   },
-  loginBannerText: { fontSize: 13, fontFamily: "Cairo_600SemiBold" },
+  loginBannerText: { fontSize: 13, fontFamily: typography.bodyLg.fontFamily },
 
   acceptBtn: {
     flexDirection: "row",
@@ -511,13 +508,13 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     marginTop: 8,
   },
-  acceptBtnText: { fontSize: 16, fontFamily: "Cairo_700Bold", color: "#fff" },
+  acceptBtnText: { fontSize: 16, fontFamily: typography.headlineSm.fontFamily, color: "#fff" },
 
   cancelBtn: {
     alignItems: "center",
     paddingVertical: 12,
   },
-  cancelBtnText: { fontSize: 14, fontFamily: "Cairo_400Regular" },
+  cancelBtnText: { fontSize: 14, fontFamily: typography.body.fontFamily },
 
   successIcon: {
     width: 100,
@@ -526,8 +523,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  successTitle: { fontSize: 22, fontFamily: "Cairo_700Bold", textAlign: "center" },
-  successDesc: { fontSize: 14, fontFamily: "Cairo_400Regular", textAlign: "center", lineHeight: 22 },
+  successTitle: { fontSize: 22, fontFamily: typography.headlineSm.fontFamily, textAlign: "center" },
+  successDesc: { fontSize: 14, fontFamily: typography.body.fontFamily, textAlign: "center", lineHeight: 22 },
 
   errorIcon: {
     width: 90,
@@ -536,8 +533,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  errorTitle: { fontSize: 20, fontFamily: "Cairo_700Bold", textAlign: "center" },
-  errorDesc: { fontSize: 14, fontFamily: "Cairo_400Regular", textAlign: "center", lineHeight: 22 },
+  errorTitle: { fontSize: 20, fontFamily: typography.headlineSm.fontFamily, textAlign: "center" },
+  errorDesc: { fontSize: 14, fontFamily: typography.body.fontFamily, textAlign: "center", lineHeight: 22 },
 
   primaryBtn: {
     paddingHorizontal: 32,
@@ -545,7 +542,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: "center",
   },
-  primaryBtnText: { fontSize: 15, fontFamily: "Cairo_700Bold", color: "#fff" },
+  primaryBtnText: { fontSize: 15, fontFamily: typography.headlineSm.fontFamily, color: "#fff" },
 
-  secondaryBtn: { fontSize: 14, fontFamily: "Cairo_400Regular" },
+  secondaryBtn: { fontSize: 14, fontFamily: typography.body.fontFamily },
 });

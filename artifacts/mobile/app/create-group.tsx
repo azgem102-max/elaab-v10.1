@@ -1,7 +1,7 @@
 import { useApp, SportType } from "@/context/AppContext";
 import { useColors } from "@/hooks/useColors";
 
-import themeColors from "@/constants/colors";
+import { getSportTheme } from "@/constants/sportTheme";
 import { typography } from "@/constants/typography";
 import { SportGradientButton } from "@/components/SportGradientButton";
 import { GlassScreenHeader } from "@/components/glass/GlassScreenHeader";
@@ -34,34 +34,33 @@ type SportOption = {
   bgLight: string;
 };
 
-const _c = themeColors.light;
 const SPORT_OPTIONS: SportOption[] = [
   {
     key: "football",
     label: "كرة القدم",
     icon: "football-outline",
-    color: _c.football,
-    gradientStart: _c.football,
-    gradientEnd: _c.primaryLight,
-    bgLight: _c.footballContainer,
+    color: getSportTheme("football").primary,
+    gradientStart: getSportTheme("football").primary,
+    gradientEnd: getSportTheme("football").primaryLight,
+    bgLight: getSportTheme("football").pillBackground,
   },
   {
     key: "padel",
     label: "بادل",
     icon: "tennisball-outline",
-    color: _c.padel,
-    gradientStart: _c.padel,
-    gradientEnd: _c.padelLight,
-    bgLight: _c.padelContainer,
+    color: getSportTheme("padel").primary,
+    gradientStart: getSportTheme("padel").primary,
+    gradientEnd: getSportTheme("padel").primaryLight,
+    bgLight: getSportTheme("padel").pillBackground,
   },
   {
     key: "tennis",
     label: "تنس",
     icon: "tennisball",
-    color: _c.tennis,
-    gradientStart: _c.tennis,
-    gradientEnd: _c.tennisLight,
-    bgLight: _c.tennisContainer,
+    color: getSportTheme("tennis").primary,
+    gradientStart: getSportTheme("tennis").primary,
+    gradientEnd: getSportTheme("tennis").primaryLight,
+    bgLight: getSportTheme("tennis").pillBackground,
   },
 ];
 
@@ -248,7 +247,7 @@ export default function CreateGroupScreen() {
             ]}
           >
             <TextInput
-              style={[styles.softInput, { color: colors.onSurface, fontFamily: "Cairo_600SemiBold" }]}
+              style={[styles.softInput, { color: colors.onSurface, fontFamily: typography.bodyLg.fontFamily }]}
               value={name}
               onChangeText={(t) => {
                 setName(t);
@@ -280,7 +279,7 @@ export default function CreateGroupScreen() {
         <View style={styles.section}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 4, justifyContent: "flex-end" }}>
             <Text style={[styles.sectionLabel, { color: colors.onSurface }]}>وصف المجموعة</Text>
-            <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "Cairo_400Regular" }}>(اختياري)</Text>
+            <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: typography.body.fontFamily }}>(اختياري)</Text>
           </View>
           <Animated.View
             style={[
@@ -293,7 +292,7 @@ export default function CreateGroupScreen() {
             ]}
           >
             <TextInput
-              style={[styles.softTextarea, { color: colors.onSurface, fontFamily: "Cairo_400Regular" }]}
+              style={[styles.softTextarea, { color: colors.onSurface, fontFamily: typography.body.fontFamily }]}
               value={description}
               onChangeText={(t) => {
                 setDescription(t);
@@ -422,7 +421,7 @@ const styles = StyleSheet.create({
   },
   scroll: { paddingHorizontal: 20, gap: 22 },
   section: { gap: 8 },
-  sectionLabel: { fontSize: 14, fontFamily: "Cairo_700Bold", textAlign: "right" },
+  sectionLabel: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily, textAlign: "right" },
 
   /* Sport Cards */
   sportCardsRow: { flexDirection: "row", gap: 10 },
@@ -445,8 +444,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  sportCardLabel: { fontSize: 12, fontFamily: "Cairo_700Bold" },
-  sportCardLabelSelected: { fontSize: 12, fontFamily: "Cairo_700Bold", color: "#fff" },
+  sportCardLabel: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily },
+  sportCardLabelSelected: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily, color: "#fff" },
 
   /* Soft Focus Inputs */
   softInputWrap: {
@@ -466,15 +465,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   softTextarea: { fontSize: 15, minHeight: 100, paddingVertical: 10, textAlign: "right" },
-  charCount: { fontSize: 11, fontFamily: "Cairo_400Regular", textAlign: "left" },
+  charCount: { fontSize: 11, fontFamily: typography.body.fontFamily, textAlign: "left" },
 
   /* Error */
   errorRow: { flexDirection: "row", alignItems: "center", gap: 4, justifyContent: "flex-end" },
-  errorText: { fontSize: 12, fontFamily: "Cairo_400Regular", textAlign: "right" },
+  errorText: { fontSize: 12, fontFamily: typography.body.fontFamily, textAlign: "right" },
 
   /* Toggle Card */
   toggleCard: { borderRadius: 20, padding: 16, gap: 12 },
-  toggleTitle: { fontSize: 15, fontFamily: "Cairo_700Bold", textAlign: "right" },
+  toggleTitle: { fontSize: 15, fontFamily: typography.headlineSm.fontFamily, textAlign: "right" },
   visibilityRow: { flexDirection: "row", gap: 10 },
   visibilityBtn: {
     flex: 1,
@@ -486,7 +485,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-  visibilityBtnText: { fontSize: 14, fontFamily: "Cairo_700Bold" },
+  visibilityBtnText: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily },
   toggleInfoRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, padding: 10 },
-  toggleInfoText: { flex: 1, fontSize: 12, fontFamily: "Cairo_400Regular", textAlign: "right" },
+  toggleInfoText: { flex: 1, fontSize: 12, fontFamily: typography.body.fontFamily, textAlign: "right" },
 });

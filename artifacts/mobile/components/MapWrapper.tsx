@@ -6,6 +6,8 @@ import type { ApiMatch } from "@/services/api";
 import { sportColor, sportLabel } from "@/context/AppContext";
 import { getSportIcon } from "@/components/icons/SportIcons";
 import { useColors } from "@/hooks/useColors";
+import { typography } from "@/constants/typography";
+
 
 const RIYADH_LAT = 24.7136;
 const RIYADH_LNG = 46.6753;
@@ -341,15 +343,15 @@ const cardStyles = StyleSheet.create({
     paddingVertical: 10,
   },
   sportDot: { width: 7, height: 7, borderRadius: 4 },
-  sportLabel: { fontSize: 12, fontFamily: "Cairo_700Bold" },
-  timeText: { fontSize: 11, fontFamily: "Cairo_400Regular" },
+  sportLabel: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily },
+  timeText: { fontSize: 11, fontFamily: typography.body.fontFamily },
   body: { paddingHorizontal: 14, paddingVertical: 8, gap: 6 },
-  title: { fontSize: 16, fontFamily: "Cairo_700Bold", textAlign: "right", lineHeight: 24 },
+  title: { fontSize: 16, fontFamily: typography.headlineSm.fontFamily, textAlign: "right", lineHeight: 24 },
   metaRow: { flexDirection: "row", alignItems: "center", gap: 4 },
-  metaText: { fontSize: 12, fontFamily: "Cairo_400Regular", flex: 1 },
+  metaText: { fontSize: 12, fontFamily: typography.body.fontFamily, flex: 1 },
   statsRow: { flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "flex-end" },
   statPill: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  statText: { fontSize: 12, fontFamily: "Cairo_700Bold" },
+  statText: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily },
   actions: {
     flexDirection: "row",
     gap: 10,
@@ -363,12 +365,12 @@ const cardStyles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
   },
-  detailsBtnText: { fontSize: 13, fontFamily: "Cairo_700Bold" },
+  detailsBtnText: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily },
   joinBtn: { borderRadius: 20, overflow: "hidden" },
   joinBtnGradient: { paddingHorizontal: 22, paddingVertical: 10, alignItems: "center" },
-  joinBtnText: { color: "#fff", fontSize: 13, fontFamily: "Cairo_700Bold" },
+  joinBtnText: { color: "#fff", fontSize: 13, fontFamily: typography.headlineSm.fontFamily },
   joinedPill: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
-  joinedText: { fontSize: 13, fontFamily: "Cairo_700Bold" },
+  joinedText: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily },
 });
 
 const styles = StyleSheet.create({
@@ -382,12 +384,12 @@ const styles = StyleSheet.create({
   },
   mapErrorText: {
     fontSize: 16,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "center",
   },
   mapErrorSub: {
     fontSize: 13,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "center",
     lineHeight: 22,
   },
@@ -432,19 +434,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
-  calloutSport: { fontSize: 12, fontFamily: "Cairo_700Bold" },
-  calloutTime: { fontSize: 11, fontFamily: "Cairo_400Regular" },
-  calloutTitle: { fontSize: 13, fontFamily: "Cairo_700Bold", textAlign: "right", lineHeight: 20, paddingHorizontal: 12 },
-  calloutVenue: { fontSize: 11, fontFamily: "Cairo_400Regular", textAlign: "right", paddingHorizontal: 12 },
+  calloutSport: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily },
+  calloutTime: { fontSize: 11, fontFamily: typography.body.fontFamily },
+  calloutTitle: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily, textAlign: "right", lineHeight: 20, paddingHorizontal: 12 },
+  calloutVenue: { fontSize: 11, fontFamily: typography.body.fontFamily, textAlign: "right", paddingHorizontal: 12 },
   calloutRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 12,
   },
-  calloutCost: { fontSize: 14, fontFamily: "Cairo_700Bold" },
+  calloutCost: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily },
   calloutSpots: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20 },
-  calloutSpotsText: { fontSize: 11, fontFamily: "Cairo_600SemiBold" },
+  calloutSpotsText: { fontSize: 11, fontFamily: typography.bodyLg.fontFamily },
   calloutBtn: {
     margin: 10,
     marginTop: 6,
@@ -452,5 +454,5 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     alignItems: "center",
   },
-  calloutBtnText: { color: "#fff", fontFamily: "Cairo_700Bold", fontSize: 13 },
+  calloutBtnText: { color: "#fff", fontFamily: typography.headlineSm.fontFamily, fontSize: 13 },
 });

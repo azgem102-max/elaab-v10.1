@@ -5,6 +5,7 @@ import {
   Text,
   View,
   ViewStyle,
+  StyleProp,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -17,29 +18,20 @@ import { HighlightText } from "@/components/HighlightText";
 import { sportColor, sportLabel, formatDate } from "@/context/AppContext";
 import { getSportIcon } from "@/components/icons/SportIcons";
 import { getSportTheme } from "@/constants/sportTheme";
+import { useTranslation } from "@/i18n";
 import type { Match } from "@/context/AppContext";
 
 const SURFACE = "#FFFFFF";
 const BORDER = "#E5E7EB";
 
-const SPORT_LABELS: Record<string, string> = {
-  football: "كرة القدم",
-  padel: "بادل",
-  tennis: "تنس",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  upcoming: "قادمة",
-  today: "اليوم",
-  completed: "منتهية",
-};
+// Labels and statuses are now handled via i18n t() calls inside the component
 
 export type MatchCardVariant = "full" | "compact";
 
 interface MatchCardProps {
   match: Match;
   onPress?: () => void;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   variant?: MatchCardVariant;
   searchQuery?: string;
   showScore?: boolean;
@@ -65,6 +57,7 @@ function MatchCardInner({
   onViewGroup,
   showActions = false,
 }: MatchCardProps) {
+  const { t, locale } = useTranslation();
   const colors = useColors();
   const SportIcon = getSportIcon(match.sport);
   const sportTheme = getSportTheme(match.sport);
@@ -83,7 +76,7 @@ function MatchCardInner({
   const isToday = match.status === "today";
 
   const dateStr = match.date
-    ? new Date(match.date).toLocaleDateString("ar-SA", {
+    ? new Date(match.date).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
         weekday: "short",
         month: "short",
         day: "numeric",
@@ -114,12 +107,12 @@ function MatchCardInner({
             <View style={[styles.categoryPill, { backgroundColor: PRIMARY_CONTAINER }]}>
               <SportIcon color={PRIMARY} size={13} />
               <Text style={[styles.categoryPillText, { color: PRIMARY }]}>
-                {SPORT_LABELS[match.sport] ?? match.sport}
+                {t(`sports.${match.sport}`)}
               </Text>
             </View>
             {isToday && (
               <View style={[styles.todayPill, { backgroundColor: "#FEF3C7" }]}>
-                <Text style={[styles.todayPillText, { color: "#D97706" }]}>اليوم</Text>
+                <Text style={[styles.todayPillText, { color: "#D97706" }]}>{t("common.today")}</Text>
               </View>
             )}
           </View>
@@ -136,7 +129,7 @@ function MatchCardInner({
               </Text>
             </View>
             <Text style={[styles.compactSpots, { color: isFull ? "#DC2626" : "#16A34A" }]}>
-              {isFull ? "مكتملة" : `${remaining} مكان`}
+              {isFull ? t("matchDetails.spotsFull") : t("matchDetails.spotsRemaining", { count: remaining })}
             </Text>
           </View>
           <LiquidProgressBar progress={Math.min(pct, 1)} sport={match.sport} height={4} />
@@ -163,45 +156,45 @@ function MatchCardInner({
               {isFull && (
                 <View style={[styles.statusPill, { backgroundColor: "#FEE2E2" }]}>
                   <Ionicons name="alert-circle" size={12} color="#DC2626" />
-                  <Text style={[styles.statusPillText, { color: "#DC2626" }]}>ممتلئة</Text>
+                  <Text style={[styles.statusPillText, { color: "#DC2626" }]}>{t("matchDetails.spotsFull")}</Text>
                 </View>
               )}
               {!match.isPublic ? (
                 <View style={[styles.statusPill, { backgroundColor: "#F3F4F6" }]}>
                   <Ionicons name="lock-closed" size={11} color="#6B7280" />
-                  <Text style={[styles.statusPillText, { color: "#6B7280" }]}>خاص</Text>
+                  <Text style={[styles.statusPillText, { color: "#6B7280" }]}>{t("common.private")}</Text>
                 </View>
               ) : (
                 <View style={[styles.statusPill, { backgroundColor: "rgba(22, 163, 74, 0.10)" }]}>
                   <Ionicons name="globe-outline" size={11} color="#16A34A" />
-                  <Text style={[styles.statusPillText, { color: "#16A34A" }]}>عام</Text>
+                  <Text style={[styles.statusPillText, { color: "#16A34A" }]}>{t("common.public")}</Text>
                 </View>
               )}
             </View>
             <View style={styles.badgeRowRight}>
               {isToday && (
                 <View style={[styles.todayPill, { backgroundColor: "#FEF3C7" }]}>
-                  <Text style={[styles.todayPillText, { color: "#D97706" }]}>اليوم</Text>
+                  <Text style={[styles.todayPillText, { color: "#D97706" }]}>{t("common.today")}</Text>
                 </View>
               )}
               {(match.sport === "padel" || match.sport === "tennis") && match.matchFormat && (
                 <View style={[styles.statusPill, { backgroundColor: PRIMARY_CONTAINER }]}>
                   <Text style={[styles.statusPillText, { color: PRIMARY }]}>
-                    {match.matchFormat === "single" ? "فردي" : "مزدوج"}
+                    {match.matchFormat === "single" ? t("matchDetails.format.single") : t("matchDetails.format.double")}
                   </Text>
                 </View>
               )}
               {match.status && match.status !== "upcoming" && !isToday && (
                 <View style={[styles.statusPill, { backgroundColor: "#F3F4F6" }]}>
                   <Text style={[styles.statusPillText, { color: "#6B7280" }]}>
-                    {STATUS_LABELS[match.status] ?? match.status}
+                    {t(`matchDetails.status.${match.status}`)}
                   </Text>
                 </View>
               )}
               <View style={[styles.categoryPill, { backgroundColor: PRIMARY_CONTAINER, borderWidth: 1, borderColor: `${PRIMARY}30` }]}>
                 <SportIcon color={PRIMARY} size={13} />
-                <Text style={[styles.categoryPillText, { color: PRIMARY, fontFamily: "Cairo_700Bold" }]}>
-                  {SPORT_LABELS[match.sport] ?? match.sport}
+                <Text style={[styles.categoryPillText, { color: PRIMARY, fontFamily: typography.headlineSm.fontFamily }]}>
+                  {t(`sports.${match.sport}`)}
                 </Text>
               </View>
             </View>
@@ -212,7 +205,7 @@ function MatchCardInner({
               text={match.title}
               query={searchQuery}
               style={[styles.title, { color: "#111827" }]}
-              highlightStyle={{ fontFamily: "Cairo_700Bold", backgroundColor: "#FEF08A" }}
+              highlightStyle={{ fontFamily: typography.headlineSm.fontFamily, backgroundColor: "#FEF08A" }}
               numberOfLines={1}
             />
           ) : (
@@ -238,10 +231,10 @@ function MatchCardInner({
               <View style={styles.infoRow}>
                 {searchQuery ? (
                   <HighlightText
-                    text={formatDate(match.date)}
+                    text={formatDate(match.date, t, locale)}
                     query={searchQuery}
                     style={[styles.infoText, { color: "#6B7280" }]}
-                    highlightStyle={{ fontFamily: "Cairo_700Bold", backgroundColor: "#FEF08A" }}
+                    highlightStyle={{ fontFamily: typography.headlineSm.fontFamily, backgroundColor: "#FEF08A" }}
                     numberOfLines={1}
                   />
                 ) : (
@@ -255,7 +248,7 @@ function MatchCardInner({
                     text={match.venue}
                     query={searchQuery}
                     style={[styles.infoText, { color: "#6B7280" }]}
-                    highlightStyle={{ fontFamily: "Cairo_700Bold", backgroundColor: "#FEF08A" }}
+                    highlightStyle={{ fontFamily: typography.headlineSm.fontFamily, backgroundColor: "#FEF08A" }}
                     numberOfLines={1}
                   />
                 ) : (
@@ -267,9 +260,9 @@ function MatchCardInner({
               </View>
               {match.cost !== undefined && match.cost !== null && (
                 <View style={styles.infoRow}>
-                  <Text style={[styles.infoText, { color: "#111827", fontFamily: "Cairo_700Bold" }]}>
+                  <Text style={[styles.infoText, { color: "#111827", fontFamily: typography.headlineSm.fontFamily }]}>
                     {match.cost}{" "}
-                    <Text style={{ color: "#6B7280", fontFamily: "Cairo_400Regular", fontSize: 11 }}>ر.س</Text>
+                    <Text style={{ color: "#6B7280", fontFamily: typography.body.fontFamily, fontSize: 11 }}>{t("common.currency")}</Text>
                   </Text>
                   <Ionicons name="card-outline" size={14} color={PRIMARY} />
                 </View>
@@ -281,7 +274,7 @@ function MatchCardInner({
             <View style={styles.spotsSection}>
               <View style={styles.spotsTextRow}>
                 <Text style={[styles.spotsRemaining, { color: isFull ? "#DC2626" : "#16A34A" }]}>
-                  {isFull ? "مكتملة" : `${remaining} مكان`}
+                  {isFull ? t("matchDetails.spotsFull") : t("matchDetails.spotsRemaining", { count: remaining })}
                 </Text>
                 <Text style={[styles.spotsTotal, { color: "#9CA3AF" }]}>
                   {joined}/{max}
@@ -306,14 +299,14 @@ function MatchCardInner({
                       style={[styles.actionBtn, { backgroundColor: PRIMARY }]}
                       onPress={onViewGroup}
                     >
-                      <Text style={[styles.actionBtnText, { color: "#fff" }]}>عرض المجموعة</Text>
+                       <Text style={[styles.actionBtnText, { color: "#fff" }]}>{t("explore.viewGroup")}</Text>
                     </Pressable>
                   ) : match.joinedByCurrentUser ? (
                     <Pressable
                       style={[styles.actionBtn, { backgroundColor: `${PRIMARY}15`, borderWidth: 1, borderColor: `${PRIMARY}30` }]}
                       onPress={onLeave}
                     >
-                      <Text style={[styles.actionBtnText, { color: PRIMARY }]}>مسجل ✓</Text>
+                      <Text style={[styles.actionBtnText, { color: PRIMARY }]}>{t("home.joined")}</Text>
                     </Pressable>
                   ) : (
                     <Pressable
@@ -325,9 +318,9 @@ function MatchCardInner({
                       disabled={isFull}
                     >
                       {isFull ? (
-                        <Text style={[styles.actionBtnText, { color: "#6B7280" }]}>مكتملة</Text>
+                        <Text style={[styles.actionBtnText, { color: "#6B7280" }]}>{t("matchDetails.spotsFull")}</Text>
                       ) : (
-                        <Text style={[styles.actionBtnText, { color: "#111827" }]}>انضم</Text>
+                        <Text style={[styles.actionBtnText, { color: "#111827" }]}>{t("common.join")}</Text>
                       )}
                     </Pressable>
                   )}
@@ -336,7 +329,7 @@ function MatchCardInner({
                 <View style={styles.costCol}>
                   <Text style={[styles.costValue, { color: "#111827" }]}>
                     {match.cost}{" "}
-                    <Text style={[styles.costUnit, { color: "#6B7280" }]}>ر.س</Text>
+                    <Text style={[styles.costUnit, { color: "#6B7280" }]}>{t("common.currency")}</Text>
                   </Text>
                 </View>
               )}
@@ -444,7 +437,7 @@ const styles = StyleSheet.create({
   },
   todayPillText: {
     ...typography.labelSm,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   title: {
     ...typography.headlineSm,
@@ -478,7 +471,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 13,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
     textAlign: "right",
     flex: 1,
   },
@@ -498,11 +491,11 @@ const styles = StyleSheet.create({
   },
   spotsRemaining: {
     fontSize: 12,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   spotsTotal: {
     fontSize: 11,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
   rightCol: {
     alignItems: "flex-end",
@@ -512,12 +505,12 @@ const styles = StyleSheet.create({
   },
   costValue: {
     fontSize: 16,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     lineHeight: 22,
   },
   costUnit: {
     fontSize: 11,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
   },
   actionsRow: {
     flexDirection: "row",
@@ -539,7 +532,7 @@ const styles = StyleSheet.create({
   },
   actionBtnText: {
     fontSize: 13,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   compactWrapper: {
     borderRadius: 12,
@@ -563,7 +556,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   compactTitle: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     fontSize: 14,
     textAlign: "right",
   },
@@ -581,11 +574,11 @@ const styles = StyleSheet.create({
   },
   compactInfoText: {
     fontSize: 11,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     flex: 1,
   },
   compactSpots: {
     fontSize: 11,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
 });

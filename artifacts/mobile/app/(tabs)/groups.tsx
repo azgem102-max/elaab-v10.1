@@ -10,7 +10,6 @@ import { GlassButton } from "@/components/glass/GlassButton";
 import { SkeletonLoader } from "@/components/SkeletonLoader";
 import { getSportTheme } from "@/constants/sportTheme";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -29,16 +28,13 @@ import {
   NativeSyntheticEvent,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "@/i18n";
+import { typography } from "@/constants/typography";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const MY_CARD_WIDTH = Math.round(SCREEN_WIDTH * 0.54);
 
-const SPORT_FILTERS: { key: "all" | SportType; label: string; icon: React.FC<{ color?: string; size?: number }> }[] = [
-  { key: "all", label: "الكل", icon: AllSportsIcon },
-  { key: "football", label: "كرة القدم", icon: FootballIcon },
-  { key: "padel", label: "بادل", icon: PadelIcon },
-  { key: "tennis", label: "تنس", icon: TennisIcon },
-];
+// SPORT_FILTERS moved inside component to use t()
 
 type ToastType = { visible: boolean; message: string };
 
@@ -47,6 +43,14 @@ export default function GroupsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { groups, joinGroup, leaveGroup, user, groupsLoading, groupsError, refreshGroups } = useApp();
+  const { t, locale } = useTranslation();
+
+  const SPORT_FILTERS: { key: "all" | SportType; label: string; icon: React.FC<{ color?: string; size?: number }> }[] = [
+    { key: "all", label: t('common.all'), icon: AllSportsIcon },
+    { key: "football", label: t('sports.football'), icon: FootballIcon },
+    { key: "padel", label: t('sports.padel'), icon: PadelIcon },
+    { key: "tennis", label: t('sports.tennis'), icon: TennisIcon },
+  ];
   const [search, setSearch] = useState("");
   const [focused, setFocused] = useState(false);
   const [sportFilter, setSportFilter] = useState<"all" | SportType>("all");
@@ -126,7 +130,7 @@ export default function GroupsScreen() {
     <Animated.View style={[styles.container, { backgroundColor: "transparent", opacity: fadeAnim }]}>
       <GlassScreenHeader style={{ paddingTop: topPad + 12, paddingHorizontal: 20, gap: 12, paddingBottom: 8 }}>
         <View style={styles.headerRow}>
-          <Text style={[styles.title, { color: colors.onSurface }]}>المجموعات</Text>
+          <Text style={[styles.title, { color: colors.onSurface }]}>{t('groups.title')}</Text>
         </View>
 
         <GlassInput
@@ -134,7 +138,7 @@ export default function GroupsScreen() {
           onChangeText={setSearch}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          placeholder="ابحث عن مجموعة..."
+          placeholder={t('groups.searchPlaceholder')}
           sport={sportFilter === "all" ? "football" : sportFilter}
         />
 
@@ -154,11 +158,11 @@ export default function GroupsScreen() {
             const IconComponent = item.icon;
             const activeBgColor =
               item.key === "football"
-                ? colors.football
+                ? getSportTheme("football").primary
                 : item.key === "padel"
-                ? colors.padel
+                ? getSportTheme("padel").primary
                 : item.key === "tennis"
-                ? colors.tennis
+                ? getSportTheme("tennis").primary
                 : colors.primary;
             return (
               <Pressable
@@ -181,7 +185,7 @@ export default function GroupsScreen() {
         {isFiltering && !groupsLoading && (
           <View style={styles.resultsRow}>
             <Text style={[styles.resultsText, { color: colors.mutedForeground }]}>
-              {totalResults} نتيجة
+              {totalResults} {t('common.result')}
             </Text>
           </View>
         )}
@@ -199,7 +203,7 @@ export default function GroupsScreen() {
           >
             <Ionicons name="cloud-offline-outline" size={16} color={colors.warning} />
             <Text style={[styles.offlineBannerText, { color: colors.warning }]}>
-              تعذّر الاتصال بالخادم. اضغط للمحاولة مجدداً.
+              {t('groups.connectionError')}
             </Text>
           </Pressable>
         )}
@@ -214,7 +218,7 @@ export default function GroupsScreen() {
         ) : (
           <>
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>مجموعاتي</Text>
+              <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t('groups.myGroups')}</Text>
               {allMyGroups.length > 0 && (
                 <View style={[styles.countBadge, { backgroundColor: colors.primary + "18" }]}>
                   <Text style={[styles.countText, { color: colors.primary }]}>{allMyGroups.length}</Text>
@@ -228,7 +232,7 @@ export default function GroupsScreen() {
               <View style={[styles.noResults, { backgroundColor: colors.surfaceContainerLow, borderRadius: 20 }]}>
                 <Ionicons name="search-outline" size={24} color={colors.mutedForeground} />
                 <Text style={[styles.noResultsText, { color: colors.mutedForeground }]}>
-                  لا توجد مجموعات تطابق البحث
+                  {t('groups.noMatchingGroups')}
                 </Text>
               </View>
             ) : (
@@ -237,7 +241,7 @@ export default function GroupsScreen() {
                   <>
                     <View style={[styles.subSectionHeader]}>
                       <Ionicons name="star" size={14} color={colors.warning} />
-                      <Text style={[styles.subSectionTitle, { color: colors.mutedForeground }]}>أديرها</Text>
+                      <Text style={[styles.subSectionTitle, { color: colors.mutedForeground }]}>{t('groups.managed')}</Text>
                     </View>
                     <ScrollView
                       horizontal
@@ -263,7 +267,7 @@ export default function GroupsScreen() {
                   <>
                     <View style={[styles.subSectionHeader, myOwnedFiltered.length > 0 && { marginTop: 16 }]}>
                       <Ionicons name="people-outline" size={14} color={colors.mutedForeground} />
-                      <Text style={[styles.subSectionTitle, { color: colors.mutedForeground }]}>عضو فيها</Text>
+                      <Text style={[styles.subSectionTitle, { color: colors.mutedForeground }]}>{t('groups.memberOf')}</Text>
                     </View>
                     <ScrollView
                       horizontal
@@ -286,11 +290,11 @@ export default function GroupsScreen() {
                           currentUserId={currentUserId}
                           onLeave={() => {
                             Alert.alert(
-                              "مغادرة المجموعة",
-                              `هل أنت متأكد من مغادرة مجموعة "${group.name}"؟`,
+                              t('groups.leaveGroupTitle'),
+                              t('groups.leaveGroupMsg', { name: group.name }),
                               [
-                                { text: "إلغاء", style: "cancel" },
-                                { text: "مغادرة", style: "destructive", onPress: () => leaveGroup(group.id) },
+                                { text: t('common.cancel'), style: "cancel" },
+                                { text: t('common.leave'), style: "destructive", onPress: () => leaveGroup(group.id) },
                               ]
                             );
                           }}
@@ -318,7 +322,7 @@ export default function GroupsScreen() {
             )}
 
             <View style={[styles.sectionHeader, { marginTop: 24 }]}>
-              <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>اكتشف مجموعات</Text>
+              <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t('groups.discover')}</Text>
               {discoverGroups.length > 0 && (
                 <View style={[styles.countBadge, { backgroundColor: colors.surfaceContainerHigh }]}>
                   <Text style={[styles.countText, { color: colors.onSurfaceVariant }]}>{discoverGroups.length}</Text>
@@ -334,25 +338,22 @@ export default function GroupsScreen() {
                   <Ionicons name="compass-outline" size={28} color={colors.primary} />
                 </View>
                 <Text style={[styles.discoverEmptyTitle, { color: colors.onSurface }]}>
-                  {isFiltering ? "لا توجد نتائج" : "لا توجد مجموعات للاكتشاف"}
+                  {isFiltering ? t('groups.noDiscoverResults') : t('groups.noDiscoverGroups')}
                 </Text>
                 <Text style={[styles.discoverEmptyText, { color: colors.mutedForeground }]}>
-                  {isFiltering ? "جرب تغيير الفلاتر أو مصطلح البحث" : "كن الأول وأنشئ مجموعتك الرياضية"}
+                  {isFiltering ? t('groups.noDiscoverDesc') : t('groups.beFirst')}
                 </Text>
                 {!isFiltering && (
                   <Pressable
                     style={styles.discoverEmptyCTA}
                     onPress={() => router.push("/create-group")}
                   >
-                    <LinearGradient
-                      colors={[colors.accent, colors.accent + "CC"]}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={styles.discoverEmptyCTAInner}
+                    <View
+                      style={[styles.discoverEmptyCTAInner, { backgroundColor: colors.accent }]}
                     >
                       <Ionicons name="add" size={16} color={colors.accentForeground} />
-                      <Text style={[styles.discoverEmptyCTAText, { color: colors.accentForeground }]}>أنشئ مجموعة</Text>
-                    </LinearGradient>
+                      <Text style={[styles.discoverEmptyCTAText, { color: colors.accentForeground }]}>{t('groups.createGroup')}</Text>
+                    </View>
                   </Pressable>
                 )}
               </View>
@@ -363,7 +364,7 @@ export default function GroupsScreen() {
                   group={group}
                   onJoin={async () => {
                     await joinGroup(group.id);
-                    showToast(`تم إرسال طلب الانضمام، في انتظار موافقة الأدمن`);
+                    showToast(t('groups.joinRequestSent'));
                   }}
                 />
               ))
@@ -377,14 +378,11 @@ export default function GroupsScreen() {
         style={styles.fab}
         onPress={() => router.push("/create-group")}
       >
-        <LinearGradient
-          colors={[colors.accent, colors.accent + "CC"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.fabGradient}
+        <View
+          style={[styles.fabGradient, { backgroundColor: colors.accent }]}
         >
           <Ionicons name="add" size={28} color={colors.accentForeground} />
-        </LinearGradient>
+        </View>
       </Pressable>
 
       {toast.visible && (
@@ -397,28 +395,26 @@ export default function GroupsScreen() {
 }
 
 function MyGroupsEmpty({ colors }: { colors: ReturnType<typeof useColors> }) {
+  const { t } = useTranslation();
   return (
     <View style={[styles.emptyMyGroups, { backgroundColor: colors.surfaceContainerLow, borderRadius: 24 }]}>
       <View style={[styles.emptyIcon, { backgroundColor: colors.surfaceContainerHigh }]}>
         <Ionicons name="people-outline" size={32} color={colors.primary} />
       </View>
-      <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>ابدأ مجموعتك الأولى</Text>
+      <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>{t('groups.startFirstGroup')}</Text>
       <Text style={[styles.emptyDesc, { color: colors.mutedForeground }]}>
-        أنشئ مجموعتك الرياضية أو انضم لمجموعة موجودة واستمتع بالتنظيم مع أصدقائك
+        {t('groups.startFirstGroupDesc')}
       </Text>
       <Pressable
         style={styles.emptyCreateBtn}
         onPress={() => router.push("/create-group")}
       >
-        <LinearGradient
-          colors={[colors.accent, colors.accent + "CC"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.emptyCreateBtnInner}
+        <View
+          style={[styles.emptyCreateBtnInner, { backgroundColor: colors.accent }]}
         >
           <Ionicons name="add" size={16} color={colors.accentForeground} />
-          <Text style={[styles.emptyCreateBtnText, { color: colors.accentForeground }]}>أنشئ مجموعة</Text>
-        </LinearGradient>
+          <Text style={[styles.emptyCreateBtnText, { color: colors.accentForeground }]}>{t('groups.createGroup')}</Text>
+        </View>
       </Pressable>
     </View>
   );
@@ -434,6 +430,7 @@ const MyGroupCard = React.memo(function MyGroupCard({
   onLeave?: () => void;
 }) {
   const colors = useColors();
+  const { t, locale } = useTranslation();
   const SportIcon = getSportIcon(group.sport);
   const sportTheme = getSportTheme(group.sport);
   const glassBg = sportTheme.glass.backgroundGradient;
@@ -448,24 +445,21 @@ const MyGroupCard = React.memo(function MyGroupCard({
           borderWidth: 1.5,
           borderColor: borderColor,
           ...Platform.select({
-            web: { boxShadow: `0px 4px 20px ${sportTheme.glass.glassColor}, 0px 1px 6px rgba(0,0,0,0.06)` },
+            web: { boxShadow: `0px 2px 8px rgba(0,0,0,0.04), 0px 1px 3px rgba(0,0,0,0.02)` },
             default: {
-              shadowColor: sportTheme.glass.glassColor,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.6,
-              shadowRadius: 16,
-              elevation: 5,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.04,
+              shadowRadius: 8,
+              elevation: 2,
             },
           }),
         },
       ]}
       onPress={() => router.push({ pathname: "/group-detail", params: { id: group.id } })}
     >
-      <LinearGradient
-        colors={glassBg}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
+      <View
+        style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.card }]}
       />
 
       <View style={styles.myCardContent}>
@@ -498,7 +492,7 @@ const MyGroupCard = React.memo(function MyGroupCard({
             {group.name}
           </Text>
           <View style={styles.memberRow}>
-            <Text style={[styles.memberCountText, { color: colors.mutedForeground }]}>{group.memberCount} عضو</Text>
+            <Text style={[styles.memberCountText, { color: colors.mutedForeground }]}>{group.memberCount} {t('common.member')}</Text>
             <Ionicons name="people" size={15} color={colors.mutedForeground} />
           </View>
         </View>
@@ -523,7 +517,7 @@ const MyGroupCard = React.memo(function MyGroupCard({
                 }}
               >
                 <Ionicons name="person-add-outline" size={13} color={primaryColor} />
-                <Text style={[styles.cardActionBtnText, { color: primaryColor }]}>دعوة</Text>
+                <Text style={[styles.cardActionBtnText, { color: primaryColor }]}>{t('common.invite')}</Text>
               </Pressable>
               <Pressable
                 style={[styles.cardActionBtn, { backgroundColor: sportTheme.primaryContainer }]}
@@ -533,7 +527,7 @@ const MyGroupCard = React.memo(function MyGroupCard({
                 }}
               >
                 <Ionicons name="settings-outline" size={13} color={primaryColor} />
-                <Text style={[styles.cardActionBtnText, { color: primaryColor }]}>إدارة</Text>
+                <Text style={[styles.cardActionBtnText, { color: primaryColor }]}>{t('common.manage')}</Text>
               </Pressable>
             </>
           ) : (
@@ -545,7 +539,7 @@ const MyGroupCard = React.memo(function MyGroupCard({
               }}
             >
               <Ionicons name="exit-outline" size={13} color={colors.destructive} />
-              <Text style={[styles.cardActionBtnText, { color: colors.destructive }]}>غادر</Text>
+              <Text style={[styles.cardActionBtnText, { color: colors.destructive }]}>{t('common.leave')}</Text>
             </Pressable>
           )}
         </View>
@@ -562,6 +556,7 @@ const DiscoverGroupCard = React.memo(function DiscoverGroupCard({
   onJoin: () => void;
 }) {
   const colors = useColors();
+  const { t } = useTranslation();
   const SportIcon = getSportIcon(group.sport);
   const sc = sportColor(group.sport, colors);
 
@@ -570,22 +565,17 @@ const DiscoverGroupCard = React.memo(function DiscoverGroupCard({
       style={styles.discoverCardWrapper}
       onPress={() => router.push({ pathname: "/group-detail", params: { id: group.id } })}
     >
-      <GlassCard variant="light" padding="none" style={styles.discoverCard}>
-        <LinearGradient
-          colors={[sc, colors.primary]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.discoverBanner}
-        >
+      <View style={[styles.discoverCard, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
+        <View style={[styles.discoverBanner, { backgroundColor: sc }]}>
           <View style={styles.discoverBannerCircle}>
-            <SportIcon color="#fff" size={22} />
+            <SportIcon color={colors.primaryForeground} size={22} />
           </View>
           {!group.isPublic && (
             <View style={styles.discoverLockBadge}>
-              <Ionicons name="lock-closed" size={10} color="#fff" />
+              <Ionicons name="lock-closed" size={10} color={colors.primaryForeground} />
             </View>
           )}
-        </LinearGradient>
+        </View>
 
         <View style={styles.discoverBody}>
           <Text style={[styles.discoverName, { color: colors.onSurface }]} numberOfLines={1}>
@@ -594,7 +584,7 @@ const DiscoverGroupCard = React.memo(function DiscoverGroupCard({
 
           <View style={styles.discoverBadgeRow}>
             <GlassBadge
-              label={`${group.memberCount} عضو`}
+              label={`${group.memberCount} ${t('common.member')}`}
               variant="default"
               size="sm"
             />
@@ -624,7 +614,7 @@ const DiscoverGroupCard = React.memo(function DiscoverGroupCard({
           <View style={styles.discoverFooter}>
             {group.hasPendingRequest ? (
               <GlassButton
-                label="في الانتظار..."
+                label={t('groups.waitingApproval')}
                 sport={group.sport}
                 variant="primary"
                 size="sm"
@@ -633,7 +623,7 @@ const DiscoverGroupCard = React.memo(function DiscoverGroupCard({
               />
             ) : (
               <GlassButton
-                label="طلب"
+                label={t('groups.request')}
                 sport={group.sport}
                 variant="accent"
                 size="sm"
@@ -643,7 +633,7 @@ const DiscoverGroupCard = React.memo(function DiscoverGroupCard({
             )}
           </View>
         </View>
-      </GlassCard>
+      </View>
     </Pressable>
   );
 }, (prev, next) => prev.group === next.group);
@@ -651,7 +641,7 @@ const DiscoverGroupCard = React.memo(function DiscoverGroupCard({
 const styles = StyleSheet.create({
   container: { flex: 1 },
   headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "flex-end" },
-  title: { fontSize: 26, fontFamily: "Cairo_700Bold", lineHeight: 36 },
+  title: { fontSize: 26, fontFamily: typography.headlineSm.fontFamily, lineHeight: 36 },
   filterList: { gap: 8, paddingRight: 4 },
   filterChip: {
     flexDirection: "row",
@@ -661,9 +651,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 24,
   },
-  filterText: { fontSize: 13, fontFamily: "Cairo_600SemiBold" },
+  filterText: { fontSize: 13, fontFamily: typography.bodyLg.fontFamily },
   resultsRow: { paddingHorizontal: 20, paddingTop: 2 },
-  resultsText: { fontSize: 12, fontFamily: "Cairo_400Regular", textAlign: "right" },
+  resultsText: { fontSize: 12, fontFamily: typography.body.fontFamily, textAlign: "right" },
 
   scrollContent: { paddingTop: 8, gap: 0 },
   offlineBanner: {
@@ -675,7 +665,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 10,
   },
-  offlineBannerText: { flex: 1, fontSize: 13, fontFamily: "Cairo_600SemiBold", textAlign: "right", lineHeight: 20 },
+  offlineBannerText: { flex: 1, fontSize: 13, fontFamily: typography.bodyLg.fontFamily, textAlign: "right", lineHeight: 20 },
   loadingRow: { paddingVertical: 16, paddingHorizontal: 16, gap: 16 },
 
   sectionHeader: {
@@ -686,9 +676,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 12,
   },
-  sectionTitle: { fontSize: 17, fontFamily: "Cairo_700Bold" },
+  sectionTitle: { fontSize: 17, fontFamily: typography.headlineSm.fontFamily },
   countBadge: { paddingHorizontal: 9, paddingVertical: 3, borderRadius: 12 },
-  countText: { fontSize: 13, fontFamily: "Cairo_700Bold" },
+  countText: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily },
 
   myGroupsScroll: { paddingHorizontal: 16, gap: 14, paddingBottom: 4 },
 
@@ -702,7 +692,7 @@ const styles = StyleSheet.create({
   },
   subSectionTitle: {
     fontSize: 13,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
 
   dotsRow: {
@@ -731,19 +721,19 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 20,
   },
-  sportPillText: { fontSize: 12, fontFamily: "Cairo_700Bold" },
+  sportPillText: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily },
   myCardTopBadges: { flexDirection: "row", alignItems: "center", gap: 6 },
   crownBadge: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center" },
   lockBadge: { width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   myCardMiddle: { gap: 6, flex: 1, justifyContent: "flex-end" },
   myCardName: {
     fontSize: 20,
-    fontFamily: "Cairo_900Black",
+    fontFamily: typography.displaySm.fontFamily,
     lineHeight: 28,
     textAlign: "right",
   },
   memberRow: { flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "flex-end" },
-  memberCountText: { fontSize: 13, fontFamily: "Cairo_600SemiBold" },
+  memberCountText: { fontSize: 13, fontFamily: typography.bodyLg.fontFamily },
   nextMatchPill: {
     flexDirection: "row",
     gap: 6,
@@ -755,7 +745,7 @@ const styles = StyleSheet.create({
   },
   nextMatchPillText: {
     fontSize: 11,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     flex: 1,
     textAlign: "right",
   },
@@ -768,12 +758,12 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderRadius: 20,
   },
-  cardActionBtnText: { fontSize: 12, fontFamily: "Cairo_700Bold" },
+  cardActionBtnText: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily },
 
   emptyMyGroups: { marginHorizontal: 16, padding: 24, alignItems: "center", gap: 14 },
   emptyIcon: { width: 68, height: 68, borderRadius: 34, alignItems: "center", justifyContent: "center" },
-  emptyTitle: { fontSize: 17, fontFamily: "Cairo_700Bold", textAlign: "center" },
-  emptyDesc: { fontSize: 13, fontFamily: "Cairo_400Regular", textAlign: "center", lineHeight: 22 },
+  emptyTitle: { fontSize: 17, fontFamily: typography.headlineSm.fontFamily, textAlign: "center" },
+  emptyDesc: { fontSize: 13, fontFamily: typography.body.fontFamily, textAlign: "center", lineHeight: 22 },
   emptyCreateBtn: { borderRadius: 24, overflow: "hidden", marginTop: 4 },
   emptyCreateBtnInner: {
     flexDirection: "row",
@@ -782,10 +772,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingVertical: 12,
   },
-  emptyCreateBtnText: { fontSize: 14, fontFamily: "Cairo_700Bold" },
+  emptyCreateBtnText: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily },
 
   noResults: { marginHorizontal: 16, padding: 20, alignItems: "center", gap: 8, marginBottom: 12 },
-  noResultsText: { fontSize: 14, fontFamily: "Cairo_400Regular", textAlign: "center" },
+  noResultsText: { fontSize: 14, fontFamily: typography.body.fontFamily, textAlign: "center" },
 
   discoverCardWrapper: { marginHorizontal: 16, marginBottom: 12 },
   discoverCard: { borderRadius: 20, overflow: "hidden" },
@@ -818,10 +808,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   discoverBody: { padding: 16, gap: 8 },
-  discoverName: { fontSize: 16, fontFamily: "Cairo_700Bold", textAlign: "right", lineHeight: 24 },
+  discoverName: { fontSize: 16, fontFamily: typography.headlineSm.fontFamily, textAlign: "right", lineHeight: 24 },
 
   discoverBadgeRow: { flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "flex-end", flexWrap: "wrap" },
-  discoverDesc: { fontSize: 13, fontFamily: "Cairo_400Regular", textAlign: "right", lineHeight: 20 },
+  discoverDesc: { fontSize: 13, fontFamily: typography.body.fontFamily, textAlign: "right", lineHeight: 20 },
 
   nextMatchChip: {
     flexDirection: "row",
@@ -832,18 +822,18 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignSelf: "flex-end",
   },
-  nextMatchChipText: { fontSize: 12, fontFamily: "Cairo_400Regular" },
+  nextMatchChipText: { fontSize: 12, fontFamily: typography.body.fontFamily },
 
   discoverFooter: { flexDirection: "row", justifyContent: "flex-start", marginTop: 4 },
   discoverBtn: { minWidth: 100 },
 
   discoverEmpty: { marginHorizontal: 16, padding: 24, alignItems: "center", gap: 10 },
   discoverEmptyIcon: { width: 60, height: 60, borderRadius: 30, alignItems: "center", justifyContent: "center" },
-  discoverEmptyTitle: { fontSize: 15, fontFamily: "Cairo_700Bold", textAlign: "center" },
-  discoverEmptyText: { fontSize: 13, fontFamily: "Cairo_400Regular", textAlign: "center" },
+  discoverEmptyTitle: { fontSize: 15, fontFamily: typography.headlineSm.fontFamily, textAlign: "center" },
+  discoverEmptyText: { fontSize: 13, fontFamily: typography.body.fontFamily, textAlign: "center" },
   discoverEmptyCTA: { borderRadius: 24, overflow: "hidden", marginTop: 4 },
   discoverEmptyCTAInner: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 20, paddingVertical: 10 },
-  discoverEmptyCTAText: { fontSize: 14, fontFamily: "Cairo_700Bold" },
+  discoverEmptyCTAText: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily },
 
   fab: {
     position: "absolute",
@@ -878,5 +868,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     zIndex: 999,
   },
-  toastText: { color: "#fff", fontFamily: "Cairo_700Bold", fontSize: 14, textAlign: "center" },
+  toastText: { color: "#fff", fontFamily: typography.headlineSm.fontFamily, fontSize: 14, textAlign: "center" },
 });

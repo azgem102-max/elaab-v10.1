@@ -3,6 +3,7 @@ import { useActiveSport } from "@/context/SportFilterContext";
 import { GlassTabBar } from "@/components/glass/GlassTabBar";
 import { HomeTabIcon, ExploreTabIcon, MatchesTabIcon, GroupsTabIcon, ProfileTabIcon } from "@/components/TabIcons";
 import colors from "@/constants/colors";
+import { typography } from "@/constants/typography";
 import { Tabs } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
   badgeText: {
     color: colors.light.destructiveForeground,
     fontSize: 10,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     lineHeight: 14,
   },
 });

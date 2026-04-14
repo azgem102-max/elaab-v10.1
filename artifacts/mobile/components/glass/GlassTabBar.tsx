@@ -87,10 +87,8 @@ export function GlassTabBar({
   });
 
   const containerStyle = [
-    styles.floatingContainer,
-    { bottom: Math.max(insets.bottom, FLOAT_MARGIN) },
-    glassShadow.medium,
-    Platform.OS === "ios" ? styles.overflowHidden : undefined,
+    styles.container,
+    { paddingBottom: Math.max(insets.bottom, 12) },
   ];
 
   return (
@@ -134,7 +132,7 @@ function GlassTabItem({
   };
 
   const activeColor = colors.light.primary;
-  const inactiveColor = colors.light.mutedForeground + "8C";
+  const inactiveColor = colors.light.mutedForeground;
 
   return (
     <Pressable
@@ -147,13 +145,10 @@ function GlassTabItem({
         collapsable={false}
         style={[styles.tabIconWrap, animatedStyle]}
       >
-        {focused && (
-          <View style={styles.activePill} />
-        )}
         {icon?.({
           focused,
           color: focused ? activeColor : inactiveColor,
-          size: 24,
+          size: 26,
         })}
         {focused && (
           <View
@@ -166,18 +161,10 @@ function GlassTabItem({
 }
 
 const styles = StyleSheet.create({
-  floatingContainer: {
-    position: "absolute",
-    start: FLOAT_MARGIN,
-    end: FLOAT_MARGIN,
-    height: TAB_BAR_HEIGHT,
-    borderRadius: glassRadius.xxl,
+  container: {
     backgroundColor: colors.light.surface,
-    borderWidth: 1,
-    borderColor: colors.light.border,
-  },
-  overflowHidden: {
-    overflow: "hidden",
+    borderTopWidth: 1,
+    borderTopColor: colors.light.border,
   },
   tabRow: {
     flex: 1,
@@ -197,12 +184,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     position: "relative",
     width: 48,
-    height: 40,
-  },
-  activePill: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: glassRadius.md,
-    backgroundColor: colors.light.surfaceContainer,
+    height: 48,
   },
   activeDot: {
     width: 4,

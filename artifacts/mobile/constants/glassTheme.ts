@@ -42,51 +42,51 @@ export const glassBlur = {
 export const glassBorder = {
   light: {
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "rgba(175, 179, 174, 0.15)", // Ghost border
   },
   medium: {
     borderWidth: 1,
-    borderColor: "#D1D5DB",
+    borderColor: "rgba(175, 179, 174, 0.25)",
   },
   heavy: {
     borderWidth: 1.5,
-    borderColor: "#C7D2FE",
+    borderColor: "rgba(175, 179, 174, 0.40)",
   },
   specular: {
     borderWidth: 1,
-    borderColor: "#E0E7FF",
+    borderColor: "rgba(255, 255, 255, 0.3)",
   },
 };
 
 export const glassShadow = {
   soft: Platform.select({
-    web: { boxShadow: "0px 2px 12px rgba(44, 84, 232, 0.08), 0px 1px 4px rgba(0, 0, 0, 0.04)" },
+    web: { boxShadow: "0px 2px 12px rgba(26, 26, 27, 0.04), 0px 1px 4px rgba(0, 0, 0, 0.02)" },
     default: {
-      shadowColor: "#2C54E8",
+      shadowColor: "#1A1A1B",
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.08,
+      shadowOpacity: 0.04,
       shadowRadius: 12,
-      elevation: 3,
+      elevation: 2,
     },
   }) as ViewStyle,
   medium: Platform.select({
-    web: { boxShadow: "0px 4px 24px rgba(44, 84, 232, 0.12), 0px 2px 8px rgba(0, 0, 0, 0.06)" },
+    web: { boxShadow: "0px 4px 24px rgba(26, 26, 27, 0.06), 0px 2px 8px rgba(0, 0, 0, 0.03)" },
     default: {
-      shadowColor: "#2C54E8",
+      shadowColor: "#1A1A1B",
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.12,
+      shadowOpacity: 0.06,
       shadowRadius: 24,
-      elevation: 6,
+      elevation: 4,
     },
   }) as ViewStyle,
   heavy: Platform.select({
-    web: { boxShadow: "0px 8px 40px rgba(44, 84, 232, 0.16), 0px 4px 12px rgba(0, 0, 0, 0.08)" },
+    web: { boxShadow: "0px 8px 40px rgba(26, 26, 27, 0.10), 0px 4px 12px rgba(0, 0, 0, 0.05)" },
     default: {
-      shadowColor: "#2C54E8",
+      shadowColor: "#1A1A1B",
       shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.16,
+      shadowOpacity: 0.10,
       shadowRadius: 40,
-      elevation: 10,
+      elevation: 8,
     },
   }) as ViewStyle,
   glow: (color: string) =>
@@ -163,36 +163,36 @@ export interface SportGlassTheme {
 }
 
 const footballGlass: SportGlassTheme = {
-  glassColor: "rgba(44, 84, 232, 0.08)",
-  glassTint: "rgba(44, 84, 232, 0.12)",
+  glassColor: "rgba(34, 197, 94, 0.08)",
+  glassTint: "rgba(34, 197, 94, 0.12)",
   blurIntensity: 0,
-  borderGlow: "rgba(44, 84, 232, 0.30)",
-  gradientStart: "#2C54E8",
-  gradientEnd: "#5B7FFF",
-  backgroundGradient: ["#FFFFFF", "#F4F6FF", "#EEF2FF"],
-  primary: "#2C54E8",
+  borderGlow: "rgba(34, 197, 94, 0.30)",
+  gradientStart: "#22C55E",
+  gradientEnd: "#16A34A",
+  backgroundGradient: ["#FFFFFF", "#F0FDF4", "#DCFCE7"],
+  primary: "#22C55E",
 };
 
 const padelGlass: SportGlassTheme = {
-  glassColor: "rgba(13, 148, 136, 0.08)",
-  glassTint: "rgba(13, 148, 136, 0.12)",
+  glassColor: "rgba(0, 71, 171, 0.08)",
+  glassTint: "rgba(0, 71, 171, 0.12)",
   blurIntensity: 0,
-  borderGlow: "rgba(13, 148, 136, 0.30)",
-  gradientStart: "#0D9488",
-  gradientEnd: "#14B8A6",
-  backgroundGradient: ["#FFFFFF", "#F0FDFA", "#CCFBF1"],
-  primary: "#0D9488",
+  borderGlow: "rgba(0, 71, 171, 0.30)",
+  gradientStart: "#0047AB",
+  gradientEnd: "#003285",
+  backgroundGradient: ["#FFFFFF", "#F9F8FF", "#EDEBFF"],
+  primary: "#0047AB",
 };
 
 const tennisGlass: SportGlassTheme = {
-  glassColor: "rgba(217, 119, 6, 0.08)",
-  glassTint: "rgba(217, 119, 6, 0.12)",
+  glassColor: "rgba(210, 105, 30, 0.08)",
+  glassTint: "rgba(210, 105, 30, 0.12)",
   blurIntensity: 0,
-  borderGlow: "rgba(217, 119, 6, 0.30)",
-  gradientStart: "#D97706",
-  gradientEnd: "#F59E0B",
-  backgroundGradient: ["#FFFFFF", "#FFFBEB", "#FEF3C7"],
-  primary: "#D97706",
+  borderGlow: "rgba(210, 105, 30, 0.30)",
+  gradientStart: "#D2691E",
+  gradientEnd: "#B35A1A",
+  backgroundGradient: ["#FFFFFF", "#FFFDF9", "#FDF1E6"],
+  primary: "#D2691E",
 };
 
 const sportGlassThemes: Record<SportType, SportGlassTheme> = {

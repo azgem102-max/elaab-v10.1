@@ -3,6 +3,7 @@ import {
   StyleSheet,
   View,
   ViewStyle,
+  StyleProp,
 } from "react-native";
 
 import {
@@ -12,7 +13,7 @@ import {
 
 interface GlassScreenHeaderProps {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export function GlassScreenHeader({ children, style }: GlassScreenHeaderProps) {

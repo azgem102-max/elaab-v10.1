@@ -1,4 +1,6 @@
 import { useColors } from "@/hooks/useColors";
+import { useTranslation } from "@/i18n";
+import { typography } from "@/constants/typography";
 import themeColors from "@/constants/colors";
 import { GlassScreenHeader } from "@/components/glass/GlassScreenHeader";
 import { FootballIcon, PadelIcon, TennisIcon } from "@/components/icons/SportIcons";
@@ -34,31 +36,39 @@ import { NOTIF_PERMISSION_KEY } from "@/hooks/usePushNotifications";
 
 const NOTIF_KEY = "@elab_notif_settings";
 
-const _tc = themeColors.light;
-const SPORTS: { key: SportType; label: string; color: string; bg: string; icon: React.FC<{ color?: string; size?: number }> }[] = [
-  { key: "football", label: "كرة القدم", color: _tc.football, bg: _tc.footballContainer, icon: FootballIcon },
-  { key: "padel", label: "بادل", color: _tc.padel, bg: _tc.padelContainer, icon: PadelIcon },
-  { key: "tennis", label: "تنس", color: _tc.tennis, bg: _tc.tennisContainer, icon: TennisIcon },
-];
+import { getSportTheme } from "@/constants/sportTheme";
 
-const LEVELS: SkillLevel[] = ["مبتدئ", "متوسط", "محترف"];
+function getSportList(t: any) {
+  return [
+    { key: "football" as SportType, label: t("sports.football"), color: getSportTheme("football").primary, bg: getSportTheme("football").pillBackground, icon: FootballIcon },
+    { key: "padel" as SportType, label: t("sports.padel"), color: getSportTheme("padel").primary, bg: getSportTheme("padel").pillBackground, icon: PadelIcon },
+    { key: "tennis" as SportType, label: t("sports.tennis"), color: getSportTheme("tennis").primary, bg: getSportTheme("tennis").pillBackground, icon: TennisIcon },
+  ];
+}
 
-const SPORT_POSITIONS: Record<SportType, { key: string; label: string }[]> = {
-  football: [
-    { key: "حارس", label: "حارس المرمى" },
-    { key: "مدافع", label: "مدافع" },
-    { key: "وسط", label: "لاعب وسط" },
-    { key: "مهاجم", label: "مهاجم" },
-  ],
-  padel: [
-    { key: "يمين", label: "الجانب الأيمن" },
-    { key: "يسار", label: "الجانب الأيسر" },
-  ],
-  tennis: [
-    { key: "خط الخلفية", label: "خط الخلفية" },
-    { key: "الشبكة", label: "لاعب الشبكة" },
-  ],
-};
+function getLevelsForSegments(t: any): SkillLevel[] {
+  return [t("levels.beginner"), t("levels.intermediate"), t("levels.advanced")];
+}
+
+function getSportPositions(sport: SportType, t: any): { key: string; label: string }[] {
+  const pos: Record<SportType, { key: string; label: string }[]> = {
+    football: [
+      { key: "حارس", label: t("positions.football.gk") },
+      { key: "مدافع", label: t("positions.football.def") },
+      { key: "وسط", label: t("positions.football.mid") },
+      { key: "مهاجم", label: t("positions.football.fwd") },
+    ],
+    padel: [
+      { key: "يمين", label: t("positions.padel.right") },
+      { key: "يسار", label: t("positions.padel.left") },
+    ],
+    tennis: [
+      { key: "خط الخلفية", label: t("positions.tennis.baseline") },
+      { key: "الشبكة", label: t("positions.tennis.net") },
+    ],
+  };
+  return pos[sport] || [];
+}
 
 function PillToggle({ value, onToggle, activeColor }: { value: boolean; onToggle: () => void; activeColor: string }) {
   const colors = useColors();
@@ -88,6 +98,7 @@ function PillToggle({ value, onToggle, activeColor }: { value: boolean; onToggle
 }
 
 export default function SettingsScreen() {
+  const { t, locale } = useTranslation();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { user, setUser, logout } = useApp();
@@ -217,7 +228,7 @@ export default function SettingsScreen() {
     const numericLevels: Partial<Record<SportType, number>> = {};
     const positions: Partial<Record<SportType, string[]>> = {};
     for (const s of sports) {
-      levels[s] = user?.sportProfiles[s]?.skillLevel ?? "متوسط";
+      levels[s] = (user?.sportProfiles[s]?.skillLevel ?? t("levels.intermediate")) as SkillLevel;
       const numeric = user?.sportProfiles[s]?.skillLevelNumeric;
       if (typeof numeric === "number") numericLevels[s] = numeric;
       positions[s] = user?.sportProfiles[s]?.position ?? [];
@@ -240,7 +251,7 @@ export default function SettingsScreen() {
   async function pickAvatar() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("صلاحية مطلوبة", "نحتاج إذن الوصول لمكتبة الصور لاختيار صورة البروفايل.");
+      Alert.alert(t("profile.edit.permsRequiredTitle"), t("profile.edit.permsRequiredDesc"));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -261,7 +272,7 @@ export default function SettingsScreen() {
         setEditAvatarUri(res.avatarUrl);
       } catch {
         setEditAvatarUri(previousAvatarUri);
-        Alert.alert("خطأ", "تعذّر رفع الصورة للخادم. تم استعادة صورتك السابقة.");
+        Alert.alert(t("profile.edit.errorTitle"), t("profile.edit.uploadError"));
       } finally {
         setAvatarUploading(false);
       }
@@ -278,7 +289,7 @@ export default function SettingsScreen() {
         setEditPositions((pos) => { const c = { ...pos }; delete c[sport]; return c; });
         return next;
       } else {
-        setEditLevels((lv) => ({ ...lv, [sport]: user?.sportProfiles[sport]?.skillLevel ?? "متوسط" }));
+        setEditLevels((lv) => ({ ...lv, [sport]: (user?.sportProfiles[sport]?.skillLevel ?? t("levels.intermediate")) as SkillLevel }));
         const existingNumeric = user?.sportProfiles[sport]?.skillLevelNumeric;
         if (typeof existingNumeric === "number") {
           setEditNumericLevels((lv) => ({ ...lv, [sport]: existingNumeric }));
@@ -292,9 +303,9 @@ export default function SettingsScreen() {
   }
 
   function numericToSkillLevel(value: number): SkillLevel {
-    if (value <= 2.5) return "مبتدئ";
-    if (value <= 4.0) return "متوسط";
-    return "محترف";
+    if (value <= 2.5) return t("levels.beginner") as SkillLevel;
+    if (value <= 4.0) return t("levels.intermediate") as SkillLevel;
+    return t("levels.advanced") as SkillLevel;
   }
 
   async function handleSaveProfile() {
@@ -303,8 +314,8 @@ export default function SettingsScreen() {
     const updatedProfiles: Partial<Record<SportType, import("@/context/AppContext").SportProfile>> = {};
     for (const sport of editSports) {
       const numeric = editNumericLevels[sport] ?? user.sportProfiles[sport]?.skillLevelNumeric ?? null;
-      const skillLevel = editLevels[sport] ??
-        (numeric ? numericToSkillLevel(numeric) : user.sportProfiles[sport]?.skillLevel ?? "متوسط");
+      const skillLevel = (editLevels[sport] ??
+        (numeric ? numericToSkillLevel(numeric) : user.sportProfiles[sport]?.skillLevel ?? t("levels.intermediate"))) as SkillLevel;
       const position = editPositions[sport] ?? user.sportProfiles[sport]?.position ?? [];
       updatedProfiles[sport] = { sport, skillLevel, skillLevelNumeric: numeric, position };
     }
@@ -318,8 +329,8 @@ export default function SettingsScreen() {
       };
     }
     const primaryLevel = editSports.length > 0
-      ? (editLevels[editSports[0]] ?? "متوسط")
-      : "متوسط";
+      ? ((editLevels[editSports[0]] ?? t("levels.intermediate")) as SkillLevel)
+      : t("levels.intermediate") as SkillLevel;
     try {
       const res = await api.updateProfile({
         name: editNickname.trim(),
@@ -335,7 +346,8 @@ export default function SettingsScreen() {
         if (serverSports.length > 0) {
           for (const sport of serverSports) {
             const serverSp = (res.user.sportProfiles ?? {})[sport];
-            const skillLevel = serverSp?.skillLevel && ["مبتدئ", "متوسط", "محترف"].includes(serverSp.skillLevel)
+            const validLevels = [t("levels.beginner"), t("levels.intermediate"), t("levels.advanced")];
+            const skillLevel = serverSp?.skillLevel && validLevels.includes(serverSp.skillLevel)
               ? (serverSp.skillLevel as SkillLevel)
               : mergedProfiles[sport]?.skillLevel ?? primaryLevel;
             const rawPos = serverSp?.position ?? "";
@@ -365,7 +377,7 @@ export default function SettingsScreen() {
       }
       setEditProfileVisible(false);
     } catch {
-      Alert.alert("خطأ", "فشل حفظ الملف الشخصي، تحقق من اتصالك بالإنترنت وحاول مجدداً");
+      Alert.alert(t("profile.edit.errorTitle"), t("profile.edit.saveError"));
     } finally {
       setSaving(false);
     }
@@ -377,34 +389,34 @@ export default function SettingsScreen() {
     const domain = process.env.EXPO_PUBLIC_DOMAIN;
     const profileUrl = userId && domain ? `https://${domain}/api/profile/${userId}` : null;
     const message = profileUrl
-      ? `تحقق من ملفي الرياضي في تطبيق العب!\n${nickname} 🏆\n${profileUrl}`
-      : `تحقق من ملفي الرياضي في تطبيق العب!\n${nickname} 🏆\nحمّل التطبيق الآن`;
+      ? t("profile.share.msgWithUrl", { nickname, profileUrl })
+      : t("profile.share.msgBrief", { nickname });
     try {
       await Share.share({
         message,
-        title: `ملف ${nickname} الرياضي`,
+        title: t("profile.share.title", { nickname }),
         url: profileUrl ?? undefined,
       });
     } catch { }
   }
 
   function handleContactUs() {
-    Linking.openURL("mailto:support@elab.app?subject=تواصل معنا - تطبيق العب").catch(() => {
-      Alert.alert("خطأ", "تعذّر فتح تطبيق البريد الإلكتروني");
+    Linking.openURL(`mailto:support@elab.app?subject=${t("settings.about.contactSubject")}`).catch(() => {
+      Alert.alert(t("profile.edit.errorTitle"), t("settings.about.contactError"));
     });
   }
 
   async function handleLogout() {
     if (Platform.OS === "web") {
-      if (window.confirm("هل أنت متأكد أنك تريد تسجيل الخروج؟")) {
+      if (window.confirm(t("settings.logout.confirm"))) {
         await logout();
       }
       return;
     }
-    Alert.alert("تسجيل الخروج", "هل أنت متأكد أنك تريد تسجيل الخروج؟", [
-      { text: "إلغاء", style: "cancel" },
+    Alert.alert(t("settings.logout.label"), t("settings.logout.confirm"), [
+      { text: t("settings.logout.cancel"), style: "cancel" },
       {
-        text: "تسجيل الخروج",
+        text: t("settings.logout.label"),
         style: "destructive",
         onPress: async () => {
           await logout();
@@ -414,9 +426,9 @@ export default function SettingsScreen() {
   }
 
   const notifItems = [
-    { key: "matchNotifs" as const, label: "إشعارات المباريات", sub: "تذكيرات قبل المباراة", value: matchNotifs, color: colors.primary },
-    { key: "groupNotifs" as const, label: "إشعارات المجموعات", sub: "طلبات انضمام وتحديثات", value: groupNotifs, color: colors.secondary },
-    { key: "soundEnabled" as const, label: "الصوت والاهتزاز", sub: "أصوات الإشعارات", value: soundEnabled, color: colors.tertiary },
+    { key: "matchNotifs" as const, label: t("settings.items.matches.label"), sub: t("settings.items.matches.sub"), value: matchNotifs, color: colors.primary },
+    { key: "groupNotifs" as const, label: t("settings.items.groups.label"), sub: t("settings.items.groups.sub"), value: groupNotifs, color: colors.secondary },
+    { key: "soundEnabled" as const, label: t("settings.items.sound.label"), sub: t("settings.items.sound.sub"), value: soundEnabled, color: colors.tertiary },
   ];
 
   return (
@@ -424,12 +436,12 @@ export default function SettingsScreen() {
       <GlassScreenHeader style={{ paddingTop: topPad + 8, paddingBottom: 8 }}>
         <View style={styles.header}>
           <View style={{ width: 40 }} />
-          <Text style={[styles.title, { color: colors.onSurface }]}>الإعدادات</Text>
+          <Text style={[styles.title, { color: colors.onSurface }]}>{t("settings.title")}</Text>
           <Pressable
             onPress={() => router.back()}
             style={[styles.backBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}
           >
-            <Ionicons name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"} size={22} color={colors.onSurface} />
+            <Ionicons name={locale === "ar" ? "chevron-forward" : "chevron-back"} size={22} color={colors.onSurface} />
           </Pressable>
         </View>
       </GlassScreenHeader>
@@ -448,7 +460,7 @@ export default function SettingsScreen() {
         >
           <View style={styles.sectionHeaderRow}>
             <View style={[styles.sectionHeaderLine, { backgroundColor: colors.border }]} />
-            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>الإشعارات</Text>
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t("settings.notifications")}</Text>
             <View style={[styles.sectionHeaderLine, { backgroundColor: colors.border }]} />
           </View>
           <View style={[styles.card, { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB" }]}>
@@ -460,7 +472,7 @@ export default function SettingsScreen() {
                     style={[styles.openSettingsBtn, { backgroundColor: colors.warning + "20" }]}
                   >
                     <Ionicons name="settings-outline" size={14} color={colors.warning} />
-                    <Text style={[styles.openSettingsBtnText, { color: colors.warning }]}>افتح الإعدادات</Text>
+                    <Text style={[styles.openSettingsBtnText, { color: colors.warning }]}>{t("common.manage")}</Text>
                   </Pressable>
                 ) : (
                   <View style={[styles.permissionBadge, { backgroundColor: colors.success ? colors.success + "20" : "#22C55E20" }]}>
@@ -468,9 +480,9 @@ export default function SettingsScreen() {
                   </View>
                 )}
                 <View style={styles.settingText}>
-                  <Text style={[styles.settingLabel, { color: colors.onSurface }]}>صلاحية الإشعارات</Text>
+                  <Text style={[styles.settingLabel, { color: colors.onSurface }]}>{t("settings.notifPermission")}</Text>
                   <Text style={[styles.settingSub, { color: notifPermissionStatus === "granted" ? "#22C55E" : colors.warning }]}>
-                    {notifPermissionStatus === "granted" ? "مفعّلة" : "غير مفعّلة — اضغط لفتح الإعدادات"}
+                    {notifPermissionStatus === "granted" ? t("settings.enabled") : t("settings.disabled")}
                   </Text>
                 </View>
               </View>
@@ -502,7 +514,12 @@ export default function SettingsScreen() {
               <View style={[styles.settingRow]}>
                 <View style={styles.reminderChips}>
                   {([15, 60, 1440, 2880] as const).map((mins) => {
-                    const label = mins === 15 ? "15 د" : mins === 60 ? "ساعة" : mins === 1440 ? "يوم" : "يومان";
+                    // map mins to the available keys in ar.ts / en.ts
+                    let key = "m15";
+                    if (mins === 60) key = "h1";
+                    if (mins === 1440) key = "d1";
+                    if (mins === 2880) key = "d2";
+                    const label = t(`settings.reminderTime.${key}`);
                     const active = reminderMinutes === mins;
                     return (
                       <Pressable
@@ -516,8 +533,8 @@ export default function SettingsScreen() {
                   })}
                 </View>
                 <View style={styles.settingText}>
-                  <Text style={[styles.settingLabel, { color: colors.onSurface }]}>التذكير قبل المباراة</Text>
-                  <Text style={[styles.settingSub, { color: colors.mutedForeground }]}>وقت التنبيه قبل بداية المباراة</Text>
+                  <Text style={[styles.settingLabel, { color: colors.onSurface }]}>{t("settings.matchReminders")}</Text>
+                  <Text style={[styles.settingSub, { color: colors.mutedForeground }]}>{t("settings.matchRemindersDesc")}</Text>
                 </View>
               </View>
             )}
@@ -525,22 +542,35 @@ export default function SettingsScreen() {
 
           <View style={styles.sectionHeaderRow}>
             <View style={[styles.sectionHeaderLine, { backgroundColor: colors.border }]} />
-            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>الحساب</Text>
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t("settings.account")}</Text>
             <View style={[styles.sectionHeaderLine, { backgroundColor: colors.border }]} />
           </View>
           <View style={[styles.card, { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB" }]}>
-            <Pressable style={styles.menuRow} onPress={openEditProfile}>
-              <Ionicons name="chevron-back" size={16} color={colors.mutedForeground} />
-              <Text style={[styles.menuLabel, { color: colors.onSurface }]}>تعديل الملف الشخصي</Text>
+            <Pressable style={[styles.menuRow, { borderBottomWidth: 1, borderBottomColor: "#F3F4F6", paddingBottom: 16 }]} onPress={openEditProfile}>
+              <Ionicons name={locale === "ar" ? "chevron-back" : "chevron-forward"} size={16} color={colors.mutedForeground} />
+              <Text style={[styles.menuLabel, { color: colors.onSurface }]}>{t("settings.editProfile")}</Text>
               <View style={[styles.menuIconBox, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}>
                 <Ionicons name="person-outline" size={17} color={colors.primary} />
+              </View>
+            </Pressable>
+            
+            <Pressable style={[styles.menuRow, { paddingTop: 16 }]} onPress={() => router.push("/language")}>
+              <Ionicons name={locale === "ar" ? "chevron-back" : "chevron-forward"} size={16} color={colors.mutedForeground} />
+              <View style={{ flex: 1, alignItems: locale === "ar" ? "flex-end" : "flex-start" }}>
+                <Text style={[styles.menuLabel, { color: colors.onSurface }]}>{t("settings.changeLanguage")}</Text>
+                <Text style={[styles.settingSub, { color: colors.mutedForeground, marginTop: 2, textAlign: locale === "ar" ? "right" : "left" }]}>
+                  {locale === "ar" ? "العربية" : "English"}
+                </Text>
+              </View>
+              <View style={[styles.menuIconBox, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}>
+                <Ionicons name="language-outline" size={17} color={colors.primary} />
               </View>
             </Pressable>
           </View>
 
           <View style={styles.sectionHeaderRow}>
             <View style={[styles.sectionHeaderLine, { backgroundColor: colors.border }]} />
-            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>عن التطبيق</Text>
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t("settings.aboutTitle")}</Text>
             <View style={[styles.sectionHeaderLine, { backgroundColor: colors.border }]} />
           </View>
           <View style={[styles.card, { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB" }]}>
@@ -548,7 +578,7 @@ export default function SettingsScreen() {
               <View style={[styles.menuIconBox, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}>
                 <Ionicons name="information-circle-outline" size={17} color={colors.secondary} />
               </View>
-              <Text style={[styles.menuLabel, { color: colors.onSurface }]}>إصدار التطبيق</Text>
+              <Text style={[styles.menuLabel, { color: colors.onSurface }]}>{t("settings.version")}</Text>
               <Text style={[styles.versionBadge, { color: colors.mutedForeground }]}>1.0.0</Text>
             </View>
             <View style={styles.tertiaryBtnRow}>
@@ -557,14 +587,14 @@ export default function SettingsScreen() {
                 onPress={() => { setLegalType("terms"); setLegalVisible(true); }}
               >
                 <Ionicons name="document-text-outline" size={16} color={colors.secondary} />
-                <Text style={[styles.tertiaryBtnText, { color: colors.secondary }]}>الشروط والأحكام</Text>
+                <Text style={[styles.tertiaryBtnText, { color: colors.secondary }]}>{t("settings.termsOfService")}</Text>
               </Pressable>
               <Pressable
                 style={[styles.tertiaryBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}
                 onPress={() => { setLegalType("privacy"); setLegalVisible(true); }}
               >
                 <Ionicons name="shield-outline" size={16} color={colors.secondary} />
-                <Text style={[styles.tertiaryBtnText, { color: colors.secondary }]}>سياسة الخصوصية</Text>
+                <Text style={[styles.tertiaryBtnText, { color: colors.secondary }]}>{t("settings.privacyPolicy")}</Text>
               </Pressable>
             </View>
             <View style={[styles.tertiaryBtnRow, { paddingTop: 0 }]}>
@@ -573,14 +603,14 @@ export default function SettingsScreen() {
                 onPress={handleContactUs}
               >
                 <Ionicons name="mail-outline" size={16} color={colors.tertiary} />
-                <Text style={[styles.tertiaryBtnText, { color: colors.tertiary }]}>تواصل معنا</Text>
+                <Text style={[styles.tertiaryBtnText, { color: colors.tertiary }]}>{t("common.support")}</Text>
               </Pressable>
               <Pressable
                 style={[styles.tertiaryBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}
                 onPress={handleShareProfile}
               >
                 <Ionicons name="share-social-outline" size={16} color={colors.tertiary} />
-                <Text style={[styles.tertiaryBtnText, { color: colors.tertiary }]}>شارك ملفي الشخصي</Text>
+                <Text style={[styles.tertiaryBtnText, { color: colors.tertiary }]}>{t("common.share")}</Text>
               </Pressable>
             </View>
           </View>
@@ -590,7 +620,7 @@ export default function SettingsScreen() {
             onPress={handleLogout}
           >
             <Ionicons name="log-out-outline" size={20} color={colors.destructive} />
-            <Text style={[styles.logoutBtnText, { color: colors.destructive }]}>تسجيل الخروج</Text>
+            <Text style={[styles.logoutBtnText, { color: colors.destructive }]}>{t("settings.logout.label")}</Text>
           </Pressable>
         </ScrollView>
       </View>
@@ -615,7 +645,7 @@ export default function SettingsScreen() {
                 >
                   <Ionicons name="close" size={20} color={colors.onSurface} />
                 </Pressable>
-                <Text style={[styles.modalTitle, { color: colors.onSurface }]}>تعديل الملف الشخصي</Text>
+                <Text style={[styles.modalTitle, { color: colors.onSurface }]}>{t("profile.edit.title")}</Text>
                 <View style={{ width: 36 }} />
               </View>
             </View>
@@ -647,11 +677,11 @@ export default function SettingsScreen() {
                   <Ionicons name={avatarUploading ? "cloud-upload-outline" : "camera"} size={14} color="#fff" />
                 </View>
                 <Text style={[styles.avatarPickerLabel, { color: colors.primary }]}>
-                  {avatarUploading ? "جاري الرفع..." : "تغيير الصورة"}
+                  {avatarUploading ? t("profile.edit.avatarUploading") : t("profile.edit.avatar")}
                 </Text>
               </Pressable>
 
-              <Text style={[styles.inputLabel, { color: colors.mutedForeground }]}>الاسم المستعار</Text>
+              <Text style={[styles.inputLabel, { color: colors.mutedForeground }]}>{t("profile.edit.nickname")}</Text>
               <View
                 style={[
                   styles.inputWrap,
@@ -664,21 +694,21 @@ export default function SettingsScreen() {
                 ]}
               >
                 <TextInput
-                  style={[styles.inputField, { color: colors.onSurface, fontFamily: "Cairo_600SemiBold" }]}
+                  style={[styles.inputField, { color: colors.onSurface, fontFamily: typography.bodyLg.fontFamily }]}
                   value={editNickname}
                   onChangeText={setEditNickname}
                   onFocus={() => setNicknameFocused(true)}
                   onBlur={() => setNicknameFocused(false)}
-                  textAlign="right"
-                  placeholder="الاسم المستعار"
+                  textAlign={locale === "ar" ? "right" : "left"}
+                  placeholder={t("profile.edit.nickname")}
                   placeholderTextColor={colors.mutedForeground}
                   maxLength={20}
                 />
               </View>
 
-              <Text style={[styles.inputLabel, { color: colors.mutedForeground, marginTop: 16 }]}>الألعاب الرياضية</Text>
+              <Text style={[styles.inputLabel, { color: colors.mutedForeground, marginTop: 16 }]}>{t("profile.edit.sports")}</Text>
               <View style={styles.chipsRow}>
-                {SPORTS.map((sport) => {
+                {getSportList(t).map((sport) => {
                   const selected = editSports.includes(sport.key);
                   return (
                     <Pressable
@@ -707,22 +737,22 @@ export default function SettingsScreen() {
               </View>
 
               {editSports.map((sport) => {
-                const sportDef = SPORTS.find((s) => s.key === sport);
+                const sportDef = getSportList(t).find((s) => s.key === sport);
                 if (!sportDef) return null;
-                const currentLevel = editLevels[sport] ?? "متوسط";
+                const currentLevel = editLevels[sport] ?? t("levels.intermediate");
                 const currentNumericLevel = editNumericLevels[sport] ?? null;
                 const currentPositions = editPositions[sport] ?? [];
-                const sportPositions = SPORT_POSITIONS[sport] ?? [];
+                const sportPositions = getSportPositions(sport, t);
                 const isRacket = sport === "padel" || sport === "tennis";
                 const numericLevelColor = sportDef.color;
-                const numericLevelLabel = currentNumericLevel ? getLevelLabel(currentNumericLevel, sport) : null;
+                const numericLevelLabel = currentNumericLevel ? getLevelLabel(currentNumericLevel, sport, t) : null;
                 return (
                   <View key={sport} style={{ marginTop: 16, gap: 8 }}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6, justifyContent: "flex-end" }}>
                       <Text style={[styles.inputLabel, { color: sportDef.color, marginBottom: 0 }]}>{sportDef.label}</Text>
                       <sportDef.icon size={16} color={sportDef.color} />
                     </View>
-                    <Text style={[styles.inputLabel, { color: colors.mutedForeground, marginBottom: 4 }]}>مستوى المهارة</Text>
+                    <Text style={[styles.inputLabel, { color: colors.mutedForeground, marginBottom: 4 }]}>{t("profile.edit.skillLevel")}</Text>
                     {isRacket ? (
                       <Pressable
                         style={[
@@ -742,14 +772,14 @@ export default function SettingsScreen() {
                         ) : (
                           <>
                             <Ionicons name="trophy-outline" size={15} color={sportDef.color + "80"} />
-                            <Text style={[styles.levelPickerBtnText, { color: sportDef.color + "80" }]}>اضغط لاختيار مستواك</Text>
-                            <Ionicons name="chevron-back" size={13} color={sportDef.color + "60"} />
+                            <Text style={[styles.levelPickerBtnText, { color: sportDef.color + "80" }]}>{t("levels.clickToChoose")}</Text>
+                            <Ionicons name={locale === "ar" ? "chevron-back" : "chevron-forward"} size={13} color={sportDef.color + "60"} />
                           </>
                         )}
                       </Pressable>
                     ) : (
                       <View style={[styles.segmentedControl, { backgroundColor: colors.surfaceContainerHigh, borderWidth: 1, borderColor: "#E5E7EB" }]}>
-                        {LEVELS.map((lv) => (
+                        {getLevelsForSegments(t).map((lv) => (
                           <Pressable
                             key={lv}
                             onPress={() => setEditLevels((prev) => ({ ...prev, [sport]: lv }))}
@@ -767,7 +797,7 @@ export default function SettingsScreen() {
                     )}
                     {sportPositions.length > 0 && (
                       <>
-                        <Text style={[styles.inputLabel, { color: colors.mutedForeground, marginTop: 8, marginBottom: 4 }]}>المركز</Text>
+                        <Text style={[styles.inputLabel, { color: colors.mutedForeground, marginTop: 8, marginBottom: 4 }]}>{t("profile.edit.position")}</Text>
                         <View style={[styles.chipsRow]}>
                           {sportPositions.map((pos) => {
                             const selected = currentPositions.includes(pos.key);
@@ -803,7 +833,7 @@ export default function SettingsScreen() {
               })}
 
               <SportGradientButton
-                label={saving ? "جاري الحفظ..." : avatarUploading ? "جاري رفع الصورة..." : "حفظ التغييرات"}
+                label={saving ? t("profile.edit.saving") : avatarUploading ? t("profile.edit.avatarUploading") : t("profile.edit.save")}
                 gradientStart={colors.primary}
                 gradientEnd={colors.primaryLight}
                 onPress={handleSaveProfile}
@@ -847,7 +877,7 @@ export default function SettingsScreen() {
                   <Ionicons name="close" size={20} color={colors.onSurface} />
                 </Pressable>
                 <Text style={[styles.modalTitle, { color: colors.onSurface }]}>
-                  {legalType === "terms" ? "الشروط والأحكام" : "سياسة الخصوصية"}
+                  {legalType === "terms" ? t("settings.about.terms") : t("settings.about.privacy")}
                 </Text>
                 <View style={{ width: 36 }} />
               </View>
@@ -855,56 +885,50 @@ export default function SettingsScreen() {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.modalBody, { gap: 16 }]}>
               {legalType === "terms" ? (
                 <>
-                  <Text style={[styles.legalTitle, { color: colors.onSurface }]}>الشروط والأحكام</Text>
+                  <Text style={[styles.legalTitle, { color: colors.onSurface }]}>{t("settings.about.terms")}</Text>
                   <Text style={[styles.legalText, { color: colors.onSurfaceVariant }]}>
-                    مرحباً بك في تطبيق «العب». باستخدامك لهذا التطبيق، فإنك توافق على الالتزام بالشروط والأحكام التالية:
+                    {t("legal.terms.intro")}
                   </Text>
-                  <Text style={[styles.legalSection, { color: colors.onSurface }]}>1. الاستخدام المقبول</Text>
+                  <Text style={[styles.legalSection, { color: colors.onSurface }]}>{t("legal.terms.s1_title")}</Text>
                   <Text style={[styles.legalText, { color: colors.onSurfaceVariant }]}>
-                    يُسمح باستخدام التطبيق لأغراض التواصل الرياضي وتنظيم المباريات والتدريبات. يُحظر استخدام التطبيق بأي طريقة مخالفة للقانون أو مؤذية للآخرين.
+                    {t("legal.terms.s1_body")}
                   </Text>
-                  <Text style={[styles.legalSection, { color: colors.onSurface }]}>2. حساب المستخدم</Text>
+                  <Text style={[styles.legalSection, { color: colors.onSurface }]}>{t("legal.terms.s2_title")}</Text>
                   <Text style={[styles.legalText, { color: colors.onSurfaceVariant }]}>
-                    أنت مسؤول عن الحفاظ على أمان حسابك وكلمة مرورك. يُرجى إخطارنا فوراً في حالة الاشتباه باختراق حسابك.
+                    {t("legal.terms.s2_body")}
                   </Text>
-                  <Text style={[styles.legalSection, { color: colors.onSurface }]}>3. المحتوى</Text>
+                  <Text style={[styles.legalSection, { color: colors.onSurface }]}>{t("legal.terms.s3_title")}</Text>
                   <Text style={[styles.legalText, { color: colors.onSurfaceVariant }]}>
-                    يلتزم المستخدم بعدم نشر أي محتوى مسيء أو مخالف للآداب العامة. نحتفظ بالحق في إزالة أي محتوى مخالف وتعليق الحسابات المخالفة.
+                    {t("legal.terms.s3_body")}
                   </Text>
-                  <Text style={[styles.legalSection, { color: colors.onSurface }]}>4. المسؤولية</Text>
+                  <Text style={[styles.legalSection, { color: colors.onSurface }]}>{t("legal.terms.s4_title")}</Text>
                   <Text style={[styles.legalText, { color: colors.onSurfaceVariant }]}>
-                    التطبيق غير مسؤول عن أي أضرار قد تنشأ عن المباريات أو التدريبات المنظمة عبره. المستخدمون مسؤولون عن ترتيباتهم الخاصة.
+                    {t("legal.terms.s4_body")}
                   </Text>
                   <Text style={[styles.legalText, { color: colors.mutedForeground, marginTop: 8 }]}>
-                    آخر تحديث: أبريل 2026 — للاستفسار: terms@elab.app
+                    {t("legal.lastUpdate")}
                   </Text>
                 </>
               ) : (
                 <>
-                  <Text style={[styles.legalTitle, { color: colors.onSurface }]}>سياسة الخصوصية</Text>
+                  <Text style={[styles.legalTitle, { color: colors.onSurface }]}>{t("settings.about.privacy")}</Text>
                   <Text style={[styles.legalText, { color: colors.onSurfaceVariant }]}>
-                    نحن في تطبيق «العب» نلتزم بحماية بياناتك الشخصية وخصوصيتك. تشرح هذه السياسة كيفية جمع بياناتك واستخدامها وحمايتها.
+                    {t("legal.privacy.intro")}
                   </Text>
-                  <Text style={[styles.legalSection, { color: colors.onSurface }]}>البيانات التي نجمعها</Text>
+                  <Text style={[styles.legalSection, { color: colors.onSurface }]}>{t("legal.privacy.s1_title")}</Text>
                   <Text style={[styles.legalText, { color: colors.onSurfaceVariant }]}>
-                    • رقم الهاتف للتحقق من الهوية{"\n"}
-                    • الاسم المستعار والرياضات المفضلة{"\n"}
-                    • بيانات المباريات والمجموعات التي تشارك فيها
+                    {t("legal.privacy.s1_body")}
                   </Text>
-                  <Text style={[styles.legalSection, { color: colors.onSurface }]}>كيف نستخدم بياناتك</Text>
+                  <Text style={[styles.legalSection, { color: colors.onSurface }]}>{t("legal.privacy.s2_title")}</Text>
                   <Text style={[styles.legalText, { color: colors.onSurfaceVariant }]}>
-                    • لتشغيل خدمات التطبيق وتحسينها{"\n"}
-                    • لإرسال الإشعارات المتعلقة بالمباريات والمجموعات{"\n"}
-                    • لحماية أمان التطبيق ومنع الإساءة
+                    {t("legal.privacy.s2_body")}
                   </Text>
-                  <Text style={[styles.legalSection, { color: colors.onSurface }]}>حماية البيانات</Text>
+                  <Text style={[styles.legalSection, { color: colors.onSurface }]}>{t("legal.privacy.s3_title")}</Text>
                   <Text style={[styles.legalText, { color: colors.onSurfaceVariant }]}>
-                    • لا نشارك بياناتك مع أي طرف ثالث بدون إذنك{"\n"}
-                    • يتم تخزين بياناتك بشكل آمن ومشفر{"\n"}
-                    • يمكنك حذف حسابك وبياناتك في أي وقت
+                    {t("legal.privacy.s3_body")}
                   </Text>
                   <Text style={[styles.legalText, { color: colors.mutedForeground, marginTop: 8 }]}>
-                    آخر تحديث: أبريل 2026 — للتواصل: privacy@elab.app
+                    {t("legal.lastUpdate")}
                   </Text>
                 </>
               )}
@@ -925,7 +949,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 12,
   },
-  title: { fontSize: 20, fontFamily: "Cairo_700Bold", lineHeight: 30 },
+  title: { fontSize: 20, fontFamily: typography.headlineSm.fontFamily, lineHeight: 30 },
   backBtn: {
     width: 40,
     height: 40,
@@ -948,7 +972,7 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 12,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "center",
     letterSpacing: 0.5,
   },
@@ -962,8 +986,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   settingText: { flex: 1, alignItems: "flex-end", gap: 2 },
-  settingLabel: { fontSize: 15, fontFamily: "Cairo_600SemiBold", lineHeight: 24 },
-  settingSub: { fontSize: 12, fontFamily: "Cairo_400Regular", lineHeight: 18 },
+  settingLabel: { fontSize: 15, fontFamily: typography.bodyLg.fontFamily, lineHeight: 24 },
+  settingSub: { fontSize: 12, fontFamily: typography.body.fontFamily, lineHeight: 18 },
   pillTrack: {
     width: 46,
     height: 26,
@@ -991,7 +1015,7 @@ const styles = StyleSheet.create({
   menuLabel: {
     flex: 1,
     fontSize: 15,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
     textAlign: "right",
     lineHeight: 24,
   },
@@ -1011,7 +1035,7 @@ const styles = StyleSheet.create({
   },
   versionBadge: {
     fontSize: 13,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
     letterSpacing: 0.5,
   },
   tertiaryBtnRow: {
@@ -1033,7 +1057,7 @@ const styles = StyleSheet.create({
   },
   tertiaryBtnText: {
     fontSize: 12,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
     lineHeight: 20,
   },
   logoutBtn: {
@@ -1047,7 +1071,7 @@ const styles = StyleSheet.create({
   },
   logoutBtnText: {
     fontSize: 16,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     lineHeight: 24,
   },
   openSettingsBtn: {
@@ -1060,7 +1084,7 @@ const styles = StyleSheet.create({
   },
   openSettingsBtnText: {
     fontSize: 12,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
   permissionBadge: {
     width: 32,
@@ -1115,7 +1139,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     lineHeight: 28,
   },
   modalBody: {
@@ -1125,7 +1149,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 13,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
     textAlign: "right",
     marginBottom: 8,
   },
@@ -1150,7 +1174,7 @@ const styles = StyleSheet.create({
   },
   chipPillText: {
     fontSize: 13,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   segmentedControl: {
     flexDirection: "row",
@@ -1167,7 +1191,7 @@ const styles = StyleSheet.create({
   },
   segmentBtnText: {
     fontSize: 13,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   levelPickerBtn: {
     flexDirection: "row",
@@ -1182,7 +1206,7 @@ const styles = StyleSheet.create({
   levelPickerBtnText: {
     flex: 1,
     fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
     textAlign: "right",
   },
   reminderChips: {
@@ -1198,23 +1222,23 @@ const styles = StyleSheet.create({
   },
   reminderChipText: {
     fontSize: 12,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   legalTitle: {
     fontSize: 18,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "right",
     lineHeight: 28,
   },
   legalSection: {
     fontSize: 15,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "right",
     lineHeight: 24,
   },
   legalText: {
     fontSize: 14,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "right",
     lineHeight: 24,
   },
@@ -1233,7 +1257,7 @@ const styles = StyleSheet.create({
   },
   avatarPickerInitial: {
     fontSize: 32,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   avatarPickerBadge: {
     width: 28,
@@ -1248,7 +1272,7 @@ const styles = StyleSheet.create({
   },
   avatarPickerLabel: {
     fontSize: 13,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
   avatarUploadingOverlay: {
     position: "absolute",

@@ -9,6 +9,8 @@ import {
   View,
 } from "react-native";
 import { useColors } from "@/hooks/useColors";
+import { typography } from "@/constants/typography";
+
 
 const DAY_LABELS = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 const MONTH_LABELS = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
@@ -138,7 +140,7 @@ export function DatePickerField({ value, onChange, accentColor }: DatePickerFiel
               styles.quickDayChip,
               isActive
                 ? { backgroundColor: accentColor }
-                : { backgroundColor: colors.surfaceContainerHigh, borderWidth: 1, borderColor: colors.border },
+                : { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
             ]}
             onPress={() => onChange(qd.date)}
           >
@@ -192,15 +194,15 @@ const styles = StyleSheet.create({
   },
   selectedDayName: {
     fontSize: 14,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   selectedDateNum: {
     fontSize: 24,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   selectedMonth: {
     fontSize: 14,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
   },
   changeBtn: {
     flexDirection: "row",
@@ -211,7 +213,7 @@ const styles = StyleSheet.create({
   },
   changeText: {
     fontSize: 14,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   quickDaysRow: {
     flexDirection: "row",
@@ -226,6 +228,6 @@ const styles = StyleSheet.create({
   },
   quickDayText: {
     fontSize: 13,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
 });

@@ -17,6 +17,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useApp } from "@/context/AppContext";
 import { useColors } from "@/hooks/useColors";
 import { api, type ApiMatch } from "@/services/api";
+import { typography } from "@/constants/typography";
+import { getSportTheme } from "@/constants/sportTheme";
+
 
 type LevelVote = "higher" | "accurate" | "lower";
 
@@ -144,7 +147,7 @@ const cardStyles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 20,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   playerInfo: {
     flex: 1,
@@ -153,7 +156,7 @@ const cardStyles = StyleSheet.create({
   },
   playerName: {
     fontSize: 15,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "right",
   },
   levelPill: {
@@ -164,7 +167,7 @@ const cardStyles = StyleSheet.create({
   },
   levelPillText: {
     fontSize: 11,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
   voteRow: {
     flexDirection: "row",
@@ -182,7 +185,7 @@ const cardStyles = StyleSheet.create({
   },
   voteBtnText: {
     fontSize: 12,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
 });
 
@@ -228,7 +231,7 @@ export default function PostMatchRatingScreen() {
   );
 
   const sport = matchData?.sport ?? "football";
-  const sportAccent = sport === "padel" ? colors.padel : sport === "tennis" ? colors.tennis : colors.football;
+  const sportAccent = sport === "padel" ? getSportTheme("padel").primary : sport === "tennis" ? getSportTheme("tennis").primary : getSportTheme("football").primary;
 
   const ratablePlayers: RatablePlayer[] = (matchData?.players ?? [])
     .filter((p) => p.id !== currentUserId && !!p.skillLevel && p.attendance !== "absent")
@@ -419,12 +422,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "right",
   },
   subtitle: {
     fontSize: 13,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "right",
     marginTop: 2,
   },
@@ -452,7 +455,7 @@ const styles = StyleSheet.create({
   },
   submitBtnText: {
     color: "#fff",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     fontSize: 16,
   },
   emptyWrap: {
@@ -472,12 +475,12 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 20,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "center",
   },
   emptySubtitle: {
     fontSize: 14,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "center",
     lineHeight: 22,
   },
@@ -489,7 +492,7 @@ const styles = StyleSheet.create({
   },
   backBtnLargeText: {
     color: "#fff",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     fontSize: 15,
   },
 });

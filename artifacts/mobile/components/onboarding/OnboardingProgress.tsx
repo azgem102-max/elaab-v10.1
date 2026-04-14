@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
+import { typography } from "@/constants/typography";
+
 
 interface OnboardingProgressProps {
   currentStep: number;
@@ -60,7 +62,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     minWidth: 44,
     textAlign: "center",
   },

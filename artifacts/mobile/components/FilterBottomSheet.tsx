@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useColors } from "@/hooks/useColors";
+import { typography } from "@/constants/typography";
+
 
 export type SkillLevel = "beginner" | "intermediate" | "advanced";
 export type TimeOfDay = "morning" | "afternoon" | "evening";
@@ -334,7 +336,7 @@ export function FilterBottomSheet({ visible, filters, onChange, onClose, showDis
               <Ionicons name="search-outline" size={16} color="#2C54E8" />
               <Text style={[styles.previewText, { color: "#111827" }]}>
                 سيظهر{" "}
-                <Text style={{ color: "#2C54E8", fontFamily: "Cairo_700Bold" }}>
+                <Text style={{ color: "#2C54E8", fontFamily: typography.headlineSm.fontFamily }}>
                   {toArabicNumeral(previewCount!)} {previewCount === 1 ? "مباراة" : "مباريات"}
                 </Text>
               </Text>
@@ -383,7 +385,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 17,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "center",
   },
   resetBtn: {
@@ -392,7 +394,7 @@ const styles = StyleSheet.create({
   },
   resetBtnText: {
     fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
   closeBtn: {
     padding: 4,
@@ -415,7 +417,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 15,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
   optionsRow: {
     flexDirection: "row",
@@ -435,7 +437,7 @@ const styles = StyleSheet.create({
   },
   optionLabel: {
     fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
   optionsColumn: {
     gap: 10,
@@ -453,7 +455,7 @@ const styles = StyleSheet.create({
   },
   optionRowLabel: {
     fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
     flex: 1,
     textAlign: "right",
   },
@@ -472,7 +474,7 @@ const styles = StyleSheet.create({
   previewText: {
     flex: 1,
     fontSize: 14,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "right",
   },
   applyBtn: {
@@ -483,6 +485,6 @@ const styles = StyleSheet.create({
   applyBtnText: {
     color: "#fff",
     fontSize: 14,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
 });

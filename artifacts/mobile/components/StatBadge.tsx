@@ -3,6 +3,8 @@ import { StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useColors } from "@/hooks/useColors";
 import { spacing } from "@/constants/spacing";
+import { typography } from "@/constants/typography";
+
 
 interface StatBadgeProps {
   value: string | number;
@@ -82,7 +84,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   pillText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: typography.bodyLg.fontFamily,
   },
   card: {
     alignItems: "center",
@@ -100,11 +102,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   cardValue: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     lineHeight: 32,
   },
   cardLabel: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     fontSize: 11,
   },
 });

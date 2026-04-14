@@ -1,6 +1,8 @@
 import React from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useColors } from "@/hooks/useColors";
+import { typography } from "@/constants/typography";
 import type { MatchFilters } from "./FilterBottomSheet";
 
 const SKILL_LEVEL_LABELS: Record<string, string> = {
@@ -30,6 +32,7 @@ export function ActiveFilterChips({
   onRemoveHasSpots,
   onRemoveDistance,
 }: ActiveFilterChipsProps) {
+  const colors = useColors();
   const chips: { label: string; onRemove: () => void; key: string }[] = [];
 
   if (filters.distanceRadius != null && onRemoveDistance) {
@@ -75,11 +78,11 @@ export function ActiveFilterChips({
       {chips.map((chip) => (
         <View
           key={chip.key}
-          style={styles.chip}
+          style={[styles.chip, { backgroundColor: colors.surfaceContainerHighest, borderWidth: 0 }]}
         >
-          <Text style={styles.chipLabel}>{chip.label}</Text>
-          <Pressable onPress={chip.onRemove} hitSlop={8} style={styles.removeBtn}>
-            <Ionicons name="close" size={12} color="#2C54E8" />
+          <Text style={[styles.chipLabel, { color: colors.onSurface }]}>{chip.label}</Text>
+          <Pressable onPress={chip.onRemove} hitSlop={8} style={[styles.removeBtn, { backgroundColor: colors.mutedForeground + "15" }]}>
+            <Ionicons name="close" size={12} color={colors.onSurfaceVariant} />
           </Pressable>
         </View>
       ))}
@@ -100,14 +103,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 100,
-    backgroundColor: "#E0E7FF",
-    borderWidth: 1,
-    borderColor: "#C7D2FE",
   },
   chipLabel: {
-    fontSize: 13,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C54E8",
+    ...typography.label,
   },
   removeBtn: {
     width: 18,
@@ -115,6 +113,5 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(44, 84, 232, 0.15)",
   },
 });

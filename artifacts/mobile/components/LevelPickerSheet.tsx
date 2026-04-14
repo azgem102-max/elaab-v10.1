@@ -21,7 +21,10 @@ import Animated, {
 import Svg, { Circle, Path, Rect, Line } from "react-native-svg";
 import { Ionicons } from "@expo/vector-icons";
 import { useColors } from "@/hooks/useColors";
+import { useTranslation } from "@/i18n";
 import type { SportType } from "@/context/AppContext";
+import { typography } from "@/constants/typography";
+
 
 const { width: SCREEN_W } = Dimensions.get("window");
 
@@ -32,47 +35,44 @@ export interface LevelDefinition {
   category: "beginner" | "intermediate" | "advanced" | "tournament";
 }
 
-const PADEL_LEVELS: LevelDefinition[] = [
-  { value: 1.0, name: "مبتدئ تام", description: "ليس لديه خبرة وبدأ للتو في لعب البادل", category: "beginner" },
-  { value: 1.5, name: "مبتدئ متقدم", description: "خبرة محدودة ولا يزال يعمل على إبقاء الكرة في الملعب", category: "beginner" },
-  { value: 2.0, name: "مبتدئ نشط", description: "يحافظ على الكرة بسرعة منخفضة لكنه يكافح في المباريات من حيث السرعة والاتجاه والتمركز", category: "beginner" },
-  { value: 2.5, name: "متوسط ناشئ", description: "يحافظ على الكرة بسرعة متوسطة لكن الضربات تفتقر إلى التوجيه", category: "intermediate" },
-  { value: 3.0, name: "متوسط", description: "يبني الثقة في التبادلات المتوسطة مع أخطاء قليلة", category: "intermediate" },
-  { value: 3.5, name: "متوسط متقدم", description: "لديه السيطرة والسرعة لكن يفتقد الاختيار الصائب للضربات — لاعبو رياضة المضرب السابقون غالباً في هذه الفئة", category: "intermediate" },
-  { value: 4.0, name: "متقدم", description: "خبرة في بناء النقاط، لاعب ثابت مع تغطية جيدة للملعب وبعض الاستراتيجية", category: "advanced" },
-  { value: 4.5, name: "متقدم مميز", description: "واسع الحيلة — يضرب كرات صعبة الرد ويفرض الأخطاء ويبني النقاط باستراتيجية", category: "advanced" },
-  { value: 5.0, name: "شبه محترف", description: "خبرة في بطولات عالية المستوى، استراتيجية عالية في النقاط ويقرأ الجدار بامتياز", category: "tournament" },
-  { value: 5.5, name: "محترف ناشئ", description: "يفرض الأخطاء ويضرب وينًار، نادراً ما يخطئ، حقق نتائج جيدة في بطولات محلية رفيعة", category: "tournament" },
-  { value: 6.0, name: "محترف", description: "يملك خطة للفوز بكل نقطة وبالمباراة، حقق نتائج ممتازة في بطولات محلية رفيعة", category: "tournament" },
-];
-
-const TENNIS_LEVELS: LevelDefinition[] = [
-  { value: 1.0, name: "مبتدئ تام", description: "يبدأ لتوه في لعب التنس", category: "beginner" },
-  { value: 1.5, name: "مبتدئ", description: "خبرة محدودة، يعمل على إبقاء الكرة في اللعب", category: "beginner" },
-  { value: 2.0, name: "مبتدئ نشط", description: "يتعلم تقدير مسار الكرة، تغطية ميدانية ضعيفة، يحافظ على تبادل قصير ببطء", category: "beginner" },
-  { value: 2.5, name: "ناشئ متقدم", description: "يحافظ على تبادل قصير، الضربات الأساسية بدأت تتطور", category: "beginner" },
-  { value: 3.0, name: "متوسط", description: "ضرباته متسقة بوتيرة متوسطة لكن يفتقر للتحكم في التوجيه والعمق", category: "intermediate" },
-  { value: 3.5, name: "متوسط متقدم", description: "يحافظ على تبادل مستمر ويتحكم في الاتجاه، يطور التدوير والضربات المتنوعة", category: "intermediate" },
-  { value: 4.0, name: "متقدم ناشئ", description: "ضربات متسقة من الجانبين مع تحكم في الاتجاه والعمق، مرتاح في الشبكة", category: "advanced" },
-  { value: 4.5, name: "متقدم", description: "يتحكم في العمق والدوران تحت الضغط، يطور لعبة شاملة", category: "advanced" },
-  { value: 5.0, name: "متقدم مميز", description: "يستخدم القوة والدوران بفعالية مع تحركات جيدة وعقلية هجومية", category: "advanced" },
-  { value: 5.5, name: "شبه محترف", description: "ضربات موثوقة في جميع المواقف، يفرض الأخطاء ويسجل ضربات فائزة", category: "tournament" },
-  { value: 6.0, name: "محترف ناشئ", description: "مستوى بطولات، خبرة واسعة وخلفية جامعية أو شبه احترافية", category: "tournament" },
-  { value: 6.5, name: "محترف إقليمي", description: "يتنافس بثبات على مستويات عالية جداً", category: "tournament" },
-  { value: 7.0, name: "نخبة عالمية", description: "لاعب محترف يتنافس في أعلى مستويات الرياضة عالمياً", category: "tournament" },
-];
-
-export function getLevelsForSport(sport: SportType): LevelDefinition[] {
-  if (sport === "padel") return PADEL_LEVELS;
-  if (sport === "tennis") return TENNIS_LEVELS;
+export function getLevelsForSport(sport: SportType, t: any = (key: string) => key): LevelDefinition[] {
+  if (sport === "padel") {
+    return [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0].map(v => {
+      const key = `l${v.toFixed(1).replace(".", "_")}` as any;
+      return {
+        value: v,
+        name: t(`levels.padel.${key}.name`),
+        description: t(`levels.padel.${key}.desc`),
+        category: v < 2.5 ? "beginner" : v < 4.0 ? "intermediate" : v < 5.0 ? "advanced" : "tournament"
+      };
+    });
+  }
+  if (sport === "tennis") {
+    return [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0].map(v => {
+      const key = `l${v.toFixed(1).replace(".", "_")}` as any;
+      return {
+        value: v,
+        name: t(`levels.tennis.${key}.name`),
+        description: t(`levels.tennis.${key}.desc`),
+        category: v < 2.5 ? "beginner" : v < 4.0 ? "intermediate" : v < 5.5 ? "advanced" : "tournament"
+      };
+    });
+  }
   return [];
 }
 
-const CATEGORY_COLORS: Record<string, { main: string; bg: string; label: string }> = {
-  beginner: { main: "#2E7D32", bg: "#E8F5E9", label: "مبتدئ" },
-  intermediate: { main: "#0288D1", bg: "#E1F5FE", label: "متوسط" },
-  advanced: { main: "#EF6C00", bg: "#FFF3E0", label: "متقدم" },
-  tournament: { main: "#F9A825", bg: "#FFFDE7", label: "بطولات" },
+const CATEGORY_KEYS: Record<string, string> = {
+  beginner: "levels.beginner",
+  intermediate: "levels.intermediate",
+  advanced: "levels.advanced",
+  tournament: "levels.tournament",
+};
+
+const CATEGORY_COLORS: Record<string, { main: string; bg: string }> = {
+  beginner: { main: "#2E7D32", bg: "#E8F5E9" },
+  intermediate: { main: "#0288D1", bg: "#E1F5FE" },
+  advanced: { main: "#EF6C00", bg: "#FFF3E0" },
+  tournament: { main: "#F9A825", bg: "#FFFDE7" },
 };
 
 const GRADIENT_COLORS = ["#2E7D32", "#0288D1", "#EF6C00", "#F9A825"];
@@ -130,26 +130,22 @@ function LevelGuideCard({
   levels: LevelDefinition[];
   onSelect: (value: number) => void;
 }) {
+  const { t } = useTranslation();
   const cat = CATEGORY_COLORS[category];
   const midLevel = levels[Math.floor(levels.length / 2)];
-  const traits: Record<string, string[]> = {
-    beginner: ["تعلّم القواعد الأساسية", "أخطاء كثيرة طبيعية", "يمكنك اللعب مع الأصدقاء"],
-    intermediate: ["ضرباتك ثابتة ومتسقة", "تفهم مواضع الملعب", "تستطيع المنافسة"],
-    advanced: ["تقنيات متقدمة وقوية", "تكتيك واعٍ في اللعب", "تنافس بجدية"],
-    tournament: ["مستوى شبه احترافي", "تشارك في البطولات", "خبرة ومهارة عالية"],
-  };
+  const traits = (t(`levels.traits.${category}` as any, { returnObjects: true } as any) as unknown) as string[];
   const range = `${levels[0].value.toFixed(1)} – ${levels[levels.length - 1].value.toFixed(1)}`;
 
   return (
     <View style={[guideStyles.card, { backgroundColor: cat.bg, borderColor: cat.main + "30", borderWidth: 1 }]}>
       <SportLevelSvg category={category} size={64} />
-      <Text style={[guideStyles.catName, { color: cat.main }]}>{cat.label}</Text>
+      <Text style={[guideStyles.catName, { color: cat.main }]}>{t(CATEGORY_KEYS[category] as any)}</Text>
       <Text style={[guideStyles.range, { color: cat.main + "AA" }]}>{range}</Text>
       <View style={guideStyles.traits}>
-        {(traits[category] ?? []).map((t, i) => (
+        {(traits || []).map((tText, i) => (
           <View key={i} style={guideStyles.traitRow}>
             <Text style={[guideStyles.traitDot, { color: cat.main }]}>●</Text>
-            <Text style={[guideStyles.traitText, { color: cat.main + "CC" }]}>{t}</Text>
+            <Text style={[guideStyles.traitText, { color: cat.main + "CC" }]}>{tText}</Text>
           </View>
         ))}
       </View>
@@ -157,7 +153,7 @@ function LevelGuideCard({
         style={[guideStyles.pickBtn, { backgroundColor: cat.main }]}
         onPress={() => onSelect(midLevel.value)}
       >
-        <Text style={guideStyles.pickBtnText}>هذا أنا</Text>
+        <Text style={guideStyles.pickBtnText}>{t("levels.thisIsMe")}</Text>
       </Pressable>
     </View>
   );
@@ -172,14 +168,14 @@ const guideStyles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
   },
-  catName: { fontSize: 22, fontFamily: "Cairo_700Bold", textAlign: "center" },
-  range: { fontSize: 14, fontFamily: "Cairo_600SemiBold" },
+  catName: { fontSize: 22, fontFamily: typography.headlineSm.fontFamily, textAlign: "center" },
+  range: { fontSize: 14, fontFamily: typography.bodyLg.fontFamily },
   traits: { gap: 4, width: "100%", paddingHorizontal: 4 },
   traitRow: { flexDirection: "row", alignItems: "center", gap: 6, justifyContent: "flex-end" },
   traitDot: { fontSize: 8 },
-  traitText: { fontSize: 13, fontFamily: "Cairo_400Regular", textAlign: "right", flex: 1 },
+  traitText: { fontSize: 13, fontFamily: typography.body.fontFamily, textAlign: "right", flex: 1 },
   pickBtn: { paddingHorizontal: 32, paddingVertical: 12, borderRadius: 50, marginTop: 4 },
-  pickBtnText: { fontSize: 15, fontFamily: "Cairo_700Bold", color: "#fff" },
+  pickBtnText: { fontSize: 15, fontFamily: typography.headlineSm.fontFamily, color: "#fff" },
 });
 
 interface LevelGuideSheetProps {
@@ -190,6 +186,7 @@ interface LevelGuideSheetProps {
 }
 
 function LevelGuideSheet({ visible, sport, onClose, onSelect }: LevelGuideSheetProps) {
+  const { t } = useTranslation();
   const colors = useColors();
   const translateY = useSharedValue(600);
 
@@ -213,7 +210,7 @@ function LevelGuideSheet({ visible, sport, onClose, onSelect }: LevelGuideSheetP
     transform: [{ translateY: translateY.value }],
   }));
 
-  const levels = getLevelsForSport(sport);
+  const levels = getLevelsForSport(sport, t);
   const categories = [...new Set(levels.map((l) => l.category))];
 
   return (
@@ -227,11 +224,11 @@ function LevelGuideSheet({ visible, sport, onClose, onSelect }: LevelGuideSheetP
           <Pressable onPress={onClose} style={lgsStyles.closeBtn}>
             <Ionicons name="close" size={20} color={colors.onSurface} />
           </Pressable>
-          <Text style={[lgsStyles.title, { color: colors.onSurface }]}>دليل المستويات</Text>
+          <Text style={[lgsStyles.title, { color: colors.onSurface }]}>{t("levels.levelGuide")}</Text>
           <View style={{ width: 32 }} />
         </View>
         <Text style={[lgsStyles.subtitle, { color: colors.mutedForeground }]}>
-          اختر الفئة التي تصف مستواك الحالي
+          {t("levels.chooseCat")}
         </Text>
         <ScrollView
           horizontal
@@ -287,8 +284,8 @@ const lgsStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  title: { fontSize: 18, fontFamily: "Cairo_700Bold" },
-  subtitle: { fontSize: 13, fontFamily: "Cairo_400Regular", textAlign: "center", marginBottom: 16 },
+  title: { fontSize: 18, fontFamily: typography.headlineSm.fontFamily },
+  subtitle: { fontSize: 13, fontFamily: typography.body.fontFamily, textAlign: "center", marginBottom: 16 },
   scrollContent: { paddingHorizontal: 12, paddingBottom: 8 },
 });
 
@@ -309,6 +306,7 @@ function LevelDetailCard({
   level: LevelDefinition;
   visible: boolean;
 }) {
+  const { t } = useTranslation();
   const cat = CATEGORY_COLORS[level.category];
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.92);
@@ -341,7 +339,9 @@ function LevelDetailCard({
         <View style={{ flex: 1, alignItems: "flex-end", gap: 2 }}>
           <Text style={[detailStyles.levelName, { color: cat.main }]}>{level.name}</Text>
           <View style={[detailStyles.catPill, { backgroundColor: cat.main + "20" }]}>
-            <Text style={[detailStyles.catPillText, { color: cat.main }]}>{cat.label}</Text>
+            <Text style={[detailStyles.catPillText, { color: cat.main }]}>
+              {t(CATEGORY_KEYS[level.category] as any)}
+            </Text>
           </View>
         </View>
       </View>
@@ -365,15 +365,15 @@ const detailStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  valueText: { fontSize: 18, fontFamily: "Cairo_700Bold", color: "#fff" },
-  levelName: { fontSize: 16, fontFamily: "Cairo_700Bold", textAlign: "right" },
+  valueText: { fontSize: 18, fontFamily: typography.headlineSm.fontFamily, color: "#fff" },
+  levelName: { fontSize: 16, fontFamily: typography.headlineSm.fontFamily, textAlign: "right" },
   catPill: {
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: 50,
   },
-  catPillText: { fontSize: 12, fontFamily: "Cairo_600SemiBold" },
-  desc: { fontSize: 13, fontFamily: "Cairo_400Regular", textAlign: "right", lineHeight: 20 },
+  catPillText: { fontSize: 12, fontFamily: typography.bodyLg.fontFamily },
+  desc: { fontSize: 13, fontFamily: typography.body.fontFamily, textAlign: "right", lineHeight: 20 },
 });
 
 interface LevelPickerSheetProps {
@@ -385,10 +385,11 @@ interface LevelPickerSheetProps {
 }
 
 export function LevelPickerSheet({ visible, sport, currentValue, onClose, onConfirm }: LevelPickerSheetProps) {
+  const { t } = useTranslation();
   const colors = useColors();
   const translateY = useSharedValue(Platform.OS === "web" ? 0 : 700);
 
-  const levels = getLevelsForSport(sport);
+  const levels = getLevelsForSport(sport, t);
   const defaultValue = currentValue ?? (levels.length > 2 ? levels[2].value : levels[0].value);
   const [selected, setSelected] = useState<number>(defaultValue);
 
@@ -436,7 +437,7 @@ export function LevelPickerSheet({ visible, sport, currentValue, onClose, onConf
               <Ionicons name="close" size={20} color={colors.onSurface} />
             </Pressable>
             <Text style={[pickerStyles.title, { color: colors.onSurface }]}>
-              {sport === "padel" ? "مستواك في البادل" : "مستواك في التنس"}
+              {sport === "padel" ? t("levels.yourLevelPadel") : t("levels.yourLevelTennis")}
             </Text>
             <View style={{ width: 32 }} />
           </View>
@@ -476,8 +477,10 @@ export function LevelPickerSheet({ visible, sport, currentValue, onClose, onConf
             </View>
 
             <View style={pickerStyles.labelsRow}>
-              {["مبتدئ", "متوسط", "متقدم", "بطولات"].map((label, i) => (
-                <Text key={i} style={[pickerStyles.barLabel, { color: GRADIENT_COLORS[i] }]}>{label}</Text>
+              {["beginner", "intermediate", "advanced", "tournament"].map((cat, i) => (
+                <Text key={i} style={[pickerStyles.barLabel, { color: GRADIENT_COLORS[i] }]}>
+                  {t(CATEGORY_KEYS[cat] as any)}
+                </Text>
               ))}
             </View>
 
@@ -489,7 +492,7 @@ export function LevelPickerSheet({ visible, sport, currentValue, onClose, onConf
             >
               <Ionicons name="checkmark" size={20} color="#fff" />
               <Text style={pickerStyles.confirmText}>
-                تأكيد المستوى {selected.toFixed(1)} ★
+                {t("levels.confirmLevel", { level: selected.toFixed(1) })}
               </Text>
             </Pressable>
           </ScrollView>
@@ -528,7 +531,7 @@ const pickerStyles = StyleSheet.create({
     marginBottom: 4,
   },
   closeBtn: { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
-  title: { fontSize: 18, fontFamily: "Cairo_700Bold" },
+  title: { fontSize: 18, fontFamily: typography.headlineSm.fontFamily },
   body: { paddingHorizontal: 24, paddingBottom: 40, gap: 12 },
   gradientBarWrap: { alignItems: "center", paddingVertical: 16 },
   gradientBar: { height: 8, borderRadius: 4 },
@@ -546,7 +549,7 @@ const pickerStyles = StyleSheet.create({
     paddingHorizontal: 4,
     marginTop: -6,
   },
-  barLabel: { fontSize: 10, fontFamily: "Cairo_600SemiBold" },
+  barLabel: { fontSize: 10, fontFamily: typography.bodyLg.fontFamily },
   guideBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -557,7 +560,7 @@ const pickerStyles = StyleSheet.create({
     borderWidth: 1.5,
     marginTop: 4,
   },
-  guideBtnText: { fontSize: 14, fontFamily: "Cairo_600SemiBold" },
+  guideBtnText: { fontSize: 14, fontFamily: typography.bodyLg.fontFamily },
   confirmBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -567,12 +570,12 @@ const pickerStyles = StyleSheet.create({
     borderRadius: 50,
     marginTop: 4,
   },
-  confirmText: { fontSize: 16, fontFamily: "Cairo_700Bold", color: "#fff" },
+  confirmText: { fontSize: 16, fontFamily: typography.headlineSm.fontFamily, color: "#fff" },
 });
 
-export function getLevelLabel(value: number | null | undefined, sport: SportType): string {
+export function getLevelLabel(value: number | null | undefined, sport: SportType, t: any): string {
   if (value == null) return "";
-  const levels = getLevelsForSport(sport);
+  const levels = getLevelsForSport(sport, t);
   if (levels.length === 0) return "";
   const level = levels.find((l) => l.value === value) ?? levels.reduce((prev, curr) =>
     Math.abs(curr.value - value) < Math.abs(prev.value - value) ? curr : prev

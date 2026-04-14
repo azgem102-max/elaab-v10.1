@@ -17,6 +17,9 @@ import {
   Animated,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "@/i18n";
+import { typography } from "@/constants/typography";
+
 
 const SPORT_ACCENT: Record<string, string> = {
   football: "#2C54E8",
@@ -28,6 +31,7 @@ export default function MyMatchesScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { matches, user, refreshMatches, matchesLoading } = useApp();
+  const { t, locale } = useTranslation();
   const currentUserId = user?.id ?? "";
   const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
   const [initialLoaded, setInitialLoaded] = useState(false);
@@ -74,14 +78,14 @@ export default function MyMatchesScreen() {
   return (
     <Animated.View style={[styles.container, { backgroundColor: "transparent", opacity: fadeAnim }]}>
       <GlassScreenHeader style={{ paddingTop: topPad + 12, paddingHorizontal: 20, gap: 14, paddingBottom: 8 }}>
-        <Text style={[styles.title, { color: colors.onSurface }]}>مبارياتي</Text>
+        <Text style={[styles.title, { color: colors.onSurface }]}>{t('myMatches.title')}</Text>
 
         <View style={[styles.summaryBar, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]}>
-          <StatBadge variant="card" size="lg" icon="calendar-outline" value={upcoming.length} label="قادمة" color={colors.primary} />
+          <StatBadge variant="card" size="lg" icon="calendar-outline" value={upcoming.length} label={t('myMatches.upcomingStat')} color={colors.primary} />
           <View style={[styles.summaryDivider, { backgroundColor: colors.outline + "30" }]} />
-          <StatBadge variant="card" size="lg" icon="shield-outline" value={organized.length} label="كمنظّم" color={colors.tertiary} />
+          <StatBadge variant="card" size="lg" icon="shield-outline" value={organized.length} label={t('myMatches.asOrganizer')} color={colors.tertiary} />
           <View style={[styles.summaryDivider, { backgroundColor: colors.outline + "30" }]} />
-          <StatBadge variant="card" size="lg" icon="checkmark-circle-outline" value={`${attendanceRate}%`} label="الحضور" color={colors.success} />
+          <StatBadge variant="card" size="lg" icon="checkmark-circle-outline" value={`${attendanceRate}%`} label={t('myMatches.attendance')} color={colors.success} />
         </View>
 
         <View style={[styles.tabContainer, { backgroundColor: colors.surfaceContainerHigh }]}>
@@ -98,38 +102,38 @@ export default function MyMatchesScreen() {
             ]}
           />
           {[
-            { key: "upcoming" as const, label: "القادمة", count: upcoming.length },
-            { key: "past" as const, label: "السابقة", count: past.length },
-          ].map((t) => (
+            { key: "upcoming" as const, label: t('myMatches.upcoming'), count: upcoming.length },
+            { key: "past" as const, label: t('myMatches.past'), count: past.length },
+          ].map((tabItem) => (
             <Pressable
-              key={t.key}
+              key={tabItem.key}
               style={styles.tabBtn}
-              onPress={() => setTab(t.key)}
+              onPress={() => setTab(tabItem.key)}
             >
               <Text
                 style={[
                   styles.tabText,
-                  { color: tab === t.key ? colors.accentForeground : colors.onSurfaceVariant },
+                  { color: tab === tabItem.key ? colors.accentForeground : colors.onSurfaceVariant },
                 ]}
               >
-                {t.label}
+                {tabItem.label}
               </Text>
               <View
                 style={[
                   styles.tabCountBadge,
                   {
                     backgroundColor:
-                      tab === t.key ? colors.accentForeground + "26" : colors.surfaceContainerHigh,
+                      tab === tabItem.key ? colors.accentForeground + "26" : colors.surfaceContainerHigh,
                   },
                 ]}
               >
                 <Text
                   style={[
                     styles.tabCountText,
-                    { color: tab === t.key ? colors.accentForeground : colors.onSurfaceVariant },
+                    { color: tab === tabItem.key ? colors.accentForeground : colors.onSurfaceVariant },
                   ]}
                 >
-                  {t.count}
+                  {tabItem.count}
                 </Text>
               </View>
             </Pressable>
@@ -174,7 +178,7 @@ export default function MyMatchesScreen() {
                 {isOrganizer && (
                   <View style={[styles.organizerTag, { backgroundColor: colors.primary + "15", borderColor: colors.primary + "30" }]}>
                     <Ionicons name="shield-checkmark-outline" size={11} color={colors.primary} />
-                    <Text style={[styles.organizerTagText, { color: colors.primary }]}>منظّم</Text>
+                    <Text style={[styles.organizerTagText, { color: colors.primary }]}>{t('common.organizer')}</Text>
                   </View>
                 )}
 
@@ -208,7 +212,7 @@ export default function MyMatchesScreen() {
                             { color: attended ? colors.success : colors.destructive },
                           ]}
                         >
-                          {attended ? "حضرت ✓" : "غبت"}
+                          {attended ? t('myMatches.attended') : t('myMatches.absent')}
                         </Text>
                       </View>
                     )}
@@ -224,7 +228,7 @@ export default function MyMatchesScreen() {
                           }
                         >
                           <Ionicons name="star-outline" size={13} color={accentColor} />
-                          <Text style={[styles.rateBtnText, { color: accentColor }]}>قيّم المستوى</Text>
+                          <Text style={[styles.rateBtnText, { color: accentColor }]}>{t('myMatches.rateLevel')}</Text>
                         </Pressable>
                       )}
                   </View>
@@ -245,7 +249,7 @@ export default function MyMatchesScreen() {
                       <Text style={[styles.statusPillText, {
                         color: myPlayer.attendance === "pending" ? "#F59E0B" : colors.success,
                       }]}>
-                        {myPlayer.attendance === "pending" ? "في انتظار التأكيد" : "مؤكّد الحضور"}
+                        {myPlayer.attendance === "pending" ? t('myMatches.pendingConfirm') : t('myMatches.confirmedAttendance')}
                       </Text>
                     </View>
                   </View>
@@ -261,6 +265,7 @@ export default function MyMatchesScreen() {
 
 function MyMatchesEmptyState({ tab }: { tab: "upcoming" | "past" }) {
   const colors = useColors();
+  const { t } = useTranslation();
   return (
     <View style={emptyStyles.wrap}>
       <View style={[emptyStyles.iconCircle, { backgroundColor: tab === "upcoming" ? colors.accent + "20" : colors.surfaceContainerHigh }]}>
@@ -271,12 +276,12 @@ function MyMatchesEmptyState({ tab }: { tab: "upcoming" | "past" }) {
         />
       </View>
       <Text style={[emptyStyles.title, { color: colors.onSurface }]}>
-        {tab === "upcoming" ? "لا توجد مباريات قادمة" : "لا توجد مباريات سابقة"}
+        {tab === "upcoming" ? t('myMatches.noUpcoming') : t('myMatches.noPast')}
       </Text>
       <Text style={[emptyStyles.desc, { color: colors.mutedForeground }]}>
         {tab === "upcoming"
-          ? "انضم لمباراة أو أنشئ واحدة وابدأ رحلتك الرياضية"
-          : "مباراتك المنتهية ستظهر هنا لمراجعة أدائك"}
+          ? t('myMatches.noUpcomingDesc')
+          : t('myMatches.noPastDesc')}
       </Text>
       {tab === "upcoming" && (
         <Pressable
@@ -284,7 +289,7 @@ function MyMatchesEmptyState({ tab }: { tab: "upcoming" | "past" }) {
           onPress={() => router.push("/(tabs)/explore")}
         >
           <Ionicons name="search-outline" size={16} color={colors.accentForeground} />
-          <Text style={[emptyStyles.ctaText, { color: colors.accentForeground }]}>ابحث عن مباراة</Text>
+          <Text style={[emptyStyles.ctaText, { color: colors.accentForeground }]}>{t('myMatches.findMatch')}</Text>
         </Pressable>
       )}
     </View>
@@ -301,8 +306,8 @@ const emptyStyles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 8,
   },
-  title: { fontSize: 18, fontFamily: "Cairo_700Bold", textAlign: "center" },
-  desc: { fontSize: 14, fontFamily: "Cairo_400Regular", textAlign: "center", lineHeight: 22 },
+  title: { fontSize: 18, fontFamily: typography.headlineSm.fontFamily, textAlign: "center" },
+  desc: { fontSize: 14, fontFamily: typography.body.fontFamily, textAlign: "center", lineHeight: 22 },
   cta: {
     marginTop: 8,
     flexDirection: "row",
@@ -312,12 +317,12 @@ const emptyStyles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 28,
   },
-  ctaText: { fontSize: 14, fontFamily: "Cairo_700Bold" },
+  ctaText: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily },
 });
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  title: { fontSize: 26, fontFamily: "Cairo_700Bold", textAlign: "right", lineHeight: 36 },
+  title: { fontSize: 26, fontFamily: typography.headlineSm.fontFamily, textAlign: "right", lineHeight: 36 },
 
   summaryBar: {
     flexDirection: "row",
@@ -351,7 +356,7 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     zIndex: 1,
   },
-  tabText: { fontSize: 13, fontFamily: "Cairo_700Bold" },
+  tabText: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily },
   tabCountBadge: {
     minWidth: 20,
     height: 20,
@@ -360,7 +365,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 5,
   },
-  tabCountText: { fontSize: 11, fontFamily: "Cairo_700Bold" },
+  tabCountText: { fontSize: 11, fontFamily: typography.headlineSm.fontFamily },
 
   list: { paddingHorizontal: 16, paddingTop: 12 },
   cardSpacing: { marginBottom: 14 },
@@ -381,7 +386,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
   },
-  organizerTagText: { fontSize: 11, fontFamily: "Cairo_700Bold" },
+  organizerTagText: { fontSize: 11, fontFamily: typography.headlineSm.fontFamily },
 
   pastActionsRow: {
     flexDirection: "row",
@@ -400,7 +405,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
   },
-  attendanceBadgeText: { fontSize: 12, fontFamily: "Cairo_700Bold" },
+  attendanceBadgeText: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily },
   rateBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -410,7 +415,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
   },
-  rateBtnText: { fontSize: 12, fontFamily: "Cairo_700Bold" },
+  rateBtnText: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily },
 
   statusRow: { paddingHorizontal: 12, paddingBottom: 10, paddingTop: 2 },
   statusPill: {
@@ -423,5 +428,5 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
   },
-  statusPillText: { fontSize: 12, fontFamily: "Cairo_600SemiBold" },
+  statusPillText: { fontSize: 12, fontFamily: typography.bodyLg.fontFamily },
 });

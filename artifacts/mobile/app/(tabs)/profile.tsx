@@ -11,8 +11,8 @@ import { ActivityIndicator, Alert, Animated, Image, Platform, Pressable, ScrollV
 import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Stop } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-
-
+import { useTranslation } from "@/i18n";
+import { typography } from "@/constants/typography";
 function CircularProgress({ size, strokeWidth, progress, color, bg }: {
   size: number; strokeWidth: number; progress: number; color: string; bg: string;
 }) {
@@ -48,6 +48,7 @@ function ReliabilityGaugeCard({ relValue, relColor, relLabel, formatted }: {
   relValue: number; relColor: string; relLabel: string; formatted: string;
 }) {
   const colors = useColors();
+  const { t } = useTranslation();
   const GAUGE_SIZE = 120;
   const STROKE = 8;
   return (
@@ -62,7 +63,7 @@ function ReliabilityGaugeCard({ relValue, relColor, relLabel, formatted }: {
         />
         <View style={gaugeStyles.inner}>
           <Text style={[gaugeStyles.score, { color: relColor }]}>{formatted}</Text>
-          <Text style={[gaugeStyles.scoreLabel, { color: colors.onSurface }]}>موثوقية</Text>
+          <Text style={[gaugeStyles.scoreLabel, { color: colors.onSurface }]}>{t('profile.reliability')}</Text>
         </View>
       </View>
       <View style={gaugeStyles.labelRow}>
@@ -78,20 +79,21 @@ function ReliabilityGaugeCard({ relValue, relColor, relLabel, formatted }: {
 const gaugeStyles = StyleSheet.create({
   wrap: { alignItems: "center", gap: 10 },
   inner: { alignItems: "center", gap: 2 },
-  score: { fontSize: 26, fontFamily: "Cairo_700Bold", lineHeight: 32 },
-  scoreLabel: { fontSize: 11, fontFamily: "Cairo_400Regular", opacity: 0.8 },
+  score: { fontSize: 26, fontFamily: typography.headlineSm.fontFamily, lineHeight: 32 },
+  scoreLabel: { fontSize: 11, fontFamily: typography.body.fontFamily, opacity: 0.8 },
   labelRow: { alignItems: "center" },
   pill: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 24 },
   dot: { width: 7, height: 7, borderRadius: 3.5 },
-  pillText: { fontSize: 12, fontFamily: "Cairo_700Bold" },
+  pillText: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily },
 });
 
 function ReliabilityTutorialCard() {
   const colors = useColors();
+  const { t, isRTL } = useTranslation();
   const STEPS = [
-    { icon: "search-outline" as const, label: "انضم لمباراة", desc: "ابحث وسجّل نفسك في أي مباراة متاحة" },
-    { icon: "football-outline" as const, label: "العب وأكمل المباراة", desc: "احضر في الموعد وأكمل المباراة حتى النهاية" },
-    { icon: "star-outline" as const, label: "احصل على تقييم", desc: "يقيّمك زملاؤك بعد كل مباراة تكتمل" },
+    { icon: "search-outline" as const, label: t('profile.reliabilityTutorial.step1Label'), desc: t('profile.reliabilityTutorial.step1Desc') },
+    { icon: "football-outline" as const, label: t('profile.reliabilityTutorial.step2Label'), desc: t('profile.reliabilityTutorial.step2Desc') },
+    { icon: "star-outline" as const, label: t('profile.reliabilityTutorial.step3Label'), desc: t('profile.reliabilityTutorial.step3Desc') },
   ];
   return (
     <View style={[styles.tutorialCard, { backgroundColor: colors.surfaceContainerLow, overflow: "hidden", borderWidth: 1, borderColor: colors.primary + "30" }]}>
@@ -100,14 +102,14 @@ function ReliabilityTutorialCard() {
           <Ionicons name="shield-outline" size={22} color={colors.primary} />
         </View>
         <View style={{ flex: 1, alignItems: "flex-end", gap: 2 }}>
-          <Text style={[styles.tutorialTitle, { color: colors.onSurface }]}>مؤشر الموثوقية™</Text>
+          <Text style={[styles.tutorialTitle, { color: colors.onSurface }]}>{t('profile.reliabilityTutorial.title')}</Text>
           <Text style={[styles.tutorialSubtitle, { color: colors.mutedForeground }]}>
-            يظهر مؤشرك بعد أول مباراة مكتملة
+            {t('profile.reliabilityTutorial.subtitle')}
           </Text>
         </View>
       </View>
       <Text style={[styles.tutorialBody, { color: colors.mutedForeground }]}>
-        مؤشر الموثوقية يعكس كيف يراك زملاؤك — هل تحضر مبارياتك؟ وهل تلتزم بمواعيدك؟ كلما التزمت أكثر، ارتفع مؤشرك وأصبحت مرجعاً موثوقاً في المجتمع.
+        {t('profile.reliabilityTutorial.body')}
       </Text>
       <View style={styles.tutorialSteps}>
         {STEPS.map((step, i) => (
@@ -130,7 +132,7 @@ function ReliabilityTutorialCard() {
         onPress={() => router.push("/(tabs)/explore")}
       >
         <Ionicons name="compass-outline" size={16} color={colors.primaryForeground} />
-        <Text style={[styles.tutorialCtaText, { color: colors.primaryForeground }]}>اكتشف المباريات</Text>
+        <Text style={[styles.tutorialCtaText, { color: colors.primaryForeground }]}>{t('profile.reliabilityTutorial.discoverMatches')}</Text>
       </Pressable>
     </View>
   );
@@ -140,6 +142,7 @@ export default function ProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { user, logout, matches, refreshProfile, refreshMatches } = useApp();
+  const { t, locale, isRTL } = useTranslation();
   const [loadError, setLoadError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -188,11 +191,11 @@ export default function ProfileScreen() {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 16, paddingHorizontal: 32 }}>
         <Ionicons name="cloud-offline-outline" size={52} color={colors.mutedForeground} />
-        <Text style={{ fontSize: 18, fontFamily: "Cairo_700Bold", color: colors.onSurface, textAlign: "center" }}>
-          تعذّر تحميل الملف الشخصي
+        <Text style={{ fontSize: 18, fontFamily: typography.headlineSm.fontFamily, color: colors.onSurface, textAlign: "center" }}>
+          {t('profile.profileLoadError')}
         </Text>
-        <Text style={{ fontSize: 14, fontFamily: "Cairo_400Regular", color: colors.mutedForeground, textAlign: "center" }}>
-          تحقق من اتصالك بالإنترنت وحاول مجدداً
+        <Text style={{ fontSize: 14, fontFamily: typography.body.fontFamily, color: colors.mutedForeground, textAlign: "center" }}>
+          {t('profile.checkConnectionRetry')}
         </Text>
         <Pressable
           style={[{ backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24 }]}
@@ -202,7 +205,7 @@ export default function ProfileScreen() {
             refreshProfile().catch(() => setLoadError(true)).finally(() => setIsLoading(false));
           }}
         >
-          <Text style={{ fontSize: 15, fontFamily: "Cairo_700Bold", color: colors.primaryForeground }}>إعادة المحاولة</Text>
+          <Text style={{ fontSize: 15, fontFamily: typography.headlineSm.fontFamily, color: colors.primaryForeground }}>{t('common.retry')}</Text>
         </Pressable>
       </View>
     );
@@ -212,8 +215,8 @@ export default function ProfileScreen() {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 16, paddingHorizontal: 32 }}>
         <Ionicons name="person-circle-outline" size={64} color={colors.mutedForeground} />
-        <Text style={{ fontSize: 18, fontFamily: "Cairo_700Bold", color: colors.onSurface, textAlign: "center" }}>
-          تعذّر تحميل الملف الشخصي
+        <Text style={{ fontSize: 18, fontFamily: typography.headlineSm.fontFamily, color: colors.onSurface, textAlign: "center" }}>
+          {t('profile.profileLoadError')}
         </Text>
         <Pressable
           style={[{ backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24 }]}
@@ -226,7 +229,7 @@ export default function ProfileScreen() {
             ]).finally(() => setIsLoading(false));
           }}
         >
-          <Text style={{ fontSize: 15, fontFamily: "Cairo_700Bold", color: colors.primaryForeground }}>إعادة المحاولة</Text>
+          <Text style={{ fontSize: 15, fontFamily: typography.headlineSm.fontFamily, color: colors.primaryForeground }}>{t('common.retry')}</Text>
         </Pressable>
       </View>
     );
@@ -242,7 +245,7 @@ export default function ProfileScreen() {
     : 0;
 
   const relColor = reliabilityColor(user.reliability, colors);
-  const relLabel = reliabilityLabel(user.reliability);
+  const relLabel = reliabilityLabel(user.reliability, t);
   const relValue = user.reliability ?? 0;
   const relFormatted = formatReliability(user.reliability, user.matchesPlayed);
 
@@ -251,8 +254,8 @@ export default function ProfileScreen() {
   async function handleShareProfile() {
     try {
       await Share.share({
-        message: `🏅 ${user!.nickname} على تطبيق العب!\nموثوقية: ${formatReliability(user!.reliability, user!.matchesPlayed)} • مباريات: ${user!.matchesPlayed}`,
-        title: `ملف ${user!.nickname} الرياضي`,
+        message: t('profile.shareMessage', { name: user!.nickname, reliability: formatReliability(user!.reliability, user!.matchesPlayed), matches: String(user!.matchesPlayed) }),
+        title: t('profile.shareTitle', { name: user!.nickname }),
       });
     } catch { }
   }
@@ -268,11 +271,8 @@ export default function ProfileScreen() {
       showsVerticalScrollIndicator={false}
     >
       {/* === HERO CARD === */}
-      <LinearGradient
-        colors={[colors.primary, colors.primaryLight, colors.surface]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[styles.heroCard, { borderWidth: 1, borderColor: colors.primary + "30" }]}
+      <View
+        style={[styles.heroCard, { backgroundColor: colors.card, borderColor: colors.border }]}
       >
         {/* Top row: avatar + name + reliability gauge */}
         <View style={styles.heroTop}>
@@ -286,20 +286,20 @@ export default function ProfileScreen() {
 
           {/* Name & Info */}
           <View style={styles.heroInfo}>
-            <Text style={[styles.heroBadgeLabel, { color: "rgba(255,255,255,0.75)" }]}>ملفي الرياضي</Text>
-            <Text style={[styles.heroNickname, { color: "#FFFFFF" }]} numberOfLines={1}>{user.nickname}</Text>
+            <Text style={[styles.heroBadgeLabel, { color: colors.mutedForeground }]}>{t('profile.myProfile')}</Text>
+            <Text style={[styles.heroNickname, { color: colors.onSurface }]} numberOfLines={1}>{user.nickname}</Text>
             {user.phone ? (
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
-                <Text style={[styles.heroPhone, { color: "rgba(255,255,255,0.75)" }]}>{user.phone}</Text>
-                <Ionicons name="call-outline" size={12} color="rgba(255,255,255,0.75)" />
+                <Text style={[styles.heroPhone, { color: colors.mutedForeground }]}>{user.phone}</Text>
+                <Ionicons name="call-outline" size={12} color={colors.mutedForeground} />
               </View>
             ) : null}
           </View>
 
           {/* Avatar */}
-          <View style={[styles.avatarWrap, { width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2, backgroundColor: colors.primaryContainer, borderColor: colors.primary + "60" }]}>
+          <View style={[styles.avatarWrap, { width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: 24, backgroundColor: colors.primaryContainer, borderColor: colors.primary + "60", overflow: "hidden" }]}>
             {user.avatarUri ? (
-              <Image source={{ uri: user.avatarUri }} style={{ width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2 }} />
+              <Image source={{ uri: user.avatarUri }} style={{ width: "100%", height: "100%" }} />
             ) : (
               <Text style={[styles.avatarInitial, { color: colors.primary }]}>{user.nickname.charAt(0)}</Text>
             )}
@@ -313,19 +313,28 @@ export default function ProfileScreen() {
               const st = getSportTheme(sport as SportType);
               const profile = user.sportProfiles[sport];
               const numericLevel = profile?.skillLevelNumeric ?? null;
+              
+              const rawLevel = profile?.skillLevel as string | null;
+              let translatedLevel: any = rawLevel;
+              if (rawLevel) {
+                if (rawLevel === "مبتدئ" || rawLevel === "Beginner") translatedLevel = t("levels.beginner");
+                else if (rawLevel === "متوسط" || rawLevel === "Intermediate") translatedLevel = t("levels.intermediate");
+                else if (rawLevel === "محترف" || rawLevel === "Advanced" || rawLevel === "متقدم") translatedLevel = t("levels.advanced");
+              }
+
               const levelText = numericLevel
-                ? getLevelLabel(numericLevel, sport as SportType)
-                : profile?.skillLevel ?? null;
+                ? getLevelLabel(numericLevel, sport as SportType, t)
+                : translatedLevel;
               const isRacket = sport === "padel" || sport === "tennis";
               return (
                 <View key={sport} style={[styles.sportPill, { backgroundColor: st.pillBackground, borderColor: st.primary + "40", borderWidth: 1 }]}>
                   <Text style={styles.sportPillEmoji}>{st.emoji}</Text>
                   <View style={styles.sportPillContent}>
-                    <Text style={[styles.sportPillName, { color: st.primary }]}>{sportLabel(sport)}</Text>
+                    <Text style={[styles.sportPillName, { color: st.primary }]}>{sportLabel(sport, t)}</Text>
                     {isRacket && levelText ? (
                       <Text style={[styles.sportPillPos, { color: colors.mutedForeground }]}>{levelText}</Text>
-                    ) : !isRacket && profile?.skillLevel ? (
-                      <Text style={[styles.sportPillPos, { color: colors.mutedForeground }]}>{profile.skillLevel}</Text>
+                    ) : !isRacket && translatedLevel ? (
+                      <Text style={[styles.sportPillPos, { color: colors.mutedForeground }]}>{translatedLevel}</Text>
                     ) : null}
                   </View>
                 </View>
@@ -341,17 +350,17 @@ export default function ProfileScreen() {
             onPress={() => router.push({ pathname: "/settings", params: { openEdit: "1" } })}
           >
             <Ionicons name="create-outline" size={15} color={colors.accentForeground} />
-            <Text style={[styles.quickActionLimeText, { color: colors.accentForeground }]}>عدّل الملف</Text>
+            <Text style={[styles.quickActionLimeText, { color: colors.accentForeground }]}>{t('profile.editProfile')}</Text>
           </Pressable>
           <Pressable
             style={[styles.quickActionGhost, { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.outline }]}
             onPress={handleShareProfile}
           >
             <Ionicons name="share-social-outline" size={15} color={colors.onSurface} />
-            <Text style={[styles.quickActionGhostText, { color: colors.onSurface }]}>شارك ملفي</Text>
+            <Text style={[styles.quickActionGhostText, { color: colors.onSurface }]}>{t('profile.shareProfile')}</Text>
           </Pressable>
         </View>
-      </LinearGradient>
+      </View>
 
       {/* === RELIABILITY TUTORIAL (new users) === */}
       {user.reliability === null && <ReliabilityTutorialCard />}
@@ -359,7 +368,7 @@ export default function ProfileScreen() {
       {/* === STATS CARD === */}
       <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]}>
         <View style={styles.cardHeaderRow}>
-          <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>إحصائياتي</Text>
+          <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t('profile.stats')}</Text>
           <View style={[styles.cardHeaderIconWrap, { backgroundColor: sportTheme.primary + "12" }]}>
             <Ionicons name="stats-chart-outline" size={18} color={sportTheme.primary} />
           </View>
@@ -370,14 +379,14 @@ export default function ProfileScreen() {
               <Ionicons name="football-outline" size={20} color={sportTheme.primary} />
             </View>
             <Text style={[styles.statNum, { color: colors.onSurface }]}>{user.matchesPlayed}</Text>
-            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>مباراة</Text>
+            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{t('profile.match')}</Text>
           </View>
           <View style={[styles.statItem, { backgroundColor: relColor + "10", borderColor: relColor + "20", borderWidth: 1 }]}>
             <View style={[styles.statIconWrap, { backgroundColor: relColor + "20" }]}>
               <Ionicons name="checkmark-circle-outline" size={20} color={relColor} />
             </View>
             <Text style={[styles.statNum, { color: colors.onSurface }]}>{relFormatted}</Text>
-            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>الحضور</Text>
+            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{t('profile.attendanceStat')}</Text>
           </View>
         </View>
       </View>
@@ -386,22 +395,22 @@ export default function ProfileScreen() {
       {totalOrganized > 0 && (
         <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]}>
           <View style={styles.cardHeaderRow}>
-            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>كمنظّم</Text>
+            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t('profile.asOrganizer')}</Text>
             <View style={[styles.organizerBadge, { backgroundColor: colors.primary + "18" }]}>
               <Ionicons name="shield-checkmark-outline" size={14} color={colors.primary} />
-              <Text style={[styles.organizerBadgeText, { color: colors.primary }]}>منظّم</Text>
+              <Text style={[styles.organizerBadgeText, { color: colors.primary }]}>{t('common.organizer')}</Text>
             </View>
           </View>
           <View style={styles.statsGrid}>
             <View style={[styles.statItem, { backgroundColor: colors.surfaceContainerHigh }]}>
               <Ionicons name="calendar-outline" size={22} color={colors.primary} />
               <Text style={[styles.statNum, { color: colors.onSurface }]}>{totalOrganized}</Text>
-              <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>نظّمها</Text>
+              <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{t('profile.organized')}</Text>
             </View>
             <View style={[styles.statItem, { backgroundColor: colors.surfaceContainerHigh }]}>
               <Ionicons name="people-outline" size={22} color={colors.secondary} />
               <Text style={[styles.statNum, { color: colors.onSurface }]}>{avgAttendance > 0 ? `${avgAttendance}%` : "—"}</Text>
-              <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>الحضور</Text>
+              <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{t('profile.attendanceStat')}</Text>
             </View>
           </View>
           {organizedMatches.length > 0 && (
@@ -412,8 +421,8 @@ export default function ProfileScreen() {
                 if (latest) router.push({ pathname: "/manage-match", params: { id: latest.id } });
               }}
             >
-              <Text style={[styles.viewOrgMatchesBtnText, { color: colors.primary }]}>إدارة آخر مباراة</Text>
-              <Ionicons name="chevron-back" size={16} color={colors.primary} />
+              <Text style={[styles.viewOrgMatchesBtnText, { color: colors.primary }]}>{t('profile.manageLastMatch')}</Text>
+              <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={16} color={colors.primary} />
             </Pressable>
           )}
         </View>
@@ -422,9 +431,9 @@ export default function ProfileScreen() {
       {/* === MENU === */}
       <View style={[styles.menuSection, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]}>
         {[
-          { icon: "notifications-outline" as const, label: "الإشعارات", route: "/notifications", color: colors.secondary, params: undefined },
-          { icon: "settings-outline" as const, label: "الإعدادات", route: "/settings", color: colors.tertiary, params: undefined },
-          { icon: "shield-outline" as const, label: "الشروط والخصوصية", route: "/settings", color: colors.mutedForeground, params: { scrollToAbout: "1" } },
+          { icon: "notifications-outline" as const, label: t('profile.notifications'), route: "/notifications", color: colors.secondary, params: undefined },
+          { icon: "settings-outline" as const, label: t('profile.settings'), route: "/settings", color: colors.tertiary, params: undefined },
+          { icon: "shield-outline" as const, label: t('profile.termsPrivacy'), route: "/settings", color: colors.mutedForeground, params: { scrollToAbout: "1" } },
         ].map((item, i) => (
           <Pressable
             key={i}
@@ -440,7 +449,7 @@ export default function ProfileScreen() {
               }
             }}
           >
-            <Ionicons name="chevron-back" size={16} color={colors.mutedForeground} />
+            <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={16} color={colors.mutedForeground} />
             <Text style={[styles.menuText, { color: colors.onSurface }]}>{item.label}</Text>
             <View style={[styles.menuIconWrap, { backgroundColor: item.color + "12", borderWidth: 1, borderColor: item.color + "20" }]}>
               <Ionicons name={item.icon} size={18} color={item.color} />
@@ -466,18 +475,18 @@ const styles = StyleSheet.create({
   },
   heroTop: { flexDirection: "row", gap: 12, alignItems: "center", justifyContent: "space-between" },
   heroInfo: { flex: 1, gap: 4, alignItems: "flex-end" },
-  heroBadgeLabel: { fontSize: 11, fontFamily: "Cairo_400Regular", textAlign: "right" },
-  heroNickname: { fontSize: 22, fontFamily: "Cairo_700Bold", textAlign: "right", lineHeight: 32 },
-  heroPhone: { fontSize: 12, fontFamily: "Cairo_400Regular" },
+  heroBadgeLabel: { fontSize: 11, fontFamily: typography.body.fontFamily, textAlign: "right" },
+  heroNickname: { fontSize: 22, fontFamily: typography.headlineSm.fontFamily, textAlign: "right", lineHeight: 32 },
+  heroPhone: { fontSize: 12, fontFamily: typography.body.fontFamily },
   avatarWrap: { alignItems: "center", justifyContent: "center", borderWidth: 2 },
-  avatarInitial: { fontSize: 32, fontFamily: "Cairo_700Bold" },
+  avatarInitial: { fontSize: 32, fontFamily: typography.headlineSm.fontFamily },
 
   sportsRow: { flexDirection: "row", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" },
   sportPill: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 },
   sportPillEmoji: { fontSize: 16 },
   sportPillContent: { alignItems: "flex-end" },
-  sportPillName: { fontSize: 13, fontFamily: "Cairo_700Bold", lineHeight: 20 },
-  sportPillPos: { fontSize: 11, fontFamily: "Cairo_400Regular", lineHeight: 16 },
+  sportPillName: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily, lineHeight: 20 },
+  sportPillPos: { fontSize: 11, fontFamily: typography.body.fontFamily, lineHeight: 16 },
 
   quickActionsRow: { flexDirection: "row", gap: 10 },
   quickActionLime: {
@@ -489,7 +498,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 22,
   },
-  quickActionLimeText: { fontSize: 13, fontFamily: "Cairo_700Bold" },
+  quickActionLimeText: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily },
   quickActionGhost: {
     flex: 1,
     flexDirection: "row",
@@ -500,43 +509,43 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     borderWidth: 1,
   },
-  quickActionGhostText: { fontSize: 13, fontFamily: "Cairo_700Bold" },
+  quickActionGhostText: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily },
 
   card: { borderRadius: 24, padding: 20, gap: 16 },
   cardHeaderRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   cardHeaderIconWrap: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
 
-  sectionTitle: { fontSize: 17, fontFamily: "Cairo_700Bold", textAlign: "right", lineHeight: 26 },
+  sectionTitle: { fontSize: 17, fontFamily: typography.headlineSm.fontFamily, textAlign: "right", lineHeight: 26 },
 
   statsGrid: { flexDirection: "row", gap: 10 },
   statItem: { flex: 1, alignItems: "center", gap: 6, paddingVertical: 16, borderRadius: 18 },
   statIconWrap: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },
-  statNum: { fontSize: 22, fontFamily: "Cairo_700Bold", lineHeight: 30 },
-  statLabel: { fontSize: 11, fontFamily: "Cairo_600SemiBold", textAlign: "center" },
+  statNum: { fontSize: 22, fontFamily: typography.headlineSm.fontFamily, lineHeight: 30 },
+  statLabel: { fontSize: 11, fontFamily: typography.bodyLg.fontFamily, textAlign: "center" },
 
   organizerBadge: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  organizerBadgeText: { fontSize: 12, fontFamily: "Cairo_700Bold" },
+  organizerBadgeText: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily },
   viewOrgMatchesBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 12, borderRadius: 16, marginTop: 4 },
-  viewOrgMatchesBtnText: { fontSize: 14, fontFamily: "Cairo_700Bold" },
+  viewOrgMatchesBtnText: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily },
 
   menuSection: { borderRadius: 24, overflow: "hidden" },
   menuItem: { flexDirection: "row", alignItems: "center", paddingHorizontal: 18, paddingVertical: 16 },
-  menuText: { flex: 1, fontSize: 15, fontFamily: "Cairo_600SemiBold", textAlign: "right", marginHorizontal: 12, lineHeight: 24 },
+  menuText: { flex: 1, fontSize: 15, fontFamily: typography.bodyLg.fontFamily, textAlign: "right", marginHorizontal: 12, lineHeight: 24 },
   menuIconWrap: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
 
   tutorialCard: { borderRadius: 24, padding: 18, gap: 14 },
   tutorialHeader: { flexDirection: "row", alignItems: "center", gap: 12 },
   tutorialIconWrap: { width: 46, height: 46, borderRadius: 23, alignItems: "center", justifyContent: "center" },
-  tutorialTitle: { fontSize: 17, fontFamily: "Cairo_700Bold", textAlign: "right" },
-  tutorialSubtitle: { fontSize: 12, fontFamily: "Cairo_400Regular", textAlign: "right" },
-  tutorialBody: { fontSize: 13, fontFamily: "Cairo_400Regular", textAlign: "right", lineHeight: 22 },
+  tutorialTitle: { fontSize: 17, fontFamily: typography.headlineSm.fontFamily, textAlign: "right" },
+  tutorialSubtitle: { fontSize: 12, fontFamily: typography.body.fontFamily, textAlign: "right" },
+  tutorialBody: { fontSize: 13, fontFamily: typography.body.fontFamily, textAlign: "right", lineHeight: 22 },
   tutorialSteps: { gap: 10 },
   tutorialStep: { flexDirection: "row", alignItems: "center", gap: 10 },
   tutorialStepNumWrap: { width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  tutorialStepNum: { fontSize: 12, fontFamily: "Cairo_700Bold", lineHeight: 16 },
+  tutorialStepNum: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily, lineHeight: 16 },
   tutorialStepIcon: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
-  tutorialStepLabel: { fontSize: 13, fontFamily: "Cairo_700Bold", textAlign: "right" },
-  tutorialStepDesc: { fontSize: 11, fontFamily: "Cairo_400Regular", textAlign: "right", lineHeight: 17 },
+  tutorialStepLabel: { fontSize: 13, fontFamily: typography.headlineSm.fontFamily, textAlign: "right" },
+  tutorialStepDesc: { fontSize: 11, fontFamily: typography.body.fontFamily, textAlign: "right", lineHeight: 17 },
   tutorialCta: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 12, borderRadius: 20, marginTop: 2 },
-  tutorialCtaText: { fontSize: 14, fontFamily: "Cairo_700Bold" },
+  tutorialCtaText: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily },
 });

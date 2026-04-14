@@ -1,5 +1,6 @@
 import { useApp, Notification } from "@/context/AppContext";
 import { useColors } from "@/hooks/useColors";
+import { typography } from "@/constants/typography";
 
 import { GlassScreenHeader } from "@/components/glass/GlassScreenHeader";
 import { glassShadow } from "@/constants/glassTheme";
@@ -457,7 +458,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  title: { fontSize: 20, fontFamily: "Cairo_700Bold" },
+  title: { fontSize: 20, fontFamily: typography.headlineSm.fontFamily },
   unreadBadge: {
     minWidth: 20,
     height: 20,
@@ -468,7 +469,7 @@ const styles = StyleSheet.create({
   },
   unreadBadgeText: {
     fontSize: 11,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     color: "#FFFFFF",
   },
   headerActions: {
@@ -483,7 +484,7 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderRadius: 50,
   },
-  markAllText: { fontSize: 12, fontFamily: "Cairo_700Bold" },
+  markAllText: { fontSize: 12, fontFamily: typography.headlineSm.fontFamily },
   list: { paddingHorizontal: 16, paddingTop: 4, gap: 0 },
   sectionHeader: {
     flexDirection: "row",
@@ -494,7 +495,7 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 12,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     letterSpacing: 0.5,
   },
   sectionLine: {
@@ -524,7 +525,7 @@ const styles = StyleSheet.create({
   },
   deleteText: {
     color: "#fff",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     fontSize: 14,
   },
 
@@ -578,7 +579,7 @@ const styles = StyleSheet.create({
   },
   notifBody: {
     fontSize: 13,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "right",
     lineHeight: 20,
   },
@@ -592,7 +593,7 @@ const styles = StyleSheet.create({
   },
   notifTime: {
     fontSize: 11,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
   },
   tapHint: {
     flexDirection: "row",
@@ -604,7 +605,7 @@ const styles = StyleSheet.create({
   },
   tapHintText: {
     fontSize: 10,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
   },
   unreadLabel: {
     paddingHorizontal: 7,
@@ -613,7 +614,7 @@ const styles = StyleSheet.create({
   },
   unreadLabelText: {
     fontSize: 10,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
   },
 
   emptyContainer: {
@@ -634,12 +635,12 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: typography.headlineSm.fontFamily,
     textAlign: "center",
   },
   emptySubtitle: {
     fontSize: 14,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: typography.body.fontFamily,
     textAlign: "center",
     lineHeight: 22,
   },

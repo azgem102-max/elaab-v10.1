@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { SportGradientButton } from "@/components/SportGradientButton";
 import { typography } from "@/constants/typography";
 import { useColors } from "@/hooks/useColors";
+import { getSportTheme } from "@/constants/sportTheme";
 
 export default function NotFoundScreen() {
   const colors = useColors();
@@ -21,7 +22,7 @@ export default function NotFoundScreen() {
         </Text>
         <SportGradientButton
           label="العودة للرئيسية"
-          gradientStart={colors.football}
+          gradientStart={getSportTheme("football").primary}
           gradientEnd={colors.primaryLight}
           onPress={() => router.replace("/")}
           style={styles.button}
