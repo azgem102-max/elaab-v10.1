@@ -1,0 +1,22 @@
+
+> workspace@0.0.0 typecheck C:\Users\azzam\Desktop\elab-app versions\elaab-v11\elaab-v101-1
+> pnpm run typecheck:libs && pnpm -r --filter "./artifacts/**" --filter "./scripts" --if-present run typecheck
+
+
+> workspace@0.0.0 typecheck:libs C:\Users\azzam\Desktop\elab-app versions\elaab-v11\elaab-v101-1
+> tsc --build
+
+Scope: 4 of 9 workspace projects
+artifacts/api-server typecheck$ tsc -p tsconfig.json --noEmit
+artifacts/mobile typecheck$ tsc -p tsconfig.json --noEmit
+artifacts/mockup-sandbox typecheck$ tsc -p tsconfig.json --noEmit
+scripts typecheck$ tsc -p tsconfig.json --noEmit
+scripts typecheck: Done
+artifacts/mobile typecheck: components/LevelPickerSheet.tsx(326,5): error TS1005: ')' expected.
+artifacts/mobile typecheck: components/LevelPickerSheet.tsx(326,7): error TS1109: Expression expected.
+artifacts/mobile typecheck: components/LevelPickerSheet.tsx(327,3): error TS1109: Expression expected.
+artifacts/mobile typecheck: Failed
+C:\Users\azzam\Desktop\elab-app versions\elaab-v11\elaab-v101-1\artifacts\mobile:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/mobile@0.0.0 typecheck: `tsc -p tsconfig.json --noEmit`
+Exit status 2
+ ELIFECYCLE  Command failed with exit code 2.

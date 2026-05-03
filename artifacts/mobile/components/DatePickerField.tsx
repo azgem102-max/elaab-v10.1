@@ -12,8 +12,11 @@ import { useColors } from "@/hooks/useColors";
 import { typography } from "@/constants/typography";
 
 
-const DAY_LABELS = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-const MONTH_LABELS = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+import { useTranslation, Locale } from "@/i18n";
+import { ar } from "@/i18n/ar";
+import { en } from "@/i18n/en";
+
+const localeTranslations = { ar, en };
 
 function toDateInputValue(date: Date): string {
   const y = date.getFullYear();
@@ -53,6 +56,11 @@ interface DatePickerFieldProps {
 
 export function DatePickerField({ value, onChange, accentColor }: DatePickerFieldProps) {
   const colors = useColors();
+  const { t, locale } = useTranslation();
+  
+  const DAY_LABELS = localeTranslations[locale].dateInfo.days;
+  const MONTH_LABELS = localeTranslations[locale].dateInfo.months;
+
   const [showPicker, setShowPicker] = useState(false);
   const today = todayAtMidnight();
   const tomorrow = new Date(today);
@@ -61,9 +69,9 @@ export function DatePickerField({ value, onChange, accentColor }: DatePickerFiel
   dayAfter.setDate(today.getDate() + 2);
 
   const quickDays = [
-    { label: "اليوم", date: today },
-    { label: "غداً", date: tomorrow },
-    { label: "بعد غد", date: dayAfter },
+    { label: t("common.today"), date: today },
+    { label: t("common.tomorrow"), date: tomorrow },
+    { label: t("common.dayAfter"), date: dayAfter },
   ];
 
   function handleNativeChange(_event: DateTimePickerEvent, selectedDate?: Date): void {
@@ -76,7 +84,7 @@ export function DatePickerField({ value, onChange, accentColor }: DatePickerFiel
   }
 
   const selectedCard = (
-    <View style={[styles.selectedCard, { backgroundColor: withAlpha(accentColor, 0.08), borderColor: withAlpha(accentColor, 0.25) }]}>
+    <View style={[styles.selectedCard, { backgroundColor: withAlpha(accentColor, 0.08), borderColor: withAlpha(accentColor, 0.12) }]}>
       <View style={styles.selectedCardLeft}>
         <Text style={[styles.selectedDayName, { color: accentColor }]}>
           {DAY_LABELS[value.getDay()]}
@@ -92,7 +100,7 @@ export function DatePickerField({ value, onChange, accentColor }: DatePickerFiel
         {Platform.OS === "web" ? (
           <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
             <Ionicons name="calendar-outline" size={18} color={accentColor} />
-            <Text style={[styles.changeText, { color: accentColor }]}>تغيير</Text>
+            <Text style={[styles.changeText, { color: accentColor }]}>{t("common.change")}</Text>
             <input
               type="date"
               min={toDateInputValue(today)}
@@ -122,7 +130,7 @@ export function DatePickerField({ value, onChange, accentColor }: DatePickerFiel
             onPress={() => setShowPicker(true)}
           >
             <Ionicons name="calendar-outline" size={18} color={accentColor} />
-            <Text style={[styles.changeText, { color: accentColor }]}>تغيير</Text>
+            <Text style={[styles.changeText, { color: accentColor }]}>{t("common.change")}</Text>
           </Pressable>
         )}
       </View>

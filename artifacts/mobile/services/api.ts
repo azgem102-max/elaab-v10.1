@@ -152,7 +152,7 @@ export interface ApiMatch {
   status: ApiMatchStatus;
   sessionType: "match" | "training";
   matchFormat?: "single" | "double" | null;
-  skillLevel?: "beginner" | "intermediate" | "advanced" | null;
+  skillLevel?: string | null;
   description?: string;
   joinedByCurrentUser?: boolean;
   invitedGroupId?: string;
@@ -203,6 +203,14 @@ export interface ApiJoinRequest {
   reliability: number | null;
   matchesPlayed: number;
   requestedAt: string;
+}
+
+export type ApiJoinGroupStatus = "joined" | "pending";
+
+export interface ApiJoinGroupResponse {
+  success: boolean;
+  status: ApiJoinGroupStatus;
+  memberCount?: number;
 }
 
 export interface ApiNotification {
@@ -292,7 +300,7 @@ export const api = {
       method: "DELETE",
     }),
 
-  updateMatch: (id: string, data: { title?: string; venue?: string; location?: string | null; date?: string; time?: string; cost?: number; maxPlayers?: number; description?: string; skillLevel?: "beginner" | "intermediate" | "advanced" | null }) =>
+  updateMatch: (id: string, data: { title?: string; venue?: string; location?: string | null; date?: string; time?: string; cost?: number; maxPlayers?: number; description?: string; skillLevel?: string | null }) =>
     apiFetch<{ success: boolean; match: ApiMatch }>(`/matches/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
@@ -326,7 +334,7 @@ export const api = {
     }),
 
   joinGroup: (id: string) =>
-    apiFetch<{ success: boolean; status: string; memberCount?: number }>(`/groups/${id}/join`, {
+    apiFetch<ApiJoinGroupResponse>(`/groups/${id}/join`, {
       method: "POST",
     }),
 

@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
 
 export const notificationsTable = pgTable("notifications", {
   id: text("id").primaryKey(),
@@ -9,7 +9,9 @@ export const notificationsTable = pgTable("notifications", {
   relatedId: text("related_id"),
   read: boolean("read").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (t) => [
+  index("notifications_user_id_idx").on(t.userId),
+]);
 
 export type InsertNotification = typeof notificationsTable.$inferInsert;
 export type Notification = typeof notificationsTable.$inferSelect;

@@ -166,11 +166,12 @@ export default function GroupsScreen() {
                 : colors.primary;
             return (
               <Pressable
-                style={[
+                style={({ pressed }) => [
                   styles.filterChip,
                   isActive
                     ? { backgroundColor: activeBgColor }
-                    : { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border },
+                    : { backgroundColor: colors.surfaceContainerHigh, borderWidth: 0 },
+                  pressed && { transform: [{ scale: 0.96 }] },
                 ]}
                 onPress={() => setSportFilter(item.key)}
               >
@@ -221,7 +222,7 @@ export default function GroupsScreen() {
               <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t('groups.myGroups')}</Text>
               {allMyGroups.length > 0 && (
                 <View style={[styles.countBadge, { backgroundColor: colors.primary + "18" }]}>
-                  <Text style={[styles.countText, { color: colors.primary }]}>{allMyGroups.length}</Text>
+                  <Text style={[styles.countText, { color: colors.primary, fontVariant: ['tabular-nums'] }]}>{allMyGroups.length}</Text>
                 </View>
               )}
             </View>
@@ -325,7 +326,7 @@ export default function GroupsScreen() {
               <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t('groups.discover')}</Text>
               {discoverGroups.length > 0 && (
                 <View style={[styles.countBadge, { backgroundColor: colors.surfaceContainerHigh }]}>
-                  <Text style={[styles.countText, { color: colors.onSurfaceVariant }]}>{discoverGroups.length}</Text>
+                  <Text style={[styles.countText, { color: colors.onSurfaceVariant, fontVariant: ['tabular-nums'] }]}>{discoverGroups.length}</Text>
                 </View>
               )}
             </View>
@@ -363,8 +364,18 @@ export default function GroupsScreen() {
                   key={group.id}
                   group={group}
                   onJoin={async () => {
-                    await joinGroup(group.id);
-                    showToast(t('groups.joinRequestSent'));
+                    try {
+                      const result = await joinGroup(group.id);
+                      showToast(
+                        result.status === "joined"
+                          ? t("invite.success")
+                          : t("groups.joinRequestSent"),
+                      );
+                    } catch (error) {
+                      showToast(
+                        error instanceof Error ? error.message : t("common.error"),
+                      );
+                    }
                   }}
                 />
               ))
@@ -375,7 +386,7 @@ export default function GroupsScreen() {
       </ScrollView>
 
       <Pressable
-        style={styles.fab}
+        style={({ pressed }) => [styles.fab, pressed && { transform: [{ scale: 0.96 }] }]}
         onPress={() => router.push("/create-group")}
       >
         <View
@@ -433,41 +444,27 @@ const MyGroupCard = React.memo(function MyGroupCard({
   const { t, locale } = useTranslation();
   const SportIcon = getSportIcon(group.sport);
   const sportTheme = getSportTheme(group.sport);
-  const glassBg = sportTheme.glass.backgroundGradient;
-  const borderColor = sportTheme.glass.borderGlow;
   const primaryColor = sportTheme.primary;
 
   return (
     <Pressable
-      style={[
+      style={({ pressed }) => [
         styles.myCard,
         {
-          borderWidth: 1.5,
-          borderColor: borderColor,
-          ...Platform.select({
-            web: { boxShadow: `0px 2px 8px rgba(0,0,0,0.04), 0px 1px 3px rgba(0,0,0,0.02)` },
-            default: {
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.04,
-              shadowRadius: 8,
-              elevation: 2,
-            },
-          }),
+          backgroundColor: sportTheme.cardBackground,
+          borderWidth: 0,
         },
+        pressed && { transform: [{ scale: 0.96 }] },
       ]}
       onPress={() => router.push({ pathname: "/group-detail", params: { id: group.id } })}
     >
-      <View
-        style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.card }]}
-      />
 
       <View style={styles.myCardContent}>
         <View style={styles.myCardTop}>
           <View
             style={[
               styles.sportPill,
-              { backgroundColor: sportTheme.badgeBackground, borderWidth: 1, borderColor: borderColor },
+              { backgroundColor: sportTheme.badgeBackground, borderWidth: 0 },
             ]}
           >
             <SportIcon color={primaryColor} size={14} />
@@ -492,7 +489,7 @@ const MyGroupCard = React.memo(function MyGroupCard({
             {group.name}
           </Text>
           <View style={styles.memberRow}>
-            <Text style={[styles.memberCountText, { color: colors.mutedForeground }]}>{group.memberCount} {t('common.member')}</Text>
+            <Text style={[styles.memberCountText, { color: colors.mutedForeground, fontVariant: ['tabular-nums'] }]}>{group.memberCount} {t('common.member')}</Text>
             <Ionicons name="people" size={15} color={colors.mutedForeground} />
           </View>
         </View>
@@ -558,21 +555,21 @@ const DiscoverGroupCard = React.memo(function DiscoverGroupCard({
   const colors = useColors();
   const { t } = useTranslation();
   const SportIcon = getSportIcon(group.sport);
-  const sc = sportColor(group.sport, colors);
+  const sportTheme = getSportTheme(group.sport);
 
   return (
     <Pressable
-      style={styles.discoverCardWrapper}
+      style={({ pressed }) => [styles.discoverCardWrapper, pressed && { transform: [{ scale: 0.97 }] }]}
       onPress={() => router.push({ pathname: "/group-detail", params: { id: group.id } })}
     >
-      <View style={[styles.discoverCard, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
-        <View style={[styles.discoverBanner, { backgroundColor: sc }]}>
-          <View style={styles.discoverBannerCircle}>
-            <SportIcon color={colors.primaryForeground} size={22} />
+      <View style={[styles.discoverCard, { backgroundColor: sportTheme.cardBackground, borderWidth: 0 }]}>
+        <View style={[styles.discoverBanner, { backgroundColor: sportTheme.primaryContainer }]}>
+          <View style={[styles.discoverBannerCircle, { backgroundColor: sportTheme.primary }]}>
+            <SportIcon color="#fff" size={22} />
           </View>
           {!group.isPublic && (
             <View style={styles.discoverLockBadge}>
-              <Ionicons name="lock-closed" size={10} color={colors.primaryForeground} />
+              <Ionicons name="lock-closed" size={10} color="#fff" />
             </View>
           )}
         </View>
@@ -623,7 +620,7 @@ const DiscoverGroupCard = React.memo(function DiscoverGroupCard({
               />
             ) : (
               <GlassButton
-                label={t('groups.request')}
+                label={t('common.join')}
                 sport={group.sport}
                 variant="accent"
                 size="sm"
@@ -650,6 +647,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 24,
+    minHeight: 44,
   },
   filterText: { fontSize: 13, fontFamily: typography.bodyLg.fontFamily },
   resultsRow: { paddingHorizontal: 20, paddingTop: 2 },
@@ -777,8 +775,8 @@ const styles = StyleSheet.create({
   noResults: { marginHorizontal: 16, padding: 20, alignItems: "center", gap: 8, marginBottom: 12 },
   noResultsText: { fontSize: 14, fontFamily: typography.body.fontFamily, textAlign: "center" },
 
-  discoverCardWrapper: { marginHorizontal: 16, marginBottom: 12 },
-  discoverCard: { borderRadius: 20, overflow: "hidden" },
+  discoverCardWrapper: { marginHorizontal: 16, marginBottom: 16 },
+  discoverCard: { borderRadius: 24, overflow: "hidden" },
 
   discoverBanner: {
     height: 64,
@@ -790,11 +788,9 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "rgba(255,255,255,0.22)",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1.5,
-    borderColor: "rgba(255,255,255,0.35)",
+    borderWidth: 0,
   },
   discoverLockBadge: {
     position: "absolute",
@@ -844,13 +840,13 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     overflow: "hidden",
     ...Platform.select({
-      web: { boxShadow: "0px 10px 30px rgba(44, 84, 232, 0.35), 0px 4px 10px rgba(44, 84, 232, 0.18)" },
+      web: { boxShadow: "0px 10px 30px rgba(5, 183, 87, 0.3), 0px 4px 10px rgba(5, 183, 87, 0.15)" },
       default: {
-        shadowColor: "#2C54E8",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.35,
-        shadowRadius: 20,
-        elevation: 14,
+        shadowColor: "#05B757",
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.25,
+        shadowRadius: 12,
+        elevation: 10,
       },
     }),
   },

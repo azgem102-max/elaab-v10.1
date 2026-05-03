@@ -61,7 +61,16 @@ import { typography } from "@/constants/typography";
 
 SplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30 * 1000, // 30 seconds
+      gcTime: 5 * 60 * 1000, // 5 minutes (garbage collection time)
+      retry: 1,
+      refetchOnWindowFocus: false, // Don't refetch on app focus by default (avoids massive re-renders on mobile)
+    },
+  },
+});
 setQueryClientRef(queryClient);
 
 function navigateFromNotification(data: Record<string, unknown>) {

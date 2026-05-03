@@ -254,8 +254,8 @@ export default function GroupDetailScreen() {
   async function handleShareGroup() {
     const domain = process.env.EXPO_PUBLIC_DOMAIN;
     const shareText = domain
-      ? `انضم لمجموعة "${groupSafe.name}" على تطبيق العب!\nhttps://${domain}/api/group/${groupSafe.id}`
-      : `انضم لمجموعة "${groupSafe.name}" على تطبيق العب! حمّل التطبيق الآن`;
+      ? `انضم لمجموعة "${groupSafe.name}" على تطبيق ARENA!\nhttps://${domain}/api/group/${groupSafe.id}`
+      : `انضم لمجموعة "${groupSafe.name}" على تطبيق ARENA! حمّل التطبيق الآن`;
     try {
       await Share.share({ message: shareText, title: `مجموعة ${groupSafe.name}` });
     } catch {}
@@ -270,8 +270,8 @@ export default function GroupDetailScreen() {
     const domain = process.env.EXPO_PUBLIC_DOMAIN;
     const inviteLink = domain ? `https://${domain}/api/invite/${token}` : null;
     const shareText = inviteLink
-      ? `أُدعيت للانضمام إلى مجموعة "${groupSafe.name}" على تطبيق العب!\n${inviteLink}`
-      : `أُدعيت للانضمام إلى مجموعة "${groupSafe.name}" على تطبيق العب! حمّل التطبيق الآن`;
+      ? `أُدعيت للانضمام إلى مجموعة "${groupSafe.name}" على تطبيق ARENA!\n${inviteLink}`
+      : `أُدعيت للانضمام إلى مجموعة "${groupSafe.name}" على تطبيق ARENA! حمّل التطبيق الآن`;
     try {
       await Share.share({ message: shareText, title: `دعوة لمجموعة ${groupSafe.name}` });
     } catch {}

@@ -14,7 +14,7 @@ import { useColors } from "@/hooks/useColors";
 import { typography } from "@/constants/typography";
 
 
-export type SkillLevel = "beginner" | "intermediate" | "advanced";
+export type SkillLevel = string;
 export type TimeOfDay = "morning" | "afternoon" | "evening";
 export type DistanceRadius = 5 | 10 | 25 | 50;
 
@@ -188,7 +188,7 @@ export function FilterBottomSheet({ visible, filters, onChange, onClose, showDis
                             styles.optionChip,
                             isActive
                               ? { backgroundColor: "#E0E7FF", borderColor: "#2C54E8", borderWidth: 1.5 }
-                              : { backgroundColor: "#F4F6FF", borderColor: "#E5E7EB", borderWidth: 1 },
+                              : { backgroundColor: "#F4F6FF", borderColor: "rgba(0,0,0,0.06)", borderWidth: 1 },
                           ]}
                           onPress={() => toggleDistance(key)}
                         >
@@ -209,7 +209,7 @@ export function FilterBottomSheet({ visible, filters, onChange, onClose, showDis
                   </View>
                 </View>
 
-                <View style={[styles.divider, { backgroundColor: "#E5E7EB" }]} />
+                <View style={[styles.divider, { backgroundColor: "rgba(0,0,0,0.06)" }]} />
               </>
             )}
 
@@ -228,7 +228,7 @@ export function FilterBottomSheet({ visible, filters, onChange, onClose, showDis
                         styles.optionChip,
                         isActive
                           ? { backgroundColor: "#E0E7FF", borderColor: "#2C54E8", borderWidth: 1.5 }
-                          : { backgroundColor: "#F4F6FF", borderColor: "#E5E7EB", borderWidth: 1 },
+                          : { backgroundColor: "#F4F6FF", borderColor: "rgba(0,0,0,0.06)", borderWidth: 1 },
                       ]}
                       onPress={() => toggleSkillLevel(key)}
                     >
@@ -250,7 +250,7 @@ export function FilterBottomSheet({ visible, filters, onChange, onClose, showDis
               </View>
             </View>
 
-            <View style={[styles.divider, { backgroundColor: "#E5E7EB" }]} />
+            <View style={[styles.divider, { backgroundColor: "rgba(0,0,0,0.06)" }]} />
 
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
@@ -267,7 +267,7 @@ export function FilterBottomSheet({ visible, filters, onChange, onClose, showDis
                         styles.optionRow,
                         isActive
                           ? { backgroundColor: "#E0E7FF", borderColor: "#2C54E8", borderWidth: 1.5 }
-                          : { backgroundColor: "#F4F6FF", borderColor: "#E5E7EB", borderWidth: 1 },
+                          : { backgroundColor: "#F4F6FF", borderColor: "rgba(0,0,0,0.06)", borderWidth: 1 },
                       ]}
                       onPress={() => toggleTimeOfDay(key)}
                     >
@@ -293,7 +293,7 @@ export function FilterBottomSheet({ visible, filters, onChange, onClose, showDis
               </View>
             </View>
 
-            <View style={[styles.divider, { backgroundColor: "#E5E7EB" }]} />
+            <View style={[styles.divider, { backgroundColor: "rgba(0,0,0,0.06)" }]} />
 
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
@@ -305,7 +305,7 @@ export function FilterBottomSheet({ visible, filters, onChange, onClose, showDis
                   styles.optionRow,
                   filters.hasSpots
                     ? { backgroundColor: "rgba(22, 163, 74, 0.10)", borderColor: "#16A34A", borderWidth: 1.5 }
-                    : { backgroundColor: "#F4F6FF", borderColor: "#E5E7EB", borderWidth: 1 },
+                    : { backgroundColor: "#F4F6FF", borderColor: "rgba(0,0,0,0.06)", borderWidth: 1 },
                 ]}
                 onPress={toggleHasSpots}
               >
@@ -332,7 +332,7 @@ export function FilterBottomSheet({ visible, filters, onChange, onClose, showDis
           </ScrollView>
 
           {hasPreviewCount && (
-            <View style={[styles.previewBar, { backgroundColor: "#FFFFFF", borderTopColor: "#E5E7EB" }]}>
+            <View style={[styles.previewBar, { backgroundColor: "#FFFFFF", borderTopColor: "rgba(0,0,0,0.06)" }]}>
               <Ionicons name="search-outline" size={16} color="#2C54E8" />
               <Text style={[styles.previewText, { color: "#111827" }]}>
                 سيظهر{" "}

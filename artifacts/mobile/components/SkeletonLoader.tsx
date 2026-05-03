@@ -43,7 +43,7 @@ function SingleSkeleton({ variant }: { variant: "card" | "list" | "compact" }) {
       <Animated.View
         style={[
           styles.compactCard,
-          { borderWidth: 1, borderColor: "#E5E7EB" },
+          { borderWidth: 1, borderColor: "transparent" },
           { backgroundColor: colors.surfaceContainerLow, opacity },
         ]}
       >
@@ -65,7 +65,7 @@ function SingleSkeleton({ variant }: { variant: "card" | "list" | "compact" }) {
       <Animated.View
         style={[
           styles.listCard,
-          { borderWidth: 1, borderColor: "#E5E7EB" },
+          { borderWidth: 1, borderColor: "transparent" },
           { backgroundColor: colors.surfaceContainerLow, opacity },
         ]}
       >
@@ -84,7 +84,7 @@ function SingleSkeleton({ variant }: { variant: "card" | "list" | "compact" }) {
     <Animated.View
       style={[
         styles.card,
-        { borderWidth: 1, borderColor: "#E5E7EB" },
+        { borderWidth: 1, borderColor: "transparent" },
         { backgroundColor: colors.surfaceContainerLow, opacity },
       ]}
     >

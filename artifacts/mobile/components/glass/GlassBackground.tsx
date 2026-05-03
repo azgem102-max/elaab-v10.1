@@ -18,6 +18,6 @@ const styles = StyleSheet.create({
     flex: 1,
     position: "relative",
     overflow: "hidden",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#F8FAFC",
   },
 });

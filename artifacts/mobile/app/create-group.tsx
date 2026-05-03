@@ -9,6 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React, { useRef, useState } from "react";
+import { useTranslation } from "@/i18n";
 import {
   Animated,
   KeyboardAvoidingView,
@@ -37,7 +38,7 @@ type SportOption = {
 const SPORT_OPTIONS: SportOption[] = [
   {
     key: "football",
-    label: "كرة القدم",
+    label: "sports.football", // We will translate this below
     icon: "football-outline",
     color: getSportTheme("football").primary,
     gradientStart: getSportTheme("football").primary,
@@ -46,7 +47,7 @@ const SPORT_OPTIONS: SportOption[] = [
   },
   {
     key: "padel",
-    label: "بادل",
+    label: "sports.padel",
     icon: "tennisball-outline",
     color: getSportTheme("padel").primary,
     gradientStart: getSportTheme("padel").primary,
@@ -55,7 +56,7 @@ const SPORT_OPTIONS: SportOption[] = [
   },
   {
     key: "tennis",
-    label: "تنس",
+    label: "sports.tennis",
     icon: "tennisball",
     color: getSportTheme("tennis").primary,
     gradientStart: getSportTheme("tennis").primary,
@@ -66,18 +67,19 @@ const SPORT_OPTIONS: SportOption[] = [
 
 const SPORT_INDICES: Record<SportType, number> = { football: 0, padel: 1, tennis: 2 };
 
-function validateName(val: string): string {
-  if (!val.trim()) return "أدخل اسم المجموعة";
-  if (val.trim().length < 3) return "اسم المجموعة يجب أن يكون 3 أحرف على الأقل";
+function validateName(val: string, t: any): string {
+  if (!val.trim()) return t("createGroup.nameRequired");
+  if (val.trim().length < 3) return t("createGroup.nameMinLength");
   return "";
 }
 
-function validateDescription(val: string): string {
-  if (val.trim() && val.trim().length < 10) return "الوصف يجب أن يكون 10 أحرف على الأقل";
+function validateDescription(val: string, t: any): string {
+  if (val.trim() && val.trim().length < 10) return t("createGroup.descMinLength");
   return "";
 }
 
 export default function CreateGroupScreen() {
+  const { t } = useTranslation();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { createGroup, user } = useApp();
@@ -97,8 +99,8 @@ export default function CreateGroupScreen() {
 
   const sportOpt = SPORT_OPTIONS.find((s) => s.key === sport)!;
 
-  const nameError = nameTouched ? validateName(name) : "";
-  const descError = descTouched ? validateDescription(description) : "";
+  const nameError = nameTouched ? validateName(name, t) : "";
+  const descError = descTouched ? validateDescription(description, t) : "";
 
   const sportAnim = useRef(new Animated.Value(0)).current;
 
@@ -139,7 +141,7 @@ export default function CreateGroupScreen() {
   function validateAll(): boolean {
     setNameTouched(true);
     setDescTouched(true);
-    return !validateName(name) && !validateDescription(description);
+    return !validateName(name, t) && !validateDescription(description, t);
   }
 
   async function handleCreate() {
@@ -153,18 +155,18 @@ export default function CreateGroupScreen() {
         description: description.trim(),
         memberCount: 1,
         adminId: user?.id ?? "",
-        adminName: user?.nickname ?? "مجهول",
+        adminName: user?.nickname ?? t("createMatch.unknownLabel"),
         isPublic,
         nextMatch: null,
       });
       if (!newGroupId) {
-        setSubmitError("حدث خطأ أثناء إنشاء المجموعة، يرجى المحاولة مرة أخرى");
+        setSubmitError(t("createGroup.createFailed"));
         return;
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace(`/group-detail?id=${newGroupId}` as Parameters<typeof router.replace>[0]);
     } catch {
-      setSubmitError("فشل إنشاء المجموعة، تحقق من اتصالك بالإنترنت");
+      setSubmitError(t("createGroup.error"));
     } finally {
       setSubmitting(false);
     }
@@ -178,10 +180,10 @@ export default function CreateGroupScreen() {
       <GlassScreenHeader style={{ paddingTop: topPad + 8, paddingBottom: 8 }}>
         <View style={styles.header}>
           <View style={{ width: 40 }} />
-          <Text style={[typography.displayMd, styles.title, { color: colors.onSurface }]}>مجموعة جديدة</Text>
+          <Text style={[typography.displayMd, styles.title, { color: colors.onSurface }]}>{t("createGroup.title")}</Text>
           <Pressable
             onPress={() => router.back()}
-            style={[styles.backBtn, { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border }]}
+            style={({ pressed }) => [styles.backBtn, { backgroundColor: colors.background, borderWidth: 0 }, pressed && { transform: [{ scale: 0.96 }] }]}
           >
             <Ionicons name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"} size={22} color={colors.onSurface} />
           </Pressable>
@@ -195,7 +197,7 @@ export default function CreateGroupScreen() {
       >
         {/* Sport Selector */}
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.onSurface }]}>اختر الرياضة</Text>
+          <Text style={[styles.sectionLabel, { color: colors.onSurface }]}>{t("createGroup.sport")}</Text>
           <View style={styles.sportCardsRow}>
             {SPORT_OPTIONS.map((s) => {
               const selected = sport === s.key;
@@ -206,7 +208,7 @@ export default function CreateGroupScreen() {
                 >
                   <Pressable
                     onPress={() => handleSelectSport(s.key)}
-                    style={[styles.sportCard, { borderWidth: selected ? 2 : 1, borderColor: selected ? s.color : "#E5E7EB" }]}
+                    style={[styles.sportCard, { borderWidth: selected ? 2 : 0, borderColor: selected ? s.color : "transparent" }]}
                   >
                     {selected ? (
                       <View style={[styles.sportCardFill, { backgroundColor: s.color }]}>
@@ -216,14 +218,14 @@ export default function CreateGroupScreen() {
                         <View style={styles.sportIconCircleSelected}>
                           <Ionicons name={s.icon} size={28} color="#fff" />
                         </View>
-                        <Text style={styles.sportCardLabelSelected}>{s.label}</Text>
+                        <Text style={styles.sportCardLabelSelected}>{t(s.label)}</Text>
                       </View>
                     ) : (
                       <View style={[styles.sportCardFill, { backgroundColor: s.bgLight }]}>
                         <View style={[styles.sportIconCircle, { backgroundColor: "#fff" }]}>
                           <Ionicons name={s.icon} size={26} color={s.color} />
                         </View>
-                        <Text style={[styles.sportCardLabel, { color: s.color }]}>{s.label}</Text>
+                        <Text style={[styles.sportCardLabel, { color: s.color }]}>{t(s.label)}</Text>
                       </View>
                     )}
                   </Pressable>
@@ -235,7 +237,7 @@ export default function CreateGroupScreen() {
 
         {/* Group Name Input */}
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.onSurface }]}>اسم المجموعة</Text>
+          <Text style={[styles.sectionLabel, { color: colors.onSurface }]}>{t("createGroup.groupName")}</Text>
           <Animated.View
             style={[
               styles.softInputWrap,
@@ -258,7 +260,7 @@ export default function CreateGroupScreen() {
                 setNameFocused(false);
                 setNameTouched(true);
               }}
-              placeholder="مثال: فرسان الملعب، أبطال البادل..."
+              placeholder={t("createGroup.groupNamePlaceholder")}
               placeholderTextColor={colors.mutedForeground}
               textAlign="right"
               maxLength={40}
@@ -278,8 +280,8 @@ export default function CreateGroupScreen() {
         {/* Description Input */}
         <View style={styles.section}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 4, justifyContent: "flex-end" }}>
-            <Text style={[styles.sectionLabel, { color: colors.onSurface }]}>وصف المجموعة</Text>
-            <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: typography.body.fontFamily }}>(اختياري)</Text>
+            <Text style={[styles.sectionLabel, { color: colors.onSurface }]}>{t("createGroup.description")}</Text>
+            <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: typography.body.fontFamily }}>({t("common.optional")})</Text>
           </View>
           <Animated.View
             style={[
@@ -303,7 +305,7 @@ export default function CreateGroupScreen() {
                 setDescFocused(false);
                 setDescTouched(true);
               }}
-              placeholder="عرّف بمجموعتك، من ترحب بهم، وما هدفكم..."
+              placeholder={t("createGroup.descriptionPlaceholder")}
               placeholderTextColor={colors.mutedForeground}
               textAlign="right"
               multiline
@@ -324,15 +326,16 @@ export default function CreateGroupScreen() {
         </View>
 
         {/* Public/Private Selector */}
-        <View style={[styles.toggleCard, { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border }]}>
-          <Text style={[styles.toggleTitle, { color: colors.onSurface, marginBottom: 4 }]}>نوع المجموعة</Text>
+        <View style={[styles.toggleCard, { backgroundColor: colors.background, borderWidth: 0 }]}>
+          <Text style={[styles.toggleTitle, { color: colors.onSurface, marginBottom: 4 }]}>{t("createGroup.visibility")}</Text>
           <View style={styles.visibilityRow}>
             <Pressable
-              style={[
+              style={({ pressed }) => [
                 styles.visibilityBtn,
                 isPublic
                   ? { backgroundColor: sportOpt.color, borderColor: sportOpt.color }
-                  : { backgroundColor: colors.muted, borderColor: colors.border },
+                  : { backgroundColor: colors.muted, borderColor: "transparent" },
+                pressed && { transform: [{ scale: 0.96 }] },
               ]}
               onPress={() => {
                 if (!isPublic) {
@@ -343,15 +346,16 @@ export default function CreateGroupScreen() {
             >
               <Ionicons name="globe-outline" size={16} color={isPublic ? "#fff" : colors.mutedForeground} />
               <Text style={[styles.visibilityBtnText, { color: isPublic ? "#fff" : colors.mutedForeground }]}>
-                عامة
+                {t("createMatch.public")}
               </Text>
             </Pressable>
             <Pressable
-              style={[
+              style={({ pressed }) => [
                 styles.visibilityBtn,
                 !isPublic
                   ? { backgroundColor: sportOpt.color, borderColor: sportOpt.color }
-                  : { backgroundColor: colors.muted, borderColor: colors.border },
+                  : { backgroundColor: colors.muted, borderColor: "transparent" },
+                pressed && { transform: [{ scale: 0.96 }] },
               ]}
               onPress={() => {
                 if (isPublic) {
@@ -362,7 +366,7 @@ export default function CreateGroupScreen() {
             >
               <Ionicons name="lock-closed-outline" size={16} color={!isPublic ? "#fff" : colors.mutedForeground} />
               <Text style={[styles.visibilityBtnText, { color: !isPublic ? "#fff" : colors.mutedForeground }]}>
-                خاصة
+                {t("createMatch.private")}
               </Text>
             </Pressable>
           </View>
@@ -373,9 +377,7 @@ export default function CreateGroupScreen() {
               color={isPublic ? sportOpt.color : colors.mutedForeground}
             />
             <Text style={[styles.toggleInfoText, { color: isPublic ? sportOpt.color : colors.mutedForeground }]}>
-              {isPublic
-                ? "المجموعات العامة تظهر في نتائج البحث وتجذب لاعبين جدد"
-                : "المجموعات الخاصة لا تظهر في البحث — فقط من تدعوهم يمكنهم الرؤية"}
+              {isPublic ? t("createGroup.publicGroup") : t("createGroup.privateGroup")}
             </Text>
           </Animated.View>
         </View>
@@ -390,7 +392,7 @@ export default function CreateGroupScreen() {
 
         {/* Submit Button */}
         <SportGradientButton
-          label="إنشاء المجموعة"
+          label={submitting ? t("createGroup.creating") : t("createGroup.createBtn")}
           gradientStart={sportOpt.gradientStart}
           gradientEnd={sportOpt.gradientEnd}
           onPress={handleCreate}
@@ -413,9 +415,9 @@ const styles = StyleSheet.create({
   },
   title: { textAlign: "center" },
   backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
   },

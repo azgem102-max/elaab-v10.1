@@ -10,6 +10,7 @@ export const ar = {
 
   // === Common / Shared ===
   common: {
+    optional: "اختياري", // Merged from above
     save: "حفظ",
     cancel: "إلغاء",
     delete: "حذف",
@@ -50,6 +51,7 @@ export const ar = {
     linkCopied: "تم نسخ الرابط!",
     today: "اليوم",
     tomorrow: "غداً",
+    dayAfter: "بعد غد", // Added for DatePicker
     yesterday: "أمس",
     thisWeek: "هذا الأسبوع",
     allTimes: "كل الأوقات",
@@ -59,6 +61,13 @@ export const ar = {
     results: "نتائج",
     user: "مستخدم",
     support: "الدعم الفني",
+    change: "تغيير", // Added for DatePicker
+  },
+
+  // === Date Info ===
+  dateInfo: {
+    days: ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"],
+    months: ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"],
   },
 
   // === Sports ===
@@ -77,18 +86,22 @@ export const ar = {
 
   // === Welcome / Onboarding ===
   welcome: {
-    appName: "العَب",
-    tagline: "نظّم مبارياتك الرياضية مع أصحابك بكل سهولة",
+    appName: "ARENA",
+    tagline: "ساحتك للعب. تنظّم. تتواصل. تثبت التزامك.",
+    brandSubline: "مجتمع رياضي موثوق لتنظيم المباريات والمجموعات في المملكة",
+    arenaPill: "هوية جديدة لتجربة رياضية أكثر احترافية",
     chooseSport: "اختر رياضتك المفضلة",
     startNow: "ابدأ الآن",
-    feature1Title: "نظّم مباراتك",
-    feature1Desc: "أنشئ مباراة في ثوانٍ",
-    feature2Title: "جمّع أصحابك",
-    feature2Desc: "أنشئ مجموعات رياضية",
-    feature3Title: "تابع مستواك",
-    feature3Desc: "إحصائيات وتقييمات",
-    poweredBy: "رتّب، العب، كرّر 🏆",
+    feature1Title: "ساحة منظمة",
+    feature1Desc: "أنشئ المباريات وأدر التفاصيل من مكان واحد",
+    feature2Title: "مجتمع موثوق",
+    feature2Desc: "مجموعات، حضور، وتواصل بين اللاعبين",
+    feature3Title: "التزام واضح",
+    feature3Desc: "مؤشر موثوقية ودفتر متابعة للمدفوعات",
+    poweredBy: "العب. تنظّم. تتواصل.",
     swipeHint: "مرر للأعلى للبدء",
+    disclaimer: "بالمتابعة، أنت توافق على شروط الاستخدام وسياسة الخصوصية",
+    devBypass: "تخطي تسجيل الدخول للمطورين",
   },
 
   // === Phone / OTP ===
@@ -350,7 +363,7 @@ export const ar = {
       step3Desc: "يقيّمك زملاؤك بعد كل مباراة تكتمل",
       discoverMatches: "اكتشف المباريات",
     },
-    shareMessage: "🏅 {name} على تطبيق العب!\nموثوقية: {reliability} • مباريات: {matches}",
+    shareMessage: "🏅 {name} على تطبيق ARENA!\nموثوقية: {reliability} • مباريات: {matches}",
     shareTitle: "ملف {name} الرياضي",
     edit: {
       title: "تعديل الملف الشخصي",
@@ -394,6 +407,8 @@ export const ar = {
     yourLevelTennis: "مستواك في التنس",
     tapToPick: "اضغط لاختيار مستواك",
     confirmLevel: "تأكيد المستوى {level} ★",
+    confirmMulti: "تأكيد ({count})",
+    confirmMultiEmpty: "تأكيد المستويات",
     padel: {
       l1_0: { name: "مبتدئ تام", desc: "ليس لديه خبرة وبدأ للتو في لعب البادل" },
       l1_5: { name: "مبتدئ متقدم", desc: "خبرة محدودة ولا يزال يعمل على إبقاء الكرة في الملعب" },
@@ -430,6 +445,7 @@ export const ar = {
     }
   },
 
+
   // === Edit Match ===
   editMatch: {
     title: "تعديل المباراة",
@@ -455,6 +471,10 @@ export const ar = {
     success: "تم إنشاء المجموعة بنجاح",
     error: "فشل إنشاء المجموعة",
     nameRequired: "اسم المجموعة مطلوب",
+    nameMinLength: "اسم المجموعة يجب أن يكون 3 أحرف على الأقل",
+    descMinLength: "الوصف يجب أن يكون 10 أحرف على الأقل",
+    createFailed: "حدث خطأ أثناء إنشاء المجموعة، يرجى المحاولة مرة أخرى",
+
   },
 
   // === Group Detail ===
@@ -559,9 +579,9 @@ export const ar = {
       d1: "يوم",
       d2: "يومان"
     },
-    shareProfileMsg: "تحقق من ملفي الرياضي في تطبيق العب!\n{name} 🏆\n{url}",
-    shareProfileMsgNoUrl: "تحقق من ملفي الرياضي في تطبيق العب!\n{name} 🏆\nحمّل التطبيق الآن",
-    contactSubject: "تواصل معنا - تطبيق العب",
+    shareProfileMsg: "تحقق من ملفي الرياضي في تطبيق ARENA!\n{name} 🏆\n{url}",
+    shareProfileMsgNoUrl: "تحقق من ملفي الرياضي في تطبيق ARENA!\n{name} 🏆\nحمّل التطبيق الآن",
+    contactSubject: "تواصل معنا - تطبيق ARENA",
     contactError: "تعذّر فتح تطبيق البريد الإلكتروني",
     versionLabel: "الإصدار",
     contactUs: "تواصل معنا",
@@ -575,7 +595,7 @@ export const ar = {
       terms: "شروط الاستخدام",
       privacy: "سياسة الخصوصية",
       privacyPolicy: "سياسة الخصوصية",
-      contactSubject: "تواصل معنا - تطبيق العب",
+      contactSubject: "تواصل معنا - تطبيق ARENA",
       contactError: "تعذّر فتح تطبيق البريد الإلكتروني",
       termsTitle: "شروط الاستخدام",
       privacyTitle: "سياسة الخصوصية",
@@ -663,7 +683,7 @@ export const ar = {
     chooseSport: "اختر الرياضة",
     chooseSportDesc: "الألوان ستتغير تدريجياً حسب رياضتك المختارة",
     footballDesc: "حتى 22 لاعب",
-    padelTennisDesc: "أربعة لاعبين",
+    padelTennisDesc: "حتى أربعة لاعبين",
     title: "إنشاء مباراة",
     matchTitle: "عنوان المباراة",
     matchTitlePlaceholder: "مثال: مباراة ودية",
@@ -725,6 +745,13 @@ export const ar = {
     clubCenterHint: "ابدأ بالكتابة لترى اقتراحات الملاعب القريبة",
     locationUrl: "رابط الموقع (اختياري)",
     locationUrlHint: "الصق رابط Google Maps أو أي رابط يبدأ بـ https://",
+    venues: {
+      v1: "ملعب الأمير محمد",
+      v2: "أكاديمية بادل الرياض",
+      v3: "نادي التنس الملكي",
+      v4: "ملعب الهلال الصغير",
+      v5: "مركز الشباب الرياضي"
+    },
     playersAndFee: "اللاعبون والرسوم",
     playersAndFeeDesc: "حدد عدد المشاركين وتكلفة الحجز الإجمالية",
     numberOfPlayers: "عدد اللاعبين",
@@ -741,6 +768,7 @@ export const ar = {
     reviewAndPublishDesc: "اختر مستوى اللاعبين ثم راجع المباراة قبل النشر",
     playerLevel: "مستوى اللاعب",
     allLevels: "كل المستويات",
+    selectedLevels: "المستويات المحددة",
     advanced: "متقدم",
     intermediate: "متوسط",
     beginner: "مبتدئ",
@@ -808,7 +836,7 @@ export const ar = {
     connectionError: "تحقق من اتصالك بالإنترنت وحاول مجدداً",
     shareMessage: "انضم معي في مباراة «{{title}}»",
     shareDetails: "📅 {{date}} الساعة {{time}}\n📍 {{venue}}",
-    downloadApp: "حمّل تطبيق العب للانضمام",
+    downloadApp: "حمّل تطبيق ARENA للانضمام",
     inviteTitle: "دعوة للانضمام إلى مباراة «{{title}}»",
     inviteCreatedSuccess: "تم إنشاء رابط الدعوة",
     inviteCreatedError: "تعذّر إنشاء رابط الدعوة",

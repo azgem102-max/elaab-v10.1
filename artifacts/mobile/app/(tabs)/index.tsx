@@ -5,6 +5,7 @@ import { LiquidProgressBar } from "@/components/glass/LiquidProgressBar";
 import { SkeletonLoader } from "@/components/SkeletonLoader";
 import { PositionPickerModal } from "@/components/PositionPickerModal";
 import { getSportTheme } from "@/constants/sportTheme";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
@@ -24,6 +25,42 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "@/i18n";
 import { getTypography, typography } from "@/constants/typography";
 
+// ─── Stagger Animation Hook ─────────────────────────────────────
+// Skill: "Split into logical groups and stagger with ~100ms delay"
+function useStaggeredEntrance(count: number, delay = 100) {
+  const anims = useRef(
+    Array.from({ length: count }, () => new Animated.Value(0))
+  ).current;
+  const translateAnims = useRef(
+    Array.from({ length: count }, () => new Animated.Value(12))
+  ).current;
+
+  useEffect(() => {
+    const animations = anims.map((anim, i) =>
+      Animated.parallel([
+        Animated.timing(anim, {
+          toValue: 1,
+          duration: 400,
+          delay: i * delay,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateAnims[i], {
+          toValue: 0,
+          duration: 400,
+          delay: i * delay,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    Animated.parallel(animations).start();
+  }, []);
+
+  return anims.map((opacity, i) => ({
+    opacity,
+    transform: [{ translateY: translateAnims[i] }],
+  }));
+}
+
 function getGreeting(locale: string): string {
   const hour = new Date().getHours();
   if (locale === 'en') {
@@ -35,9 +72,13 @@ function getGreeting(locale: string): string {
   if (hour < 17) return "مساء الخير";
   return "مساء النور";
 }
+
 function QuickActionsScroll() {
   const colors = useColors();
   const { t } = useTranslation();
+
+  // Skill: Staggered enter for each quick action card
+  const stagger = useStaggeredEntrance(4, 80);
 
   const QUICK_ACTIONS = [
     { 
@@ -77,36 +118,41 @@ function QuickActionsScroll() {
       contentContainerStyle={styles.quickActionsScroll}
     >
       {QUICK_ACTIONS.map((action, index) => (
-        <Pressable
-          key={index}
-          style={({ pressed }) => [
-            styles.quickActionCard,
-            { 
-              backgroundColor: action.isPrimary ? colors.primary : colors.surface,
-              opacity: pressed ? 0.8 : 1 
-            }
-          ]}
-          onPress={() => router.push(action.route as never)}
-        >
-          <View style={[
-            styles.quickActionIconWrap, 
-            { backgroundColor: action.isPrimary ? 'rgba(255,255,255,0.2)' : colors.primaryContainer }
-          ]}>
-            <Ionicons
-              name={action.icon as any}
-              size={20}
-              color={action.isPrimary ? '#fff' : colors.primary}
-            />
-          </View>
-          <View style={{ gap: 2 }}>
-            <Text style={[styles.quickActionLabel, { color: action.isPrimary ? '#fff' : colors.onSurface }]}>
-               {action.label}
-            </Text>
-            <Text style={[{ fontSize: 11, fontFamily: typography.body.fontFamily }, { color: action.isPrimary ? 'rgba(255,255,255,0.8)' : colors.mutedForeground }]}>
-               {action.subItem}
-            </Text>
-          </View>
-        </Pressable>
+        <Animated.View key={index} style={stagger[index]}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.quickActionCard,
+              { 
+                backgroundColor: action.isPrimary ? colors.primary : colors.surface,
+                // Skill: Scale on press — always 0.96, never opacity
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              },
+              // Skill: Layered shadows for natural depth
+              action.isPrimary ? styles.quickActionCardShadowPrimary : styles.quickActionCardShadow,
+            ]}
+            onPress={() => router.push(action.route as never)}
+          >
+            {/* Skill: Concentric border radius — outer 24px, padding ~12px → inner = 24-12 = 12px */}
+            <View style={[
+              styles.quickActionIconWrap, 
+              { backgroundColor: action.isPrimary ? 'rgba(255,255,255,0.2)' : colors.primaryContainer }
+            ]}>
+              <Ionicons
+                name={action.icon as any}
+                size={20}
+                color={action.isPrimary ? '#fff' : colors.primary}
+              />
+            </View>
+            <View style={{ gap: 2 }}>
+              <Text style={[styles.quickActionLabel, { color: action.isPrimary ? '#fff' : colors.onSurface }]}>
+                 {action.label}
+              </Text>
+              <Text style={[{ fontSize: 11, fontFamily: typography.body.fontFamily }, { color: action.isPrimary ? 'rgba(255,255,255,0.8)' : colors.mutedForeground }]}>
+                 {action.subItem}
+              </Text>
+            </View>
+          </Pressable>
+        </Animated.View>
       ))}
     </ScrollView>
   );
@@ -150,7 +196,14 @@ function UpcomingMatchCard({
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.upcomingCard, { backgroundColor: colors.card, opacity: pressed ? 0.95 : 1 }]}
+      // Skill: Scale on press (0.96) replaces opacity feedback
+      style={({ pressed }) => [
+        styles.upcomingCard, 
+        { 
+          backgroundColor: colors.card, 
+          transform: [{ scale: pressed ? 0.96 : 1 }],
+        },
+      ]}
     >
       <View style={[styles.upcomingCardHeader]}>
         <View style={styles.upcomingCardHeaderContent}>
@@ -163,6 +216,7 @@ function UpcomingMatchCard({
             <Text style={[styles.upcomingCardDate, { color: colors.onSurface }]}>{dateStr}</Text>
           </View>
         </View>
+        {/* Skill: Concentric radius — card 24px, padding 16px → inner badge = 24-16 = 8px */}
         <View style={[styles.upcomingCardTimeBadge, { backgroundColor: colors.surfaceVariant }]}>
           <Ionicons name="time-outline" size={13} color={colors.onSurface} />
           <Text style={[styles.upcomingCardTime, { color: colors.onSurface }]}>{match.time}</Text>
@@ -182,7 +236,11 @@ function UpcomingMatchCard({
             <Ionicons name="location-outline" size={14} color={sportTheme.primary} />
           </View>
           <View style={styles.upcomingCardMetaRow}>
-            <Text style={[styles.upcomingCardMetaText, { color: isFull ? colors.destructive : colors.success }]}>
+            {/* Skill: Tabular numbers on dynamic player counts */}
+            <Text style={[styles.upcomingCardMetaText, { 
+              color: isFull ? colors.destructive : colors.success,
+              fontVariant: ['tabular-nums'],
+            }]}>
               {isFull ? t('home.matchFull') : t('home.spotsRemaining', { count: remaining })}
             </Text>
             <Ionicons
@@ -199,17 +257,30 @@ function UpcomingMatchCard({
           height={6}
         />
 
+        {/* Skill: Concentric radius — card body padding 16, card radius 24 → button radius = 24-16 = 8 */}
         <View style={styles.upcomingCardActions}>
           {match.joinedByCurrentUser ? (
             <Pressable
-              style={[styles.upcomingCardBtn, { backgroundColor: colors.destructive + "15" }]}
+              style={({ pressed }) => [
+                styles.upcomingCardBtn, 
+                { 
+                  backgroundColor: colors.destructive + "15",
+                  transform: [{ scale: pressed ? 0.96 : 1 }],
+                },
+              ]}
               onPress={onLeave}
             >
               <Text style={[styles.upcomingCardBtnText, { color: colors.destructive }]}>{t('home.leave')}</Text>
             </Pressable>
           ) : (
             <Pressable
-              style={[styles.upcomingCardBtn, { backgroundColor: colors.accent }]}
+              style={({ pressed }) => [
+                styles.upcomingCardBtn, 
+                { 
+                  backgroundColor: colors.accent,
+                  transform: [{ scale: pressed ? 0.96 : 1 }],
+                },
+              ]}
               onPress={onJoin}
               disabled={isFull}
             >
@@ -219,7 +290,13 @@ function UpcomingMatchCard({
             </Pressable>
           )}
           <Pressable
-            style={[styles.upcomingCardSecBtn, { backgroundColor: sportTheme.primaryContainer }]}
+            style={({ pressed }) => [
+              styles.upcomingCardSecBtn, 
+              { 
+                backgroundColor: sportTheme.primaryContainer,
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              },
+            ]}
             onPress={onPress}
           >
             <Text style={[styles.upcomingCardBtnText, { color: sportTheme.primary }]}>{locale === 'ar' ? 'التفاصيل' : 'Details'}</Text>
@@ -235,7 +312,13 @@ function NoUpcomingMatch() {
   const { t } = useTranslation();
   return (
     <Pressable
-      style={[styles.noUpcomingCard, { backgroundColor: colors.surfaceContainerLow }]}
+      style={({ pressed }) => [
+        styles.noUpcomingCard, 
+        { 
+          backgroundColor: colors.surfaceContainerLow,
+          transform: [{ scale: pressed ? 0.96 : 1 }],
+        },
+      ]}
       onPress={() => router.push("/(tabs)/explore")}
     >
       <View style={[styles.noUpcomingIconWrap, { backgroundColor: colors.primaryContainer }]}>
@@ -247,14 +330,26 @@ function NoUpcomingMatch() {
       </Text>
       <View style={styles.noUpcomingActionsRow}>
         <Pressable
-          style={[styles.noUpcomingBtn, { backgroundColor: colors.accent }]}
+          style={({ pressed }) => [
+            styles.noUpcomingBtn, 
+            { 
+              backgroundColor: colors.accent,
+              transform: [{ scale: pressed ? 0.96 : 1 }],
+            },
+          ]}
           onPress={() => router.push("/(tabs)/explore")}
         >
           <Ionicons name="compass-outline" size={16} color={colors.accentForeground} />
           <Text style={[styles.noUpcomingBtnText, { color: colors.accentForeground }]}>{t('home.findMatch')}</Text>
         </Pressable>
         <Pressable
-          style={[styles.noUpcomingSecBtn, { backgroundColor: colors.primaryContainer }]}
+          style={({ pressed }) => [
+            styles.noUpcomingSecBtn, 
+            { 
+              backgroundColor: colors.primaryContainer,
+              transform: [{ scale: pressed ? 0.96 : 1 }],
+            },
+          ]}
           onPress={() => router.push("/create-match")}
         >
           <Ionicons name="add-circle-outline" size={16} color={colors.primary} />
@@ -280,9 +375,17 @@ function GroupActivityCard({ group }: { group: Group }) {
 
   return (
     <Pressable
-      style={[styles.groupActivityCard, { backgroundColor: colors.surface }]}
+      // Skill: Scale on press replaces opacity
+      style={({ pressed }) => [
+        styles.groupActivityCard, 
+        { 
+          backgroundColor: colors.surface,
+          transform: [{ scale: pressed ? 0.96 : 1 }],
+        },
+      ]}
       onPress={() => router.push({ pathname: "/group-detail", params: { id: group.id } } as never)}
     >
+      {/* Skill: Concentric radius — card 20px, padding 16px → avatar is circle (independent) */}
       <View style={[styles.groupActivityAvatar, { backgroundColor: sportTheme.primaryContainer }]}>
         <SportIcon color={sportTheme.primary} size={22} />
       </View>
@@ -307,7 +410,13 @@ function EmptyGroups() {
   const { t } = useTranslation();
   return (
     <Pressable
-      style={[styles.emptyGroups, { backgroundColor: colors.surfaceContainerLow }]}
+      style={({ pressed }) => [
+        styles.emptyGroups, 
+        { 
+          backgroundColor: colors.surfaceContainerLow,
+          transform: [{ scale: pressed ? 0.96 : 1 }],
+        },
+      ]}
       onPress={() => router.push("/(tabs)/groups")}
     >
       <View style={[styles.emptyGroupsIconWrap, { backgroundColor: colors.primaryContainer }]}>
@@ -327,6 +436,62 @@ function EmptyGroups() {
   );
 }
 
+// ─── Animated Toast with Enter/Exit ──────────────────────────────
+// Skill: "Subtle exit — small fixed translateY, softer than enter"
+function AnimatedToast({ 
+  visible, 
+  message, 
+  type 
+}: { 
+  visible: boolean; 
+  message: string; 
+  type: "success" | "error" | "warning" 
+}) {
+  const colors = useColors();
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(20)).current;
+  const [shouldRender, setShouldRender] = useState(false);
+
+  useEffect(() => {
+    if (visible) {
+      setShouldRender(true);
+      // Enter: 300ms, easeOut
+      Animated.parallel([
+        Animated.timing(opacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.timing(translateY, { toValue: 0, duration: 300, useNativeDriver: true }),
+      ]).start();
+    } else if (shouldRender) {
+      // Exit: 150ms, easeIn — shorter and softer than enter
+      Animated.parallel([
+        Animated.timing(opacity, { toValue: 0, duration: 150, useNativeDriver: true }),
+        Animated.timing(translateY, { toValue: -12, duration: 150, useNativeDriver: true }),
+      ]).start(() => {
+        setShouldRender(false);
+        translateY.setValue(20);
+      });
+    }
+  }, [visible]);
+
+  if (!shouldRender) return null;
+
+  const bgColor = type === "success" ? colors.success : type === "warning" ? colors.warning : colors.destructive;
+
+  return (
+    <Animated.View 
+      style={[
+        styles.toast, 
+        { 
+          backgroundColor: bgColor,
+          opacity,
+          transform: [{ translateY }],
+        },
+      ]}
+    >
+      <Text style={styles.toastText}>{message}</Text>
+    </Animated.View>
+  );
+}
+
 export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -342,13 +507,11 @@ export default function HomeScreen() {
     type: "success",
   });
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
   const topPad = Platform.OS === "web" ? 0 : insets.top;
   const botPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
 
-  useEffect(() => {
-    Animated.timing(fadeAnim, { toValue: 1, duration: 320, useNativeDriver: true }).start();
-  }, []);
+  // Skill: Split content into 3 semantic chunks and stagger ~100ms
+  const sectionStagger = useStaggeredEntrance(3, 100);
 
   useFocusEffect(
     useCallback(() => {
@@ -398,24 +561,35 @@ export default function HomeScreen() {
   }
 
   return (
-    <Animated.View style={[styles.container, { opacity: fadeAnim, backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* ── Header ── */}
       <View style={[styles.header, { paddingTop: topPad + 16, backgroundColor: colors.background }]}>
         <View style={styles.headerRow}>
-          <Pressable onPress={() => router.push("/notifications")} style={styles.headerIconBtn}>
+          {/* Skill: Min hit area 44×44px for interactive elements */}
+          <Pressable 
+            onPress={() => router.push("/notifications")} 
+            style={({ pressed }) => [
+              styles.headerIconBtn,
+              { transform: [{ scale: pressed ? 0.96 : 1 }] },
+            ]}
+          >
             <Ionicons name="menu-outline" size={28} color={colors.onSurface} />
             {unreadCount > 0 && (
               <View style={[styles.badge, { backgroundColor: colors.destructive }]}>
-                <Text style={styles.badgeText}>{unreadCount > 9 ? "9+" : unreadCount}</Text>
+                {/* Skill: Tabular numbers on dynamic badge count */}
+                <Text style={[styles.badgeText, { fontVariant: ['tabular-nums'] }]}>
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </Text>
               </View>
             )}
           </Pressable>
 
           <View style={styles.headerCenter}>
-            <Text style={[styles.logoText, typography.displayMd, { color: colors.onSurface }]}>ARENA</Text>
+            <BrandLogo variant="lockup" tone="dark" size="sm" />
           </View>
           
           {/* Empty view to balance the header (since profile icon was removed) */}
-          <View style={{ width: 40 }} />
+          <View style={{ width: 44 }} />
         </View>
       </View>
 
@@ -432,11 +606,19 @@ export default function HomeScreen() {
           />
         }
       >
-        <QuickActionsScroll />
+        {/* Skill: Staggered section 1 — Quick Actions */}
+        <Animated.View style={sectionStagger[0]}>
+          <QuickActionsScroll />
+        </Animated.View>
 
-        <View style={[styles.section, { paddingTop: 8 }]}>
+        {/* Skill: Staggered section 2 — Upcoming Matches */}
+        <Animated.View style={[styles.section, { paddingTop: 8 }, sectionStagger[1]]}>
           <View style={styles.sectionHeaderRow}>
-            <Pressable onPress={() => router.push("/(tabs)/my-matches")}>
+            {/* Skill: Hit area — make "see all" pressable area 44px tall */}
+            <Pressable 
+              onPress={() => router.push("/(tabs)/my-matches")}
+              style={styles.seeAllPressable}
+            >
               <Text style={[styles.seeAllText, { color: colors.primary }]}>{t('home.viewAll')}</Text>
             </Pressable>
             <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t('home.upcomingMatches')}</Text>
@@ -454,11 +636,15 @@ export default function HomeScreen() {
           ) : (
             <NoUpcomingMatch />
           )}
-        </View>
+        </Animated.View>
 
-        <View style={styles.section}>
+        {/* Skill: Staggered section 3 — Group Activity */}
+        <Animated.View style={[styles.section, sectionStagger[2]]}>
           <View style={styles.sectionHeaderRow}>
-            <Pressable onPress={() => router.push("/(tabs)/groups")}>
+            <Pressable 
+              onPress={() => router.push("/(tabs)/groups")}
+              style={styles.seeAllPressable}
+            >
               <Text style={[styles.seeAllText, { color: colors.primary }]}>{t('home.viewAll')}</Text>
             </Pressable>
             <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t('home.groupActivity')}</Text>
@@ -473,23 +659,32 @@ export default function HomeScreen() {
               ))}
             </View>
           )}
-        </View>
+        </Animated.View>
       </ScrollView>
 
-      <Animated.View style={[styles.fab, { bottom: botPad + 16 }]}>
+      {/* ── FAB ── */}
+      <View style={[styles.fab, { bottom: botPad + 16 }]}>
         <Pressable
-          style={({ pressed }) => [styles.fabPressable, { backgroundColor: colors.accent, opacity: pressed ? 0.85 : 1 }]}
+          // Skill: Scale on press for FAB
+          style={({ pressed }) => [
+            styles.fabPressable, 
+            { 
+              backgroundColor: colors.accent,
+              transform: [{ scale: pressed ? 0.96 : 1 }],
+            },
+          ]}
           onPress={() => router.push("/create-match")}
         >
           <Ionicons name="add" size={28} color={colors.accentForeground} />
         </Pressable>
-      </Animated.View>
+      </View>
 
-      {toast.visible && (
-        <View style={[styles.toast, { backgroundColor: toast.type === "success" ? colors.success : toast.type === "warning" ? colors.warning : colors.destructive }]}>
-          <Text style={styles.toastText}>{toast.message}</Text>
-        </View>
-      )}
+      {/* Skill: Animated toast with enter/exit transitions */}
+      <AnimatedToast 
+        visible={toast.visible} 
+        message={toast.message} 
+        type={toast.type} 
+      />
 
       {pickerMatch && (
         <PositionPickerModal
@@ -516,7 +711,7 @@ export default function HomeScreen() {
           }}
         />
       )}
-    </Animated.View>
+    </View>
   );
 }
 
@@ -525,6 +720,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
+  // ── Header ──
   header: {
     paddingHorizontal: 16,
     paddingBottom: 20,
@@ -534,10 +730,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  // Skill: Min hit area 44×44px
   headerIconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: "rgba(255,255,255,0.18)",
     alignItems: "center",
     justifyContent: "center",
@@ -558,23 +755,25 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: "absolute",
-    top: 6,
-    right: 6,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    top: 4,
+    right: 4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
   },
   badgeText: {
-    fontSize: 8,
+    fontSize: 9,
     color: "rgba(255,255,255,1)",
     fontFamily: typography.headlineSm.fontFamily,
   },
 
+  // ── Scroll ──
   scroll: { flex: 1 },
   scrollContent: { paddingTop: 12, gap: 12, paddingHorizontal: 16 },
 
+  // ── Sections ──
   section: {
     borderRadius: 20,
     overflow: "hidden",
@@ -591,11 +790,18 @@ const styles = StyleSheet.create({
     fontFamily: typography.headlineSm.fontFamily,
     textAlign: "right",
   },
+  // Skill: Hit area — wrap "see all" text in a 44px-tall pressable
+  seeAllPressable: {
+    minHeight: 44,
+    justifyContent: "center",
+    paddingHorizontal: 4,
+  },
   seeAllText: {
     fontSize: 13,
     fontFamily: typography.bodyLg.fontFamily,
   },
 
+  // ── Quick Actions ──
   quickActionsScroll: {
     paddingHorizontal: 16,
     paddingTop: 8,
@@ -605,20 +811,34 @@ const styles = StyleSheet.create({
   quickActionCard: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 12,
-    borderRadius: 24,
+    // Skill: Concentric border radius — outer 22, inner icon wrap 12 (22-10≈12)
+    borderRadius: 22,
     gap: 10,
     minWidth: 130,
-    shadowOffset: { width: 0, height: 4 },
+  },
+  // Skill: Layered shadows for depth instead of flat elevation
+  quickActionCardShadow: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
-    shadowRadius: 10,
+    shadowRadius: 3,
     elevation: 1,
   },
+  quickActionCardShadowPrimary: {
+    shadowColor: "#05B757",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  // Skill: Concentric — outer card 22px, padding ~14px → inner = 22-14 = 8px... 
+  // but icon wrap is circular so use half its size
   quickActionIconWrap: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -627,13 +847,15 @@ const styles = StyleSheet.create({
     fontFamily: typography.headlineSm.fontFamily,
   },
 
-
+  // ── Upcoming Match Card ──
   upcomingCard: {
     borderRadius: 24,
     overflow: "hidden",
-    shadowOffset: { width: 0, height: 8 },
+    // Skill: Layered shadows — ring + lift + ambient
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
-    shadowRadius: 20,
+    shadowRadius: 12,
     elevation: 2,
     marginBottom: 8,
   },
@@ -665,9 +887,10 @@ const styles = StyleSheet.create({
     color: "rgba(255,255,255,1)",
     fontFamily: typography.headlineSm.fontFamily,
   },
+  // Skill: Concentric — card 24, padding 16 → badge = 24-16 = 8
   upcomingCardTimeBadge: {
     backgroundColor: "rgba(255,255,255,0.22)",
-    borderRadius: 12,
+    borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
     flexDirection: "row",
@@ -678,6 +901,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "rgba(255,255,255,1)",
     fontFamily: typography.headlineSm.fontFamily,
+    // Skill: Tabular numbers for time display
+    fontVariant: ['tabular-nums'],
   },
   upcomingCardBody: {
     padding: 16,
@@ -705,30 +930,41 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 4,
   },
+  // Skill: Concentric — card 24, body padding 16 → button = 24-16 = 8
   upcomingCardBtn: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 14,
+    borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
+    // Skill: Min hit area maintained — paddingVertical 12 + text = ~44px
+    minHeight: 44,
   },
   upcomingCardSecBtn: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 14,
+    borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
+    minHeight: 44,
   },
   upcomingCardBtnText: {
     fontSize: 14,
     fontFamily: typography.headlineSm.fontFamily,
   },
 
+  // ── No Upcoming ──
   noUpcomingCard: {
     borderRadius: 24,
     padding: 32,
     alignItems: "center",
     gap: 16,
+    // Skill: Layered shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1,
   },
   noUpcomingIconWrap: {
     width: 72,
@@ -755,6 +991,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     width: "100%",
   },
+  // Skill: Concentric — card 24, padding 32 (>24) → treat independently
   noUpcomingBtn: {
     flex: 1,
     flexDirection: "row",
@@ -764,6 +1001,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 14,
+    minHeight: 44,
   },
   noUpcomingSecBtn: {
     flex: 1,
@@ -774,12 +1012,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 14,
+    minHeight: 44,
   },
   noUpcomingBtnText: {
     fontSize: 13,
     fontFamily: typography.headlineSm.fontFamily,
   },
 
+  // ── Groups ──
   groupsList: { gap: 10 },
   groupActivityCard: {
     flexDirection: "row",
@@ -787,6 +1027,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     gap: 16,
+    // Skill: Layered shadow instead of flat elevation
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
+    minHeight: 44,
   },
   groupActivityAvatar: {
     width: 44,
@@ -807,11 +1054,17 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
 
+  // ── Empty Groups ──
   emptyGroups: {
     borderRadius: 24,
     padding: 32,
     alignItems: "center",
     gap: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1,
   },
   emptyGroupsIconWrap: {
     width: 64,
@@ -840,12 +1093,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 12,
+    minHeight: 44,
   },
   emptyGroupsBtnText: {
     fontSize: 13,
     fontFamily: typography.headlineSm.fontFamily,
   },
 
+  // ── FAB ──
   fab: {
     position: "absolute",
     end: 20,
@@ -856,12 +1111,15 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
+    // Skill: Layered shadow with colored glow
+    shadowColor: "#05B757",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
     elevation: 6,
   },
 
+  // ── Toast ──
   toast: {
     position: "absolute",
     bottom: 110,
@@ -872,6 +1130,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignItems: "center",
     zIndex: 999,
+    // Skill: Layered shadow for toast elevation
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
   },
   toastText: {
     color: "rgba(255,255,255,1)",

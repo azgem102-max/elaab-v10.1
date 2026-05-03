@@ -2,7 +2,7 @@ import type { ExpoConfig, ConfigContext } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "العب",
+  name: "ARENA",
   slug: "mobile",
   android: {
     ...config.android,

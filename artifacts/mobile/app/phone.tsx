@@ -1,5 +1,6 @@
-import { api } from "@/services/api";
+import { api, saveToken } from "@/services/api";
 import { useColors } from "@/hooks/useColors";
+import { useApp } from "@/context/AppContext";
 import { GlassInput } from "@/components/glass/GlassInput";
 import { GlassButton } from "@/components/glass/GlassButton";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,6 +18,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "@/i18n";
 import { typography } from "@/constants/typography";
+import { BrandLogo } from "@/components/BrandLogo";
 
 
 export default function PhoneScreen() {
@@ -24,6 +26,7 @@ export default function PhoneScreen() {
   const insets = useSafeAreaInsets();
   const { prefill } = useLocalSearchParams<{ prefill?: string }>();
   const { t, isRTL } = useTranslation();
+  const { completeOnboarding } = useApp();
   const [phone, setPhone] = useState(() => {
     if (!prefill) return "";
     if (prefill.startsWith("+966")) return `0${prefill.substring(4)}`;
@@ -104,12 +107,8 @@ export default function PhoneScreen() {
         </Pressable>
 
         <View style={styles.heroSection}>
-          <View style={[styles.iconWrap, { backgroundColor: colors.surfaceContainer, borderColor: colors.surfaceContainerHighest }]}>
-            <Ionicons
-              name="phone-portrait-outline"
-              size={32}
-              color={colors.primary}
-            />
+          <View style={[styles.iconWrap, { backgroundColor: "#101719", borderColor: "rgba(21,128,61,0.25)" }]}>
+            <BrandLogo variant="mark" tone="light" size="md" />
           </View>
           <Text style={[styles.title, { color: colors.onSurface }]}>{t('phone.title')}</Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
@@ -186,6 +185,29 @@ export default function PhoneScreen() {
           size="lg"
           style={styles.sendBtn}
         />
+
+        {__DEV__ && (
+          <Pressable
+            style={[styles.devBtn, { backgroundColor: colors.warning + "30" }]}
+            onPress={async () => {
+              await saveToken("dev_token", "dev_user_id");
+              await completeOnboarding({
+                id: "dev_user_id",
+                nickname: t('common.user'),
+                phone: "+966501234567",
+                sports: ["football"],
+                sportProfiles: {
+                  football: { sport: "football", skillLevel: "متوسط", position: [] }
+                },
+                matchesPlayed: 0,
+                reliability: null,
+              });
+              router.replace("/(tabs)");
+            }}
+          >
+            <Text style={[styles.devBtnText, { color: colors.warning }]}>⚡ تخطى تسجيل الدخول (Dev)</Text>
+          </Pressable>
+        )}
       </View>
     </KeyboardAvoidingView>
   );
@@ -288,5 +310,16 @@ const styles = StyleSheet.create({
   sendBtn: {
     width: "100%",
     marginTop: 4,
+  },
+  devBtn: {
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 50,
+    alignItems: "center",
+    marginTop: 8,
+  },
+  devBtnText: {
+    fontSize: 14,
+    fontFamily: typography.headlineSm.fontFamily,
   },
 });

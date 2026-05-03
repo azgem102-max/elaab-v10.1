@@ -40,60 +40,91 @@ async function computeMatchStatus(date: string, time: string, storedStatus?: str
   return "upcoming";
 }
 
-async function buildMatchSummary(match: typeof matchesTable.$inferSelect, currentUserId?: string) {
-  const playerRows = await db
+async function buildMatchSummaries(matches: (typeof matchesTable.$inferSelect)[], currentUserId?: string) {
+  if (matches.length === 0) return [];
+  
+  const matchIds = matches.map((m) => m.id);
+  const organizerIds = Array.from(new Set(matches.map((m) => m.organizerId)));
+
+  const allPlayers = await db
     .select()
     .from(matchPlayersTable)
-    .where(eq(matchPlayersTable.matchId, match.id));
+    .where(inArray(matchPlayersTable.matchId, matchIds));
+    
+  const playersByMatch = allPlayers.reduce((acc, p) => {
+    if (!acc[p.matchId]) acc[p.matchId] = [];
+    acc[p.matchId].push(p);
+    return acc;
+  }, {} as Record<string, typeof allPlayers>);
 
-  const organizer = await db.query.usersTable.findFirst({
-    where: eq(usersTable.id, match.organizerId),
-  });
+  const organizers = await db
+    .select()
+    .from(usersTable)
+    .where(inArray(usersTable.id, organizerIds));
+    
+  const organizerMap = new Map(organizers.map((u) => [u.id, u.name]));
 
   const externalRows = await db
-    .select({ matchId: matchPlayersTable.matchId, attended: matchPlayersTable.attended })
+    .select({ userId: matchPlayersTable.userId, attended: matchPlayersTable.attended })
     .from(matchPlayersTable)
     .innerJoin(matchesTable, eq(matchPlayersTable.matchId, matchesTable.id))
     .where(and(
-      eq(matchPlayersTable.userId, match.organizerId),
-      sql`${matchesTable.organizerId} != ${match.organizerId}`,
+      inArray(matchPlayersTable.userId, organizerIds),
+      sql`${matchesTable.organizerId} != ${matchPlayersTable.userId}`,
     ));
 
-  const joined = externalRows.length;
-  const attended = externalRows.filter((r) => r.attended).length;
-  const reliability = joined > 0 ? Math.round((attended / joined) * 100) : null;
+  const reliabilityMap = new Map<string, number | null>();
+  const rowsByUser = externalRows.reduce((acc, r) => {
+    if (!acc[r.userId]) acc[r.userId] = [];
+    acc[r.userId].push(r);
+    return acc;
+  }, {} as Record<string, typeof externalRows>);
 
-  const status = await computeMatchStatus(match.date, match.time, match.status);
+  for (const oid of organizerIds) {
+    const rows = rowsByUser[oid] || [];
+    const joined = rows.length;
+    const attended = rows.filter((r) => r.attended).length;
+    reliabilityMap.set(oid, joined > 0 ? Math.round((attended / joined) * 100) : null);
+  }
 
-  const joinedByCurrentUser = currentUserId
-    ? playerRows.some((p) => p.userId === currentUserId)
-    : false;
+  const results = await Promise.all(matches.map(async (match) => {
+    const pRows = playersByMatch[match.id] || [];
+    const joinedByCurrentUser = currentUserId ? pRows.some((p) => p.userId === currentUserId) : false;
+    const status = await computeMatchStatus(match.date, match.time, match.status);
 
-  return {
-    id: match.id,
-    title: match.title,
-    sport: match.sport,
-    date: match.date,
-    time: match.time,
-    venue: match.venue,
-    location: match.location ?? "",
-    lat: match.lat ?? null,
-    lng: match.lng ?? null,
-    maxPlayers: match.maxPlayers,
-    cost: match.cost,
-    isPublic: match.isPublic,
-    organizerId: match.organizerId,
-    organizerName: organizer?.name ?? "مستخدم",
-    organizerReliability: reliability,
-    playerCount: playerRows.length,
-    status,
-    sessionType: match.sessionType as "match" | "training",
-    matchFormat: match.matchFormat ?? null,
-    skillLevel: match.skillLevel ?? null,
-    description: match.description ?? undefined,
-    joinedByCurrentUser,
-    invitedGroupId: match.invitedGroupId ?? undefined,
-  };
+    return {
+      id: match.id,
+      title: match.title,
+      sport: match.sport,
+      date: match.date,
+      time: match.time,
+      venue: match.venue,
+      location: match.location ?? "",
+      lat: match.lat ?? null,
+      lng: match.lng ?? null,
+      maxPlayers: match.maxPlayers,
+      cost: match.cost,
+      isPublic: match.isPublic,
+      organizerId: match.organizerId,
+      organizerName: organizerMap.get(match.organizerId) ?? "مستخدم",
+      organizerReliability: reliabilityMap.get(match.organizerId) ?? null,
+      playerCount: pRows.length,
+      status,
+      sessionType: match.sessionType as "match" | "training",
+      matchFormat: match.matchFormat ?? null,
+      skillLevel: match.skillLevel ?? null,
+      description: match.description ?? undefined,
+      joinedByCurrentUser,
+      invitedGroupId: match.invitedGroupId ?? undefined,
+    };
+  }));
+
+  return results;
+}
+
+async function buildMatchSummary(match: typeof matchesTable.$inferSelect, currentUserId?: string) {
+  const summaries = await buildMatchSummaries([match], currentUserId);
+  return summaries[0]!;
 }
 
 async function buildMatchDetails(match: typeof matchesTable.$inferSelect, req?: Request, currentUserId?: string) {
@@ -274,7 +305,10 @@ router.get("/matches", async (req: Request, res: Response) => {
   }
 
   if (skillLevelFilter) {
-    upcomingMatches = upcomingMatches.filter((m) => m.skillLevel === skillLevelFilter);
+    upcomingMatches = upcomingMatches.filter((m) => {
+      if (!m.skillLevel) return false;
+      return m.skillLevel.split(",").includes(skillLevelFilter);
+    });
   }
 
   if (timeOfDayFilter) {
@@ -306,7 +340,7 @@ router.get("/matches", async (req: Request, res: Response) => {
     });
   }
 
-  const summaries = await Promise.all(upcomingMatches.map((m) => buildMatchSummary(m, currentUserId)));
+  const summaries = await buildMatchSummaries(upcomingMatches, currentUserId);
 
   const finalSummaries = (openOnly || hasSpots)
     ? summaries.filter((s) => s.playerCount < s.maxPlayers)
@@ -419,10 +453,7 @@ router.post("/matches", requireAuth, async (req: AuthRequest, res: Response) => 
       resolvedGroupId = invitedGroupId;
     }
 
-    const VALID_SKILL_LEVELS_MATCH = ["beginner", "intermediate", "advanced"] as const;
-    const resolvedSkillLevel = skillLevel && (VALID_SKILL_LEVELS_MATCH as readonly string[]).includes(skillLevel)
-      ? skillLevel as typeof VALID_SKILL_LEVELS_MATCH[number]
-      : null;
+    const resolvedSkillLevel = typeof skillLevel === "string" ? skillLevel : null;
 
     const resolvedLat = (typeof lat === "number" && isFinite(lat)) ? lat : null;
     const resolvedLng = (typeof lng === "number" && isFinite(lng)) ? lng : null;
@@ -881,7 +912,7 @@ router.patch("/matches/:id", requireAuth, async (req: AuthRequest, res: Response
     cost: z.number().min(0, "التكلفة يجب أن تكون 0 أو أكثر").max(100000, "التكلفة تجاوزت الحد الأقصى").optional(),
     maxPlayers: z.number().int().min(2, "الحد الأدنى للاعبين هو 2").max(100, "الحد الأقصى للاعبين هو 100").optional(),
     description: z.string().max(500).nullable().optional(),
-    skillLevel: z.enum(["beginner", "intermediate", "advanced"]).nullable().optional(),
+    skillLevel: z.string().nullable().optional(),
     status: z.enum(["completed"]).optional(),
   }).strict();
 

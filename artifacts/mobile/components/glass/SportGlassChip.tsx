@@ -66,8 +66,8 @@ export function SportGlassChip({
             }
           : {
               backgroundColor: "#F4F6FF",
-              borderColor: "#E5E7EB",
-              borderWidth: 1,
+              borderColor: "transparent",
+              borderWidth: 1.5,
             },
         style,
       ]}

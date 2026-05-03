@@ -371,62 +371,32 @@ router.post("/groups/:id/join", requireAuth, async (req: AuthRequest, res: Respo
       return;
     }
 
-    const existingRequest = await db.query.groupJoinRequestsTable.findFirst({
-      where: and(
-        eq(groupJoinRequestsTable.groupId, groupId),
-        eq(groupJoinRequestsTable.userId, userId),
-        eq(groupJoinRequestsTable.status, "pending"),
-      ),
-    });
-
-    if (existingRequest) {
-      res.status(409).json({ success: false, error: "لديك طلب انضمام قيد الانتظار بالفعل" });
-      return;
-    }
-
-    await db.insert(groupJoinRequestsTable).values({
-      id: generateId("gjr_"),
-      groupId,
-      userId,
-      status: "pending",
-    });
-
-    const requester = await db.query.usersTable.findFirst({
-      where: eq(usersTable.id, userId),
-    });
-    const requesterName = requester?.name ?? "مستخدم";
-
-    const groupAdmins = await db
-      .select()
-      .from(groupMembersTable)
-      .where(
-        and(
-          eq(groupMembersTable.groupId, groupId),
-          or(
-            eq(groupMembersTable.role, "owner"),
-            eq(groupMembersTable.role, "admin"),
+    const memberCount = await db.transaction(async (tx) => {
+      await tx
+        .delete(groupJoinRequestsTable)
+        .where(
+          and(
+            eq(groupJoinRequestsTable.groupId, groupId),
+            eq(groupJoinRequestsTable.userId, userId),
           ),
-        ),
-      );
+        );
 
-    const adminIdsToNotify = new Set<string>([group.adminId]);
-    for (const m of groupAdmins) {
-      adminIdsToNotify.add(m.userId);
-    }
+      await tx.insert(groupMembersTable).values({
+        id: generateId("gm_"),
+        groupId,
+        userId,
+        role: "member",
+      });
 
-    await Promise.all(
-      Array.from(adminIdsToNotify).map((adminId) =>
-        sendNotification(
-          adminId,
-          "group",
-          "طلب انضمام جديد 👥",
-          `${requesterName} يطلب الانضمام إلى مجموعة "${group.name}"`,
-          groupId,
-        ).catch(() => {}),
-      ),
-    );
+      const members = await tx
+        .select({ id: groupMembersTable.id })
+        .from(groupMembersTable)
+        .where(eq(groupMembersTable.groupId, groupId));
 
-    res.json({ success: true, status: "pending" });
+      return members.length;
+    });
+
+    res.json({ success: true, status: "joined", memberCount });
   } catch (err) {
     logger.error({ err }, "Error joining group");
     res.status(500).json({ success: false, error: "حدث خطأ في الخادم عند الانضمام للمجموعة" });
@@ -864,7 +834,7 @@ router.get("/invites/:token", async (req: Request, res: Response) => {
     });
   }
 
-  res.status(400).json({ success: false, error: "نوع الدعوة غير مدعوم" });
+  return res.status(400).json({ success: false, error: "نوع الدعوة غير مدعوم" });
 });
 
 router.post("/invites/:token/accept", requireAuth, async (req: AuthRequest, res: Response) => {
@@ -996,7 +966,7 @@ router.post("/invites/:token/accept", requireAuth, async (req: AuthRequest, res:
     return res.json({ success: true, alreadyMember: false, matchId, playerCount: allPlayers.length });
   }
 
-  res.status(400).json({ success: false, error: "نوع الدعوة غير مدعوم" });
+  return res.status(400).json({ success: false, error: "نوع الدعوة غير مدعوم" });
 });
 
 router.delete("/groups/:id/members/:userId", requireAuth, async (req: AuthRequest, res: Response) => {
@@ -1294,9 +1264,28 @@ router.delete("/groups/:id", requireAuth, async (req: AuthRequest, res: Response
     }
   }
 
+  // منع حذف مجموعة مرتبطة بمباراة قادمة
+  const upcomingMatches = await db
+    .select({ id: matchesTable.id, title: matchesTable.title })
+    .from(matchesTable)
+    .where(and(
+      eq(matchesTable.invitedGroupId, groupId),
+      eq(matchesTable.status, "upcoming"),
+    ))
+    .limit(1);
+
+  if (upcomingMatches.length > 0) {
+    res.status(409).json({
+      success: false,
+      error: `لا يمكن حذف المجموعة لأنها مرتبطة بمباراة قادمة: "${upcomingMatches[0]!.title}"`,
+    });
+    return;
+  }
+
   await db.transaction(async (tx) => {
     await tx.delete(groupMembersTable).where(eq(groupMembersTable.groupId, groupId));
     await tx.delete(groupMessagesTable).where(eq(groupMessagesTable.groupId, groupId));
+    await tx.delete(groupJoinRequestsTable).where(eq(groupJoinRequestsTable.groupId, groupId));
     await tx.delete(inviteLinksTable).where(
       and(eq(inviteLinksTable.targetType, "group"), eq(inviteLinksTable.targetId, groupId))
     );

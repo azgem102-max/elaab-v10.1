@@ -1,0 +1,1 @@
+﻿{"success":true,"message":"حساب الأدمن جاهز","adminId":"seed_user_0","adminPhone":"+966500000000","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJzZWVkX3VzZXJfMCIsInBob25lIjoiKzk2NjUwMDAwMDAwMCIsImlhdCI6MTc3NjY3MDMxOSwiZXhwIjoxNzc5MjYyMzE5fQ.ZzGszJWkyGzwD7-eAhRstLXjzu3k2vWUl5kEu77oESg","dashboardUrl":"/api/admin"}

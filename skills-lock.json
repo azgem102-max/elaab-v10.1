@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "skills": {
+    "code-simplifier": {
+      "source": "rtk-ai/rtk",
+      "sourceType": "github",
+      "computedHash": "f228e4ad6007876f8d31412f023b4decf338d5879941dbcf1a88bf603ec769df"
+    },
+    "design-patterns": {
+      "source": "rtk-ai/rtk",
+      "sourceType": "github",
+      "computedHash": "29c9bc54519dbb750c48df9472b9d17917327a5d8d74769e4c4fcd01575717b4"
+    },
+    "issue-triage": {
+      "source": "rtk-ai/rtk",
+      "sourceType": "github",
+      "computedHash": "f5f5d2b9fb579c5309040d948f1c21ec4d2eddf8ea02c11af852665c0cf7c464"
+    },
+    "make-interfaces-feel-better": {
+      "source": "jakubkrehel/make-interfaces-feel-better",
+      "sourceType": "github",
+      "computedHash": "2c3576e63d8c39d75ed327f1dcf6aab7aec0edf293a55f6cb3f7b8571974a01c"
+    },
+    "pr-triage": {
+      "source": "rtk-ai/rtk",
+      "sourceType": "github",
+      "computedHash": "ccf0299f327fdb9cfac42433460e7434a88a378f8bbd41e440a117e0ff369358"
+    },
+    "rtk-tdd": {
+      "source": "rtk-ai/rtk",
+      "sourceType": "github",
+      "computedHash": "451993a2a5bb54b0e2161e8fb83ba3eed58dfee365496d8bfaae6a0f1f1d4f80"
+    },
+    "rtk-triage": {
+      "source": "rtk-ai/rtk",
+      "sourceType": "github",
+      "computedHash": "344655403297eaf5cfc00bab10c536de6d81590ff19b8a5879cd0dbebd2b40b2"
+    },
+    "tdd-rust": {
+      "source": "rtk-ai/rtk",
+      "sourceType": "github",
+      "computedHash": "3a2e2eb6839afca75f0bd55b81a9d3ec8311f563302a47190368d15cb4e89a76"
+    }
+  }
+}

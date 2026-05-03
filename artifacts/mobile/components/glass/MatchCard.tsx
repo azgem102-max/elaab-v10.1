@@ -22,7 +22,7 @@ import { useTranslation } from "@/i18n";
 import type { Match } from "@/context/AppContext";
 
 const SURFACE = "#FFFFFF";
-const BORDER = "#E5E7EB";
+
 
 // Labels and statuses are now handled via i18n t() calls inside the component
 
@@ -97,7 +97,7 @@ function MatchCardInner({
         onPress={handlePress}
         style={({ pressed }) => [
           styles.compactWrapper,
-          { backgroundColor: SURFACE, opacity: pressed ? 0.93 : 1 },
+          { backgroundColor: SURFACE, transform: [{ scale: pressed ? 0.97 : 1 }] },
           style,
         ]}
       >
@@ -143,7 +143,7 @@ function MatchCardInner({
       onPress={handlePress}
       style={({ pressed }) => [
         styles.wrapper,
-        { opacity: pressed ? 0.93 : 1 },
+        { transform: [{ scale: pressed ? 0.97 : 1 }] },
         style,
       ]}
     >
@@ -260,7 +260,7 @@ function MatchCardInner({
               </View>
               {match.cost !== undefined && match.cost !== null && (
                 <View style={styles.infoRow}>
-                  <Text style={[styles.infoText, { color: "#111827", fontFamily: typography.headlineSm.fontFamily }]}>
+                  <Text style={[styles.infoText, { color: "#111827", fontFamily: typography.headlineSm.fontFamily, fontVariant: ['tabular-nums'] }]}>
                     {match.cost}{" "}
                     <Text style={{ color: "#6B7280", fontFamily: typography.body.fontFamily, fontSize: 11 }}>{t("common.currency")}</Text>
                   </Text>
@@ -276,7 +276,7 @@ function MatchCardInner({
                 <Text style={[styles.spotsRemaining, { color: isFull ? "#DC2626" : "#16A34A" }]}>
                   {isFull ? t("matchDetails.spotsFull") : t("matchDetails.spotsRemaining", { count: remaining })}
                 </Text>
-                <Text style={[styles.spotsTotal, { color: "#9CA3AF" }]}>
+                <Text style={[styles.spotsTotal, { color: "#9CA3AF", fontVariant: ['tabular-nums'] }]}>
                   {joined}/{max}
                 </Text>
               </View>
@@ -327,7 +327,7 @@ function MatchCardInner({
                 </View>
               ) : (
                 <View style={styles.costCol}>
-                  <Text style={[styles.costValue, { color: "#111827" }]}>
+                  <Text style={[styles.costValue, { color: "#111827", fontVariant: ['tabular-nums'] }]}>
                     {match.cost}{" "}
                     <Text style={[styles.costUnit, { color: "#6B7280" }]}>{t("common.currency")}</Text>
                   </Text>
@@ -538,8 +538,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: "hidden",
     flexDirection: "row",
-    borderWidth: 1,
-    borderColor: BORDER,
+    borderWidth: 0,
+    borderColor: "transparent",
   },
   compactAccent: {
     width: 3,

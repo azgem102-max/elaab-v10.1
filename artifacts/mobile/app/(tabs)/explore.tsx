@@ -32,6 +32,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "@/i18n";
 import { typography } from "@/constants/typography";
+import { apiMatchToMatch, toArabicNumeral } from "@/utils/transformers";
 
 type Sport = "all" | SportType;
 type VisibilityFilter = "all" | "public" | "private";
@@ -39,39 +40,6 @@ type DateFilter = "all" | "today" | "tomorrow" | "thisWeek";
 type ViewMode = "list" | "map";
 
 // Filter arrays are now built dynamically inside the component using t()
-
-
-function toArabicNumeral(n: number): string {
-  return n.toString().replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[parseInt(d)]);
-}
-
-
-function apiMatchToMatch(item: ApiMatch): Match {
-  return {
-    id: item.id,
-    title: item.title,
-    sport: item.sport as SportType,
-    date: new Date(item.date),
-    time: item.time,
-    venue: item.venue,
-    location: item.location,
-    maxPlayers: item.maxPlayers,
-    cost: item.cost,
-    isPublic: item.isPublic ?? true,
-    organizerId: item.organizerId,
-    organizerName: item.organizerName ?? "",
-    organizerReliability: item.organizerReliability ?? null,
-    players: [],
-    playerCount: item.playerCount,
-    status: (item.status as "upcoming" | "today" | "completed" | "cancelled") ?? "upcoming",
-    sessionType: (item.sessionType as "match" | "training") ?? "match",
-    matchFormat: (item.matchFormat as "single" | "double" | null) ?? null,
-    description: item.description,
-    joinedByCurrentUser: item.joinedByCurrentUser ?? false,
-    invitedGroupId: item.invitedGroupId,
-    skillLevel: item.skillLevel as "beginner" | "intermediate" | "advanced" | null ?? null,
-  };
-}
 
 function AnimatedMatchCard({
   item,
@@ -437,18 +405,20 @@ export default function ExploreScreen() {
           <View style={styles.headerActions}>
             <View style={[styles.viewToggleGroup, { backgroundColor: colors.surfaceContainerHigh }]}>
               <Pressable
-                style={[
+                style={({ pressed }) => [
                   styles.viewToggleBtn,
                   viewMode === "list" && { backgroundColor: colors.primary },
+                  pressed && { transform: [{ scale: 0.96 }] },
                 ]}
                 onPress={() => switchViewMode("list")}
               >
                 <Ionicons name="list-outline" size={17} color={viewMode === "list" ? colors.primaryForeground : colors.onSurfaceVariant} />
               </Pressable>
               <Pressable
-                style={[
+                style={({ pressed }) => [
                   styles.viewToggleBtn,
                   viewMode === "map" && { backgroundColor: colors.primary },
+                  pressed && { transform: [{ scale: 0.96 }] },
                 ]}
                 onPress={() => switchViewMode("map")}
               >
@@ -456,13 +426,12 @@ export default function ExploreScreen() {
               </Pressable>
             </View>
             <Pressable
-              style={[
+              style={({ pressed }) => [
                 styles.filterBtn,
                 {
                   backgroundColor: advancedFilterCount > 0 ? colors.primaryContainer : colors.surfaceContainerLow,
-                  borderWidth: 1,
-                  borderColor: colors.border,
                 },
+                pressed && { transform: [{ scale: 0.96 }] },
               ]}
               onPress={() => setShowFilterSheet(true)}
             >
@@ -473,7 +442,7 @@ export default function ExploreScreen() {
               />
               {advancedFilterCount > 0 && (
                 <View style={[styles.filterBadge, { backgroundColor: colors.primary }]}>
-                  <Text style={styles.filterBadgeText}>{advancedFilterCount}</Text>
+                  <Text style={[styles.filterBadgeText, { fontVariant: ['tabular-nums'] }]}>{advancedFilterCount}</Text>
                 </View>
               )}
             </Pressable>
@@ -546,11 +515,12 @@ export default function ExploreScreen() {
             return (
               <Pressable
                 key={f.key}
-                style={[
+                style={({ pressed }) => [
                   styles.filterChip,
                   isActive
                     ? { backgroundColor: activeBg }
-                    : { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border },
+                    : { backgroundColor: colors.surfaceContainerLow },
+                  pressed && { transform: [{ scale: 0.96 }] },
                 ]}
                 onPress={() => setSportFilter(f.key)}
               >
@@ -567,11 +537,12 @@ export default function ExploreScreen() {
           {DATE_FILTERS.map((f) => (
             <Pressable
               key={`date-${f.key}`}
-              style={[
+              style={({ pressed }) => [
                 styles.filterChip,
                 dateFilter === f.key
                   ? { backgroundColor: colors.accent }
-                  : { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border },
+                  : { backgroundColor: colors.surfaceContainerLow },
+                pressed && { transform: [{ scale: 0.96 }] },
               ]}
               onPress={() => setDateFilter(f.key)}
             >
@@ -589,11 +560,12 @@ export default function ExploreScreen() {
           <View style={styles.filterDivider} />
 
           <Pressable
-            style={[
+            style={({ pressed }) => [
               styles.filterChip,
               openOnly
                 ? { backgroundColor: colors.success }
-                : { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border },
+                : { backgroundColor: colors.surfaceContainerLow },
+              pressed && { transform: [{ scale: 0.96 }] },
             ]}
             onPress={() => setOpenOnly((v) => !v)}
           >
@@ -612,11 +584,12 @@ export default function ExploreScreen() {
           {VISIBILITY_FILTERS.map((f) => (
             <Pressable
               key={`vis-${f.key}`}
-              style={[
+              style={({ pressed }) => [
                 styles.filterChip,
                 visibilityFilter === f.key
                   ? { backgroundColor: colors.primary }
-                  : { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border },
+                  : { backgroundColor: colors.surfaceContainerLow },
+                pressed && { transform: [{ scale: 0.96 }] },
               ]}
               onPress={() => setVisibilityFilter(f.key)}
             >
@@ -670,9 +643,9 @@ export default function ExploreScreen() {
           keyExtractor={(m) => m.id}
           contentContainerStyle={[styles.list, { paddingBottom: botPad }]}
           showsVerticalScrollIndicator={false}
-          removeClippedSubviews={Platform.OS === "android"}
-          windowSize={10}
-          maxToRenderPerBatch={8}
+          removeClippedSubviews={true}
+          windowSize={5}
+          maxToRenderPerBatch={5}
           initialNumToRender={8}
           refreshControl={
             <RefreshControl
@@ -790,7 +763,7 @@ export default function ExploreScreen() {
       )}
 
       <Pressable
-        style={[styles.fab, { backgroundColor: colors.accent, bottom: botPad + 16 }]}
+        style={({ pressed }) => [styles.fab, { backgroundColor: colors.accent, bottom: botPad + 16 }, pressed && { transform: [{ scale: 0.96 }] }]}
         onPress={() => router.push("/create-match")}
       >
         <Ionicons name="add" size={28} color={colors.accentForeground} />
@@ -907,16 +880,16 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   viewToggleBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: "center",
     justifyContent: "center",
   },
   filterBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
@@ -954,6 +927,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderRadius: 24,
+    minHeight: 44,
   },
   filterEmoji: { fontSize: 14 },
   filterText: { fontSize: 13, fontFamily: typography.bodyLg.fontFamily },
@@ -1007,10 +981,10 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowColor: "#05B757",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
     elevation: 8,
   },
 });

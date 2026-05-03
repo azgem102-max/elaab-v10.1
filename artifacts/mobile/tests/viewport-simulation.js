@@ -1,6 +1,6 @@
 /**
  * viewport-simulation.js
- * Flow-driven viewport simulation tests for العب sports community app.
+ * Flow-driven viewport simulation tests for ARENA sports community app.
  *
  * Tests iOS iPhone 15 Pro (393x852) and Android (412x915) viewports.
  * Each screen runs real Playwright interactions and asserts on both layout
@@ -330,7 +330,7 @@ async function flowProfile(page, vp) {
   await page.waitForTimeout(2500);
 
   const of1 = await noOverflow(page);
-  const hasArabic = (await page.locator("text=العب").count()) > 0;
+  const hasArabic = (await page.locator("text=ARENA").count()) > 0;
   const noJsCrash = (await page.locator("text=ReferenceError").count()) === 0
     && (await page.locator("text=TypeError").count()) === 0;
 
@@ -457,7 +457,7 @@ async function runViewportSuite(browser, viewport) {
 
 async function main() {
   const startedAt = new Date().toISOString();
-  console.log("\nViewport Simulation Tests — العب Sports Community App");
+  console.log("\nViewport Simulation Tests — ARENA Sports Community App");
   console.log(`App URL  : ${APP_URL}`);
   console.log(`Started  : ${startedAt}\n`);
 

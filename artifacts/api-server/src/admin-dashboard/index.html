@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة تحكم العَب</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d2e;
+      --surface2: #232636;
+      --border: #2e3147;
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', 'Cairo', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Nav ── */
+    .nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-logo {
+      font-size: 20px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary-light), #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-left: auto;
+    }
+    .nav-badge {
+      background: var(--primary);
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .nav-token-info {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── Layout ── */
+    .layout { display: flex; min-height: calc(100vh - 60px); }
+    .sidebar {
+      width: 220px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      padding: 16px 12px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 60px;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+    }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s;
+      margin-bottom: 2px;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: right;
+    }
+    .sidebar-item:hover, .sidebar-item.active {
+      background: var(--surface2);
+      color: var(--text);
+    }
+    .sidebar-item.active { color: var(--primary-light); }
+    .sidebar-icon { font-size: 16px; }
+    .sidebar-section {
+      font-size: 11px;
+      color: var(--muted);
+      padding: 12px 14px 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Main ── */
+    .main { flex: 1; padding: 28px 32px; overflow: hidden; }
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .page-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .page-sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    /* ── Stats Grid ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+    .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .stat-value { font-size: 28px; font-weight: 800; }
+    .stat-card.primary .stat-value { color: var(--primary-light); }
+    .stat-card.success .stat-value { color: var(--success); }
+    .stat-card.warning .stat-value { color: var(--warning); }
+    .stat-card.danger .stat-value { color: var(--danger); }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      background: var(--warning);
+      color: #000;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+    .badge.success { background: var(--success); }
+    .badge.danger { background: var(--danger); color: #fff; }
+    .badge.primary { background: var(--primary); color: #fff; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th {
+      text-align: right;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 12px;
+    }
+    td { padding: 12px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface2); }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+    /* ── Form ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label { font-size: 12px; color: var(--muted); font-weight: 600; }
+    input, select, textarea {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+    }
+    textarea { min-height: 80px; resize: vertical; }
+    select option { background: var(--surface2); }
+
+    /* ── Status Pills ── */
+    .pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .pill-pending { background: #f59e0b20; color: var(--warning); }
+    .pill-approved { background: #22c55e20; color: var(--success); }
+    .pill-rejected { background: #ef444420; color: var(--danger); }
+    .pill-active { background: #6366f120; color: var(--primary-light); }
+    .pill-admin { background: #a78bfa20; color: #a78bfa; }
+
+    /* ── Alert ── */
+    .alert {
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    .alert-success { background: #22c55e15; border: 1px solid var(--success); color: var(--success); }
+    .alert-error { background: #ef444415; border: 1px solid var(--danger); color: var(--danger); }
+    .alert { display: none; }
+    .alert.show { display: block; }
+
+    /* ── Loading ── */
+    .loading {
+      text-align: center;
+      color: var(--muted);
+      padding: 40px;
+      font-size: 14px;
+    }
+
+    /* ── Login page ── */
+    #login-page {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px 32px;
+      width: 360px;
+    }
+    .login-logo {
+      font-size: 28px;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--primary-light), #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .login-sub { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 28px; }
+    .login-card .form-group { margin-bottom: 16px; }
+    .login-card .btn { width: 100%; margin-top: 8px; padding: 12px; }
+
+    /* ── Divider ── */
+    .divider { height: 1px; background: var(--border); margin: 20px 0; }
+    .actions-row { display: flex; gap: 8px; }
+
+    /* mobile */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { padding: 16px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ LOGIN PAGE ═══════════════════════════════════════════════════ -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">العَب</div>
+    <div class="login-sub">لوحة تحكم الأدمن</div>
+    <div id="login-alert" class="alert alert-error"></div>
+    <div class="form-group">
+      <label>رمز JWT للأدمن</label>
+      <input type="password" id="token-input" placeholder="أدخل رمز JWT هنا..." />
+    </div>
+    <button class="btn btn-primary" onclick="doLogin()">دخول</button>
+    <div class="divider"></div>
+    <div style="text-align:center; color:var(--muted); font-size:12px;">
+      للحصول على رمز JWT، شغّل السيرفر واستدعِ<br>
+      <code style="color:var(--primary-light)">POST /api/admin/seed-admin</code>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DASHBOARD ═════════════════════════════════════════════════════ -->
+<div id="dashboard" style="display:none">
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-logo">العَب</div>
+    <span class="nav-badge">Admin</span>
+    <span class="nav-token-info" id="nav-user">...</span>
+    <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="margin-right:auto">خروج</button>
+  </nav>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">القائمة</div>
+      <button class="sidebar-item active" onclick="showPage('overview', this)">
+        <span class="sidebar-icon">📊</span> نظرة عامة
+      </button>
+      <button class="sidebar-item" onclick="showPage('suggestions', this)">
+        <span class="sidebar-icon">💡</span> اقتراحات الملاعب
+        <span id="suggestions-count" class="badge" style="margin-right:auto;display:none">0</span>
+      </button>
+      <button class="sidebar-item" onclick="showPage('venues', this)">
+        <span class="sidebar-icon">🏟️</span> الملاعب
+      </button>
+      <button class="sidebar-item" onclick="showPage('add-venue', this)">
+        <span class="sidebar-icon">➕</span> إضافة ملعب
+      </button>
+      <div class="sidebar-section">المستخدمون</div>
+      <button class="sidebar-item" onclick="showPage('users', this)">
+        <span class="sidebar-icon">👥</span> المستخدمون
+      </button>
+      <div class="sidebar-section">التحليلات</div>
+      <button class="sidebar-item" onclick="showPage('matches', this)">
+        <span class="sidebar-icon">⚽</span> المباريات الأخيرة
+      </button>
+      <button class="sidebar-item" onclick="showPage('reviews', this)">
+        <span class="sidebar-icon">⭐</span> تقييمات الملاعب
+      </button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+
+      <!-- ── Overview ── -->
+      <div id="page-overview" class="page active">
+        <div class="page-title">📊 نظرة عامة</div>
+        <div class="page-sub">ملخص إحصائيات التطبيق</div>
+        <div id="stats-grid" class="stats-grid">
+          <div class="loading">جاري التحميل...</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div class="card">
+            <div class="card-title">👤 آخر المستخدمين</div>
+            <div class="table-wrap"><table id="recent-users-table">
+              <thead><tr><th>الاسم</th><th>التاريخ</th><th>الصلاحية</th></tr></thead>
+              <tbody><tr><td colspan="3" class="loading">...</td></tr></tbody>
+            </table></div>
+          </div>
+          <div class="card">
+            <div class="card-title">⚽ آخر المباريات</div>
+            <div class="table-wrap"><table id="recent-matches-table">
+              <thead><tr><th>العنوان</th><th>الرياضة</th><th>الحالة</th></tr></thead>
+              <tbody><tr><td colspan="3" class="loading">...</td></tr></tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Suggestions ── -->
+      <div id="page-suggestions" class="page">
+        <div class="page-title">💡 اقتراحات الملاعب</div>
+        <div class="page-sub">الاقتراحات المعلقة من المستخدمين</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <button class="btn btn-ghost btn-sm" onclick="loadSuggestions('pending')">⏳ معلق</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadSuggestions('approved')">✅ معتمد</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadSuggestions('rejected')">❌ مرفوض</button>
+        </div>
+        <div id="suggestions-alert" class="alert"></div>
+        <div class="card">
+          <div class="table-wrap"><table id="suggestions-table">
+            <thead><tr><th>الاسم</th><th>الرياضة</th><th>المدينة</th><th>مقترح بواسطة</th><th>التاريخ</th><th>إجراء</th></tr></thead>
+            <tbody><tr><td colspan="6" class="loading">جاري التحميل...</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ── Venues List ── -->
+      <div id="page-venues" class="page">
+        <div class="page-title">🏟️ الملاعب المعتمدة</div>
+        <div class="page-sub">قائمة الملاعب في قاعدة البيانات</div>
+        <div class="card">
+          <div class="table-wrap"><table id="venues-table">
+            <thead><tr><th>الاسم</th><th>الرياضة</th><th>المدينة</th><th>التقييم</th><th>الحالة</th><th>إجراء</th></tr></thead>
+            <tbody><tr><td colspan="6" class="loading">جاري التحميل...</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ── Add Venue ── -->
+      <div id="page-add-venue" class="page">
+        <div class="page-title">➕ إضافة ملعب جديد</div>
+        <div class="page-sub">إضافة ملعب مباشرة إلى قاعدة البيانات</div>
+        <div id="add-venue-alert" class="alert"></div>
+        <div class="card">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>اسم الملعب *</label>
+              <input type="text" id="v-name" placeholder="مثال: ملعب الهلال" />
+            </div>
+            <div class="form-group">
+              <label>الاسم بالإنجليزية</label>
+              <input type="text" id="v-name-en" placeholder="e.g. Al Hilal Stadium" />
+            </div>
+            <div class="form-group">
+              <label>الرياضة *</label>
+              <select id="v-sport">
+                <option value="football">كرة قدم</option>
+                <option value="padel">بادل</option>
+                <option value="tennis">تنس</option>
+                <option value="multi">متعدد</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>المدينة *</label>
+              <input type="text" id="v-city" placeholder="مثال: الرياض" />
+            </div>
+            <div class="form-group">
+              <label>الحي</label>
+              <input type="text" id="v-district" placeholder="مثال: النخيل" />
+            </div>
+            <div class="form-group">
+              <label>نطاق السعر</label>
+              <input type="text" id="v-price" placeholder="مثال: 100-200 ريال" />
+            </div>
+            <div class="form-group">
+              <label>رقم الجوال</label>
+              <input type="text" id="v-phone" placeholder="+966..." />
+            </div>
+            <div class="form-group">
+              <label>رابط Google Maps</label>
+              <input type="text" id="v-maps" placeholder="https://maps.google.com/..." />
+            </div>
+            <div class="form-group full">
+              <label>العنوان التفصيلي</label>
+              <input type="text" id="v-address" placeholder="مثال: شارع الملك فهد، حي العليا" />
+            </div>
+          </div>
+          <button class="btn btn-success" style="margin-top:20px" onclick="addVenue()">✅ إضافة الملعب</button>
+        </div>
+      </div>
+
+      <!-- ── Users ── -->
+      <div id="page-users" class="page">
+        <div class="page-title">👥 المستخدمون</div>
+        <div class="page-sub">قائمة المستخدمين المسجلين</div>
+        <div id="users-alert" class="alert"></div>
+        <div class="card">
+          <div class="table-wrap"><table id="users-table">
+            <thead><tr><th>الاسم</th><th>الهاتف</th><th>الصلاحية</th><th>تاريخ التسجيل</th><th>إجراء</th></tr></thead>
+            <tbody><tr><td colspan="5" class="loading">جاري التحميل...</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ── Matches ── -->
+      <div id="page-matches" class="page">
+        <div class="page-title">⚽ المباريات الأخيرة</div>
+        <div class="page-sub">آخر 10 مباريات في النظام</div>
+        <div id="matches-table-wrap" class="card">
+          <div class="loading">جاري التحميل...</div>
+        </div>
+      </div>
+
+      <!-- ── Reviews ── -->
+      <div id="page-reviews" class="page">
+        <div class="page-title">⭐ تقييمات الملاعب</div>
+        <div class="page-sub">تقييمات المستخدمين للملاعب بعد المباريات</div>
+        <div class="card">
+          <div class="table-wrap"><table id="reviews-table">
+            <thead><tr><th>الملعب</th><th>التقييم</th><th>التعليق</th><th>التاريخ</th></tr></thead>
+            <tbody><tr><td colspan="4" class="loading">جاري التحميل...</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  // ══ State ══
+  let TOKEN = localStorage.getItem('elab_admin_token') || '';
+  const API = '/api';
+
+  // ══ Auth ══
+  async function doLogin() {
+    const t = document.getElementById('token-input').value.trim();
+    if (!t) return;
+    try {
+      const r = await fetch(`${API}/admin/dashboard`, {
+        headers: { Authorization: `Bearer ${t}` }
+      });
+      if (!r.ok) {
+        showAlert('login-alert', 'error', 'الرمز غير صحيح أو ليس لديك صلاحيات أدمن');
+        return;
+      }
+      TOKEN = t;
+      localStorage.setItem('elab_admin_token', t);
+      initDashboard();
+    } catch {
+      showAlert('login-alert', 'error', 'تعذّر الاتصال بالسيرفر');
+    }
+  }
+
+  function doLogout() {
+    TOKEN = '';
+    localStorage.removeItem('elab_admin_token');
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('login-page').style.display = 'flex';
+  }
+
+  function authHeader() {
+    return { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' };
+  }
+
+  // ══ Init ══
+  async function initDashboard() {
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('nav-user').textContent = 'أدمن';
+    loadOverview();
+    loadSuggestions('pending');
+  }
+
+  // Auto-login if token saved
+  window.addEventListener('load', () => {
+    if (TOKEN) initDashboard().catch(() => { TOKEN = ''; localStorage.removeItem('elab_admin_token'); });
+    document.getElementById('token-input').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  });
+
+  // ══ Pages ══
+  function showPage(name, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    if (btn) btn.classList.add('active');
+    // Lazy load
+    if (name === 'venues') loadVenues();
+    if (name === 'users') loadUsers();
+    if (name === 'matches') loadMatches();
+    if (name === 'reviews') loadReviews();
+  }
+
+  // ══ Overview ══
+  async function loadOverview() {
+    const r = await apiFetch('/admin/dashboard');
+    if (!r) return;
+    const { stats, recentUsers, recentMatches } = r;
+
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card primary"><div class="stat-label">👥 المستخدمون</div><div class="stat-value">${stats.usersCount}</div></div>
+      <div class="stat-card success"><div class="stat-label">⚽ المباريات</div><div class="stat-value">${stats.matchesCount}</div></div>
+      <div class="stat-card primary"><div class="stat-label">🏘️ المجموعات</div><div class="stat-value">${stats.groupsCount}</div></div>
+      <div class="stat-card success"><div class="stat-label">🏟️ الملاعب</div><div class="stat-value">${stats.venuesCount}</div></div>
+      <div class="stat-card warning"><div class="stat-label">💡 اقتراحات معلقة</div><div class="stat-value">${stats.pendingSuggestionsCount}</div></div>
+      <div class="stat-card"><div class="stat-label">⏳ قائمة الانتظار</div><div class="stat-value">${stats.waitlistCount}</div></div>
+    `;
+
+    // Badge
+    if (stats.pendingSuggestionsCount > 0) {
+      const b = document.getElementById('suggestions-count');
+      b.textContent = stats.pendingSuggestionsCount;
+      b.style.display = '';
+    }
+
+    document.querySelector('#recent-users-table tbody').innerHTML = (recentUsers || []).map(u => `
+      <tr>
+        <td>${u.name || '-'}</td>
+        <td>${formatDate(u.createdAt)}</td>
+        <td>${u.isAdmin ? '<span class="pill pill-admin">أدمن</span>' : '<span class="pill pill-active">عادي</span>'}</td>
+      </tr>`).join('') || '<tr><td colspan="3">لا يوجد</td></tr>';
+
+    document.querySelector('#recent-matches-table tbody').innerHTML = (recentMatches || []).map(m => `
+      <tr>
+        <td>${m.title}</td>
+        <td>${sportLabel(m.sport)}</td>
+        <td>${statusLabel(m.status)}</td>
+      </tr>`).join('') || '<tr><td colspan="3">لا يوجد</td></tr>';
+  }
+
+  // ══ Suggestions ══
+  async function loadSuggestions(status = 'pending') {
+    const r = await apiFetch(`/admin/venues/suggestions?status=${status}`);
+    if (!r) return;
+    const tbody = document.querySelector('#suggestions-table tbody');
+    if (!r.suggestions.length) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">لا توجد اقتراحات بحالة "${status}"</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = r.suggestions.map(s => `
+      <tr>
+        <td><b>${s.name}</b>${s.notes ? `<br><small style="color:var(--muted)">${s.notes}</small>` : ''}</td>
+        <td>${sportLabel(s.sport)}</td>
+        <td>${s.city || '-'}</td>
+        <td>${s.suggestedByName || s.suggestedBy}</td>
+        <td>${formatDate(s.createdAt)}</td>
+        <td>
+          ${s.status === 'pending' ? `
+            <div class="actions-row">
+              <button class="btn btn-success btn-sm" onclick="approveSuggestion('${s.id}')">✅ اعتماد</button>
+              <button class="btn btn-danger btn-sm" onclick="rejectSuggestion('${s.id}')">❌ رفض</button>
+            </div>
+          ` : `<span class="pill pill-${s.status}">${s.status === 'approved' ? 'معتمد' : 'مرفوض'}</span>`}
+        </td>
+      </tr>`).join('');
+  }
+
+  async function approveSuggestion(id) {
+    if (!confirm('اعتماد هذا الاقتراح وإضافة الملعب؟')) return;
+    const r = await apiFetch(`/admin/venues/suggestions/${id}/approve`, 'POST', {});
+    if (r?.success) {
+      showAlert('suggestions-alert', 'success', '✅ تم اعتماد الملعب وإضافته بنجاح');
+      loadSuggestions('pending');
+    }
+  }
+
+  async function rejectSuggestion(id) {
+    const note = prompt('سبب الرفض (اختياري):');
+    if (note === null) return;
+    const r = await apiFetch(`/admin/venues/suggestions/${id}/reject`, 'POST', { adminNote: note });
+    if (r?.success) {
+      showAlert('suggestions-alert', 'success', 'تم رفض الاقتراح');
+      loadSuggestions('pending');
+    }
+  }
+
+  // ══ Venues ══
+  async function loadVenues() {
+    const r = await apiFetch('/venues');
+    if (!r) return;
+    const tbody = document.querySelector('#venues-table tbody');
+    if (!r.venues.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">لا توجد ملاعب بعد</td></tr>';
+      return;
+    }
+    tbody.innerHTML = r.venues.map(v => `
+      <tr>
+        <td><b>${v.name}</b><br><small style="color:var(--muted)">${v.address || ''}</small></td>
+        <td>${sportLabel(v.sport)}</td>
+        <td>${v.city}</td>
+        <td>${v.rating ? '⭐ ' + v.rating.toFixed(1) + ` (${v.ratingCount})` : '-'}</td>
+        <td><span class="pill pill-${v.status === 'active' ? 'active' : 'rejected'}">${v.status === 'active' ? 'نشط' : 'موقوف'}</span></td>
+        <td>
+          <button class="btn btn-danger btn-sm" onclick="deactivateVenue('${v.id}', '${v.name}')">إيقاف</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  async function deactivateVenue(id, name) {
+    if (!confirm(`إيقاف ملعب "${name}"؟`)) return;
+    await apiFetch(`/admin/venues/${id}`, 'DELETE', {});
+    loadVenues();
+  }
+
+  // ══ Add Venue ══
+  async function addVenue() {
+    const name = document.getElementById('v-name').value.trim();
+    const city = document.getElementById('v-city').value.trim();
+    if (!name || !city) {
+      showAlert('add-venue-alert', 'error', 'الاسم والمدينة مطلوبان');
+      return;
+    }
+    const data = {
+      name,
+      nameEn: document.getElementById('v-name-en').value.trim() || null,
+      sport: document.getElementById('v-sport').value,
+      city,
+      district: document.getElementById('v-district').value.trim() || null,
+      priceRange: document.getElementById('v-price').value.trim() || null,
+      phone: document.getElementById('v-phone').value.trim() || null,
+      googleMapsUrl: document.getElementById('v-maps').value.trim() || null,
+      address: document.getElementById('v-address').value.trim() || null,
+    };
+    const r = await apiFetch('/admin/venues', 'POST', data);
+    if (r?.success) {
+      showAlert('add-venue-alert', 'success', `✅ تم إضافة "${name}" بنجاح`);
+      ['v-name','v-name-en','v-city','v-district','v-price','v-phone','v-maps','v-address'].forEach(id => document.getElementById(id).value = '');
+    }
+  }
+
+  // ══ Users ══
+  async function loadUsers() {
+    const r = await apiFetch('/admin/users');
+    if (!r) return;
+    document.querySelector('#users-table tbody').innerHTML = r.users.map(u => `
+      <tr>
+        <td>${u.name || '-'}</td>
+        <td dir="ltr">${u.phone}</td>
+        <td>${u.isAdmin ? '<span class="pill pill-admin">أدمن</span>' : '<span class="pill pill-active">عادي</span>'}</td>
+        <td>${formatDate(u.createdAt)}</td>
+        <td>
+          <button class="btn btn-ghost btn-sm" onclick="toggleAdmin('${u.id}', ${u.isAdmin})">
+            ${u.isAdmin ? '🔓 إلغاء الأدمن' : '🔐 تعيين أدمن'}
+          </button>
+        </td>
+      </tr>`).join('');
+  }
+
+  async function toggleAdmin(id, isAdmin) {
+    const conf = isAdmin ? 'إلغاء صلاحيات الأدمن؟' : 'تعيين هذا المستخدم أدمناً؟';
+    if (!confirm(conf)) return;
+    const r = await apiFetch(`/admin/users/${id}/toggle-admin`, 'PATCH', {});
+    if (r?.success) {
+      showAlert('users-alert', 'success', 'تم تحديث الصلاحية');
+      loadUsers();
+    }
+  }
+
+  // ══ Matches ══
+  async function loadMatches() {
+    const r = await apiFetch('/admin/dashboard');
+    if (!r) return;
+    document.getElementById('matches-table-wrap').innerHTML = `
+      <table>
+        <thead><tr><th>العنوان</th><th>الرياضة</th><th>الملعب</th><th>التاريخ</th><th>الحالة</th></tr></thead>
+        <tbody>${(r.recentMatches || []).map(m => `
+          <tr>
+            <td>${m.title}</td>
+            <td>${sportLabel(m.sport)}</td>
+            <td>${m.venue || '-'}</td>
+            <td>${m.date ? m.date.substring(0,10) : '-'}</td>
+            <td>${statusLabel(m.status)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  // ══ Reviews ══
+  async function loadReviews() {
+    const r = await apiFetch('/admin/venue-reviews');
+    if (!r) return;
+    document.querySelector('#reviews-table tbody').innerHTML = (r.reviews || []).map(rv => `
+      <tr>
+        <td>${rv.venueName}</td>
+        <td>${'⭐'.repeat(rv.rating)}</td>
+        <td>${rv.comment || '-'}</td>
+        <td>${formatDate(rv.createdAt)}</td>
+      </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--muted)">لا توجد تقييمات</td></tr>';
+  }
+
+  // ══ Helpers ══
+  async function apiFetch(path, method = 'GET', body) {
+    try {
+      const opts = { method, headers: authHeader() };
+      if (body !== undefined) opts.body = JSON.stringify(body);
+      const r = await fetch(API + path, opts);
+      if (r.status === 401 || r.status === 403) { doLogout(); return null; }
+      return await r.json();
+    } catch { return null; }
+  }
+
+  function showAlert(id, type, msg) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = `alert alert-${type} show`;
+    el.textContent = msg;
+    setTimeout(() => el.classList.remove('show'), 4000);
+  }
+
+  function formatDate(d) {
+    if (!d) return '-';
+    return new Date(d).toLocaleDateString('ar-SA', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function sportLabel(s) {
+    return { football: '⚽ كرة قدم', padel: '🎾 بادل', tennis: '🎾 تنس', multi: '🏟️ متعدد' }[s] || s;
+  }
+
+  function statusLabel(s) {
+    const map = { upcoming: ['معلقة','pill-active'], today: ['اليوم','pill-warning'], completed: ['منتهية','pill-approved'], cancelled: ['ملغاة','pill-rejected'] };
+    const [label, cls] = map[s] || [s, 'pill-active'];
+    return `<span class="pill ${cls}">${label}</span>`;
+  }
+</script>
+
+</body>
+</html>

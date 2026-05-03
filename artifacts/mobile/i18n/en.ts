@@ -12,6 +12,7 @@ export const en: TranslationKeys = {
 
   // === Common / Shared ===
   common: {
+    optional: "optional", // Merged
     save: "Save",
     cancel: "Cancel",
     delete: "Delete",
@@ -52,6 +53,7 @@ export const en: TranslationKeys = {
     linkCopied: "Link copied!",
     today: "Today",
     tomorrow: "Tomorrow",
+    dayAfter: "Day After",
     yesterday: "Yesterday",
     thisWeek: "This Week",
     allTimes: "All Times",
@@ -61,6 +63,13 @@ export const en: TranslationKeys = {
     results: "results",
     user: "User",
     support: "Support",
+    change: "Change",
+  },
+
+  // === Date Info ===
+  dateInfo: {
+    days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
   },
 
   // === Sports ===
@@ -79,18 +88,22 @@ export const en: TranslationKeys = {
 
   // === Welcome / Onboarding ===
   welcome: {
-    appName: "Elab",
-    tagline: "Organize your sports matches with friends easily",
+    appName: "ARENA",
+    tagline: "Your arena to play. Organize. Connect. Show up.",
+    brandSubline: "A trusted sports community for matches and groups in Saudi Arabia",
+    arenaPill: "A sharper identity for a more professional sports experience",
     chooseSport: "Choose your favorite sport",
     startNow: "Get Started",
-    feature1Title: "Organize Matches",
-    feature1Desc: "Create a match in seconds",
-    feature2Title: "Gather Friends",
-    feature2Desc: "Build sports groups",
-    feature3Title: "Track Progress",
-    feature3Desc: "Stats & ratings",
-    poweredBy: "Organize, Play, Repeat 🏆",
+    feature1Title: "Organized Arena",
+    feature1Desc: "Create matches and manage every detail in one place",
+    feature2Title: "Trusted Community",
+    feature2Desc: "Groups, attendance, and player communication",
+    feature3Title: "Visible Commitment",
+    feature3Desc: "Reliability index and payment tracking",
+    poweredBy: "Play. Organize. Connect.",
     swipeHint: "Swipe up to start",
+    disclaimer: "By continuing, you agree to the Terms of Service and Privacy Policy",
+    devBypass: "Bypass login for developers",
   },
 
   // === Phone / OTP ===
@@ -352,7 +365,7 @@ export const en: TranslationKeys = {
       step3Desc: "Teammates rate you after each completed match",
       discoverMatches: "Discover Matches",
     },
-    shareMessage: "🏅 {name} on Elab!\nReliability: {reliability} • Matches: {matches}",
+    shareMessage: "🏅 {name} on ARENA!\nReliability: {reliability} • Matches: {matches}",
     shareTitle: "{name}'s Sports Profile",
     edit: {
       title: "Edit Profile",
@@ -396,6 +409,8 @@ export const en: TranslationKeys = {
     yourLevelTennis: "Your level in Tennis",
     tapToPick: "Tap to pick your level",
     confirmLevel: "Confirm Level {level} ★",
+    confirmMulti: "Confirm ({count})",
+    confirmMultiEmpty: "Confirm Levels",
     padel: {
       l1_0: { name: "Absolute Beginner", desc: "No experience, just started playing Padel" },
       l1_5: { name: "Advanced Beginner", desc: "Limited experience, working on keeping the ball in court" },
@@ -432,6 +447,7 @@ export const en: TranslationKeys = {
     }
   },
 
+
   // === Edit Match ===
   editMatch: {
     title: "Edit Match",
@@ -457,6 +473,10 @@ export const en: TranslationKeys = {
     success: "Group created successfully",
     error: "Failed to create group",
     nameRequired: "Group name is required",
+    nameMinLength: "Group name must be at least 3 characters",
+    descMinLength: "Description must be at least 10 characters",
+    createFailed: "An error occurred while creating the group. Please try again.",
+
   },
 
   // === Group Detail ===
@@ -561,9 +581,9 @@ export const en: TranslationKeys = {
       d1: "1 day",
       d2: "2 days"
     },
-    shareProfileMsg: "Check out my sports profile on Elab!\n{name} 🏆\n{url}",
-    shareProfileMsgNoUrl: "Check out my sports profile on Elab!\n{name} 🏆\nDownload the app now",
-    contactSubject: "Contact Us - Elab App",
+    shareProfileMsg: "Check out my sports profile on ARENA!\n{name} 🏆\n{url}",
+    shareProfileMsgNoUrl: "Check out my sports profile on ARENA!\n{name} 🏆\nDownload the app now",
+    contactSubject: "Contact Us - ARENA App",
     contactError: "Could not open mail app",
     versionLabel: "Version",
     contactUs: "Contact Us",
@@ -577,7 +597,7 @@ export const en: TranslationKeys = {
       terms: "Terms of Service",
       privacy: "Privacy Policy",
       privacyPolicy: "Privacy Policy",
-      contactSubject: "Contact Us - Elab App",
+      contactSubject: "Contact Us - ARENA App",
       contactError: "Could not open mail app",
       termsTitle: "Terms of Service",
       privacyTitle: "Privacy Policy",
@@ -665,7 +685,7 @@ export const en: TranslationKeys = {
     chooseSport: "Choose Sport",
     chooseSportDesc: "Colors will smoothly transition based on your sport",
     footballDesc: "Up to 22 players",
-    padelTennisDesc: "Four players",
+    padelTennisDesc: "Up to 4 players",
     title: "Create Match",
     matchTitle: "Match Title",
     matchTitlePlaceholder: "e.g. Friendly Match",
@@ -727,6 +747,13 @@ export const en: TranslationKeys = {
     clubCenterHint: "Start typing to see nearby suggestions",
     locationUrl: "Location Link (Optional)",
     locationUrlHint: "Paste a Google Maps link or any URL starting with https://",
+    venues: {
+      v1: "Prince Mohammad Stadium",
+      v2: "Riyadh Padel Academy",
+      v3: "Royal Tennis Club",
+      v4: "Al Hilal Mini Pitch",
+      v5: "Youth Sports Center"
+    },
     playersAndFee: "Players & Fee",
     playersAndFeeDesc: "Set the number of players and total fee",
     numberOfPlayers: "Number of Players",
@@ -743,6 +770,7 @@ export const en: TranslationKeys = {
     reviewAndPublishDesc: "Select skill level and review details before publishing",
     playerLevel: "Player Level",
     allLevels: "All Levels",
+    selectedLevels: "Selected Levels",
     advanced: "Advanced",
     intermediate: "Intermediate",
     beginner: "Beginner",
@@ -814,7 +842,7 @@ export const en: TranslationKeys = {
     connectionError: "Please check your internet connection and try again",
     shareMessage: "Join me in «{{title}}»",
     shareDetails: "📅 {{date}} at {{time}}\n📍 {{venue}}",
-    downloadApp: "Download Elab app to join",
+    downloadApp: "Download ARENA app to join",
     inviteTitle: "Invitation to «{{title}}»",
     inviteCreatedSuccess: "Invitation link created",
     inviteCreatedError: "Couldn't create invitation link",

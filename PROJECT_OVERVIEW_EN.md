@@ -13,6 +13,7 @@
 | Mobile App | Expo / React Native (expo-router) |
 | Backend Server | Node.js + Express |
 | Database | PostgreSQL + Drizzle ORM |
+| Performance | Indexed DB (PostgreSQL Indexes), Bulk Queries (N+1 Query Resolution), React.memo() |
 | State Management | React Query (TanStack) |
 | Design Language | Visual Silence (Minimalist Luxury) / Liquid Glass 2026 |
 | Text Direction | Multi-language (Arabic/English) — RTL/LTR |
@@ -36,13 +37,14 @@
 
 ---
 
-## 📊 Project Statistics
-- **Last updated:** 14 April 2026
-- **Last merged task:** 30
-- **Completed tasks:** 30
+## 📊 Project Statistics (DYNAMIC-START)
+- **Last updated:** 20 April 2026
+- **Last merged task:** 33
+- **Completed tasks:** 33
 - **App screens:** 23
-- **API routes:** 54
-- **Database tables:** 12
+- **API routes:** 66
+- **Database tables:** 16
+<!-- DYNAMIC-END -->
 
 ---
 
@@ -153,20 +155,18 @@ Profile ──────────────────────► se
 
 ## 🚀 Full Feature List
 
-### 1. Authentication System
+### 1. Authentication & Roles
 - Phone number + OTP login (passwordless)
-- JWT tokens for session management
-- Sign-out automatically revokes the Push Token
+- JWT tokens for session management, Push Tokens revoked on sign-out
+- **Admin Dashboard**: Centralized management loop for venues and users via `/api/admin`.
 
 ### 2. Match Management
-- **Create a match**: title, sport, date & time, venue, geolocation, max players, cost, skill level, session type (match/training)
+- **Create a match**: title, sport, date & time, venue (from verified list), max players.
+- **Waitlist**: Automatically join the waitlist when a match is full, receive notifications when spots open.
 - **Join / Leave**: with time-conflict detection (cannot join two matches at the same time)
-- **Search & Filter**: by sport, date, skill level, geolocation
-- **Gatta (cost tracker)**: track shared match costs and each player's payment status, with payment reminders
-- **Attendance recording**: organiser marks who attended and who was absent after the match
-- **Mark attendees as paid**: one-click batch payment marking for present players
-- **Cancel match**: organiser can cancel with automatic notifications to all players
-- **Remove player**: organiser can remove a specific player from the match
+- **Search & Filter**: by sport, date, skill level, location
+- **Gatta (cost tracker)**: track shared match costs and payment reminders
+- **Attendance & Auto-completion**: Organizer records attendance, or systemic auto-completion finishes matches.
 - **Invite links**: generate a private link to invite players to a closed match
 
 ### 3. Group System
@@ -178,18 +178,12 @@ Profile ──────────────────────► se
 - Group text chat (polling every 5 seconds)
 - Group invite links
 
-### 4. Rating & Badges System
-After each match, players can rate each other with three badge types:
-- 🎨 **Artist**: for skill, style, and creativity
-- 🪨 **Rock**: for strength and solidity
-- ⚡ **Bolt**: for speed and explosive energy
-
-**Rating rules:**
-- Only open for completed matches
-- Closed for cancelled matches
-- Cannot rate the same player twice
-- Cannot rate yourself
-- Includes a vote on the accuracy of the rated player's declared skill level
+### 4. Venues & Rating System
+- **Verified Venues Database**: Centralized list of sports venues.
+- **User Suggestions**: Users can suggest new venues for admin approval.
+- **Venue Rating**: 1 to 5 stars collected after matches.
+- **Player Badges**: Rate teammates with (🎨 Artist, 🪨 Rock, ⚡ Bolt).
+- Open only upon match completion, includes a vote on skill accuracy.
 
 ### 5. Reliability Index™
 An automated system that calculates each player's reliability score (0–100):
@@ -205,15 +199,17 @@ Calculation:
 Before 3 matches: displays "—" (undetermined)
 ```
 
-### 6. Notifications System
-- **Push Notifications** via Expo Push Notifications
-- Automatic notifications when:
-  - A new player joins your match
-  - A match you are registered for is cancelled
-  - Another player rates you
-  - New matches are created in your groups
-- **Notification settings**: each notification type can be toggled independently
-- **Mark as read**: individually or all at once
+### 6. High-Scale Performance Optimizations
+The app architecture is optimized to sustain high traffic and maintain fluid 60fps UI:
+- **Backend Bulk Queries**: Massive mitigation of N+1 database querying issues by rewriting subqueries and using comprehensive SQL JOINs.
+- **Database Indexing**: Crucial PostgreSQL indexes added to high-traffic columns (`date`, `sport`, `organizerId`, `matchId`, `userId`, `status`).
+- **Frontend Deduplication**: Integrated `React.memo`, optimized `FlatList` component behavior, and tuned React Query `staleTime` defaults to aggressively drop unnecessary network operations.
+
+### 6. Smart Reminders & Notifications
+- **Smart Reminders**: Pre-match (1 hour before), Post-match (ratings), and optional weekly inactivity reminders.
+- **Database-Deduplicated**: Persistent reminders sent once per appropriate trigger.
+- **Automatic notifications**: Player joined, match cancelled, group updates, etc.
+- **Granular Controls**: Toggle notifications individually.
 - **POST_NOTIFICATIONS permission**: for Android 13+ devices
 
 ### 7. User Profile
@@ -237,23 +233,23 @@ POST /auth/request-otp   ← Request OTP for a phone number
 POST /auth/verify-otp    ← Verify OTP and receive JWT
 ```
 
-### Matches (15 routes)
+### Matches & Waitlist (15 routes)
 ```
-GET    /matches                                  ← List matches (with filters)
+GET    /matches                                  ← List matches
 GET    /matches/{id}                             ← Match details
 POST   /matches                                  ← Create a new match
-DELETE /matches/{id}                             ← Cancel/delete a match (organiser only)
-POST   /matches/{id}/join                        ← Join a match
+DELETE /matches/{id}                             ← Cancel/delete a match
+POST   /matches/{id}/join                        ← Join a match (adds to waitlist if full)
 POST   /matches/{id}/leave                       ← Leave a match
-PUT    /matches/{id}/attendance                  ← Record player attendance (organiser only)
-PATCH  /matches/{id}                             ← Edit match details (organiser only)
-PATCH  /matches/{id}/players/{userId}/payment    ← Update a player's payment status
-DELETE /matches/{id}/players/{playerId}          ← Remove a player (organiser only)
-POST   /matches/{id}/payment-reminder            ← Send payment reminders to unpaid players
-POST   /matches/{id}/mark-attendees-paid         ← Batch-mark attending players as paid
-POST   /matches/{id}/invite-link                 ← Generate a match invite link
-GET    /matches/{id}/level-votes/status          ← Check if user has voted on skill levels
-POST   /matches/{id}/level-votes                 ← Submit skill-level feedback after match
+PUT    /matches/{id}/attendance                  ← Record player attendance
+PATCH  /matches/{id}                         ← Edit match details
+PATCH  /matches/{id}/players/{userId}/payment    ← Update payment status
+DELETE /matches/{id}/players/{playerId}          ← Remove a player
+POST   /matches/{id}/payment-reminder            ← Send payment reminders
+POST   /matches/{id}/mark-attendees-paid         ← Batch-mark attendees as paid
+POST   /matches/{id}/invite-link                 ← Generate invite link
+GET    /matches/{id}/level-votes/status          ← Check vote status
+POST   /matches/{id}/level-votes                 ← Submit player ratings
 ```
 
 ### Groups (18 routes)
@@ -299,14 +295,30 @@ POST   /push/register                ← Register Expo Push Token
 DELETE /push/unregister              ← Remove Push Token (on sign-out)
 ```
 
+### Venues & Admin (12 routes)
+```
+GET    /venues                               ← List verified venues
+GET    /venues/{id}                          ← Venue details and reviews
+POST   /venues/suggest                       ← Suggest a new venue
+POST   /venues/{id}/reviews                  ← Submit venue review
+GET    /venues/{id}/reviews                  ← List venue reviews
+GET    /admin                                ← Admin dashboard HTML
+GET    /admin/dashboard                      ← Admin summary metrics
+GET    /admin/venues/suggestions             ← List pending venue suggestions
+POST   /admin/venues/suggestions/{id}/approve← Approve venue suggestion
+POST   /admin/venues                         ← Add verified venue directly
+GET    /admin/users                          ← Manage users and roles
+POST   /admin/seed-admin                     ← Generate initial admin account
+```
+
 ### Miscellaneous (6 routes)
 ```
-GET  /healthz            ← Server health check
-GET  /invite/{token}     ← Invite deep-link landing page
-GET  /match/{id}         ← Match summary landing page (external share)
-GET  /group/{id}         ← Group summary landing page (external share)
-GET  /profile/{userId}   ← User profile summary landing page (external share)
-GET  /storage/avatar     ← Avatar image proxy from Object Storage
+GET  /healthz            ← Server health
+GET  /invite/{token}     ← Invite link landing
+GET  /match/{id}         ← Match landing
+GET  /group/{id}         ← Group landing
+GET  /profile/{userId}   ← User landing
+GET  /storage/avatar     ← Avatar proxy
 ```
 
 ---
@@ -328,7 +340,12 @@ GET  /storage/avatar     ← Avatar image proxy from Object Storage
 | `ratings` | id, match_id, rater_id, rated_user_id, score, rating_type, level_accuracy_vote | Post-match player ratings |
 | `notifications` | id, user_id, type, title, body, related_id, read | In-app notifications |
 | `push_tokens` | id, user_id, token | Expo push notification tokens |
-| `invite_links` | id, token, target_type, target_id, created_by, expires_at, is_revoked | Invite links for matches and groups |
+| `invite_links` | id, token, target_type, target_id | Invite links for matches and groups |
+| `venues` | id, name, sport, address, rating, status | Verified venues database |
+| `venue_suggestions` | id, name, sport, suggested_by, status | Pending venue proposals |
+| `venue_reviews` | id, venue_id, match_id, user_id, rating | Post-match venue reviews |
+| `match_waitlist` | id, match_id, user_id | Players waiting for full matches |
+| `reminder_logs` | id, match_id, user_id, type | Deduplication logs for smart reminders |
 
 ---
 
@@ -366,6 +383,9 @@ GET  /storage/avatar     ← Avatar image proxy from Object Storage
 | 28 | Implement "Visual Silence" UI/UX identity (Minimalist Luxury) | ✅ |
 | 29 | Multi-language support (i18n) — Full Arabic and English interfaces | ✅ |
 | 30 | Consolidate translation keys and resolve TypeScript conflicts | ✅ |
+| 31 | Venues Management System + Admin Dashboard | ✅ |
+| 32 | Match Waitlist Feature | ✅ |
+| 33 | Smart Reminders System (Pre/Post-match, Weekly inactive) | ✅ |
 
 ---
 

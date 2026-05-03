@@ -2,7 +2,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClient } from "@tanstack/react-query";
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
-import { api, ApiMatch, ApiGroup, ApiError, ApiUserProfile, clearToken } from "@/services/api";
+import {
+  api,
+  ApiMatch,
+  ApiGroup,
+  ApiError,
+  ApiUserProfile,
+  clearToken,
+} from "@/services/api";
 import { router } from "expo-router";
 
 export type SportType = "football" | "padel" | "tennis";
@@ -58,7 +65,7 @@ export interface Match {
   joinedByCurrentUser: boolean;
   sessionType: SessionType;
   matchFormat?: "single" | "double" | null;
-  skillLevel?: "beginner" | "intermediate" | "advanced" | null;
+  skillLevel?: string | null;
   description?: string;
   invitedGroupId?: string;
   organizerPhone?: string | null;
@@ -80,6 +87,14 @@ export interface ConflictMatchInfo {
   title: string;
   time?: string;
   date?: string;
+}
+
+export type JoinGroupStatus = "joined" | "pending";
+
+export interface JoinGroupResult {
+  success: boolean;
+  status: JoinGroupStatus;
+  memberCount?: number;
 }
 
 export interface Group {
@@ -223,11 +238,11 @@ interface AppContextType {
   leaveMatch: (matchId: string) => Promise<void>;
   cancelMatch: (matchId: string) => Promise<boolean>;
   createMatch: (match: Omit<Match, "id" | "players" | "joinedByCurrentUser">, coords?: { lat: number; lng: number } | null) => Promise<string>;
-  updateMatch: (matchId: string, data: { title?: string; venue?: string; location?: string | null; date?: string; time?: string; cost?: number; maxPlayers?: number; description?: string; skillLevel?: "beginner" | "intermediate" | "advanced" | null }) => Promise<boolean>;
+  updateMatch: (matchId: string, data: { title?: string; venue?: string; location?: string | null; date?: string; time?: string; cost?: number; maxPlayers?: number; description?: string; skillLevel?: string | null }) => Promise<boolean>;
   removeMatchPlayer: (matchId: string, playerId: string) => Promise<boolean>;
   updateAttendance: (matchId: string, userId: string, status: AttendanceStatus) => Promise<boolean>;
   updatePayment: (matchId: string, userId: string, status: PaymentStatus) => Promise<boolean>;
-  joinGroup: (groupId: string) => Promise<void>;
+  joinGroup: (groupId: string) => Promise<JoinGroupResult>;
   leaveGroup: (groupId: string) => Promise<void>;
   createGroup: (group: Omit<Group, "id" | "members" | "isJoined">) => Promise<string>;
   inviteMemberToGroup: (groupId: string, player: Player) => void;
@@ -460,7 +475,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setGroups((prev) => {
         const exists = prev.find((g) => g.id === groupId);
         if (exists) {
-          const updated = prev.map((g) => g.id === groupId ? { ...localGroup, isJoined: g.isJoined } : g);
+          const updated = prev.map((g) => g.id === groupId ? localGroup : g);
           persist({ groups: updated });
           return updated;
         }
@@ -846,7 +861,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [persist]);
 
-  const updateMatch = useCallback(async (matchId: string, data: { title?: string; venue?: string; location?: string | null; date?: string; time?: string; cost?: number; maxPlayers?: number; description?: string; skillLevel?: "beginner" | "intermediate" | "advanced" | null }): Promise<boolean> => {
+  const updateMatch = useCallback(async (matchId: string, data: { title?: string; venue?: string; location?: string | null; date?: string; time?: string; cost?: number; maxPlayers?: number; description?: string; skillLevel?: string | null }): Promise<boolean> => {
     try {
       const { match: updated } = await api.updateMatch(matchId, data);
       setMatches((prev) => {
@@ -900,26 +915,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [persist, refreshMatches]);
 
-  const joinGroup = useCallback(async (groupId: string) => {
+  const joinGroup = useCallback(async (groupId: string): Promise<JoinGroupResult> => {
+    const result = await api.joinGroup(groupId);
+
     setGroups((prev) => {
-      const updated = prev.map((g) =>
-        g.id === groupId ? { ...g, hasPendingRequest: true } : g
-      );
+      const updated = prev.map((group) => {
+        if (group.id !== groupId) return group;
+
+        const nextMemberCount =
+          result.status === "joined"
+            ? (result.memberCount ?? (group.isJoined ? group.memberCount : group.memberCount + 1))
+            : group.memberCount;
+
+        return {
+          ...group,
+          isJoined: result.status === "joined",
+          hasPendingRequest: result.status === "pending",
+          memberCount: nextMemberCount,
+        };
+      });
+
       persist({ groups: updated });
       return updated;
     });
-    try {
-      await api.joinGroup(groupId);
-    } catch {
-      setGroups((prev) => {
-        const rolled = prev.map((g) =>
-          g.id === groupId ? { ...g, hasPendingRequest: false } : g
-        );
-        persist({ groups: rolled });
-        return rolled;
-      });
+
+    if (result.status === "joined") {
+      await fetchGroupById(groupId);
     }
-  }, [persist]);
+
+    return result;
+  }, [fetchGroupById, persist]);
 
   const leaveGroup = useCallback(async (groupId: string) => {
     setGroups((prev) => {
@@ -972,8 +997,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         persist({ groups: updated });
         return updated;
       });
-    } catch {
-      /* keep temp group locally */
+    } catch (err) {
+      // حذف المجموعة الوهمية المؤقتة — لا تبقى بيانات مزيفة في الواجهة
+      setGroups((prev) => {
+        const rolled = prev.filter((g) => g.id !== tempId);
+        persist({ groups: rolled });
+        return rolled;
+      });
+      const errorMsg = err instanceof ApiError ? err.message : "فشل إنشاء المجموعة، يرجى المحاولة مجدداً";
+      throw new Error(errorMsg);
     }
 
     addNotification({ title: "مجموعة جديدة", body: `أنشأت مجموعة ${group.name}`, type: "group", linkedId: finalId });
@@ -981,36 +1013,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [user, persist, addNotification]);
 
   const inviteMemberToGroup = useCallback((groupId: string, player: Player) => {
-    setGroups((prev) => {
-      const updated = prev.map((g) => {
-        if (g.id !== groupId) return g;
-        const alreadyMember = g.members.some((m) => m.id === player.id);
-        if (alreadyMember) return g;
-        return {
-          ...g,
-          members: [...g.members, player],
-          memberCount: g.memberCount + 1,
-        };
-      });
-      persist({ groups: updated });
-      return updated;
-    });
+    // لا نضيف العضو محلياً قبل قبول الدعوة — السيرفر هو مصدر الحقيقة
     addNotification({ title: "دعوة عضو", body: `تمت دعوة ${player.nickname} للمجموعة`, type: "group", linkedId: groupId });
-    api.inviteToGroup(groupId, player.id).catch(() => {
-      setGroups((prev) => {
-        const rolled = prev.map((g) => {
-          if (g.id !== groupId) return g;
-          return {
-            ...g,
-            members: g.members.filter((m) => m.id !== player.id),
-            memberCount: Math.max(0, g.memberCount - 1),
-          };
-        });
-        persist({ groups: rolled });
-        return rolled;
-      });
+    api.inviteToGroup(groupId, player.id).then(() => {
+      // نعيد جلب بيانات المجموعة من السيرفر فقط بعد إرسال الدعوة بنجاح
+      fetchGroupById(groupId).catch(() => {});
+    }).catch(() => {
+      // الدعوة فشلت — لا تغيير في الحالة المحلية
     });
-  }, [addNotification, persist]);
+  }, [addNotification, fetchGroupById]);
 
   const removeGroupMember = useCallback(async (groupId: string, memberId: string): Promise<boolean> => {
     try {
@@ -1082,7 +1093,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
       refreshGroups();
       return true;
-    } catch {
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : "فشل حذف المجموعة، يرجى المحاولة مجدداً";
+      Alert.alert("لا يمكن حذف المجموعة", msg);
       return false;
     }
   }, [persist, refreshGroups]);

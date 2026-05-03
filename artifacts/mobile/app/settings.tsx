@@ -439,7 +439,7 @@ export default function SettingsScreen() {
           <Text style={[styles.title, { color: colors.onSurface }]}>{t("settings.title")}</Text>
           <Pressable
             onPress={() => router.back()}
-            style={[styles.backBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}
+            style={({ pressed }) => [styles.backBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }, pressed && { transform: [{ scale: 0.96 }] }]}
           >
             <Ionicons name={locale === "ar" ? "chevron-forward" : "chevron-back"} size={22} color={colors.onSurface} />
           </Pressable>
@@ -463,7 +463,7 @@ export default function SettingsScreen() {
             <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t("settings.notifications")}</Text>
             <View style={[styles.sectionHeaderLine, { backgroundColor: colors.border }]} />
           </View>
-          <View style={[styles.card, { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB" }]}>
+          <View style={[styles.card, { backgroundColor: "#FFFFFF", borderWidth: 0 }]}>
             {Platform.OS !== "web" && notifPermissionStatus !== null && (
               <View style={styles.settingRow}>
                 {notifPermissionStatus !== "granted" ? (
@@ -545,16 +545,16 @@ export default function SettingsScreen() {
             <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t("settings.account")}</Text>
             <View style={[styles.sectionHeaderLine, { backgroundColor: colors.border }]} />
           </View>
-          <View style={[styles.card, { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB" }]}>
-            <Pressable style={[styles.menuRow, { borderBottomWidth: 1, borderBottomColor: "#F3F4F6", paddingBottom: 16 }]} onPress={openEditProfile}>
+          <View style={[styles.card, { backgroundColor: "#FFFFFF", borderWidth: 0 }]}>
+            <Pressable style={({ pressed }) => [styles.menuRow, { borderBottomWidth: 1, borderBottomColor: "#F3F4F6", paddingBottom: 16 }, pressed && { transform: [{ scale: 0.98 }] }]} onPress={openEditProfile}>
               <Ionicons name={locale === "ar" ? "chevron-back" : "chevron-forward"} size={16} color={colors.mutedForeground} />
               <Text style={[styles.menuLabel, { color: colors.onSurface }]}>{t("settings.editProfile")}</Text>
-              <View style={[styles.menuIconBox, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}>
+              <View style={[styles.menuIconBox, { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }]}>
                 <Ionicons name="person-outline" size={17} color={colors.primary} />
               </View>
             </Pressable>
             
-            <Pressable style={[styles.menuRow, { paddingTop: 16 }]} onPress={() => router.push("/language")}>
+            <Pressable style={({ pressed }) => [styles.menuRow, { paddingTop: 16 }, pressed && { transform: [{ scale: 0.98 }] }]} onPress={() => router.push("/language")}>
               <Ionicons name={locale === "ar" ? "chevron-back" : "chevron-forward"} size={16} color={colors.mutedForeground} />
               <View style={{ flex: 1, alignItems: locale === "ar" ? "flex-end" : "flex-start" }}>
                 <Text style={[styles.menuLabel, { color: colors.onSurface }]}>{t("settings.changeLanguage")}</Text>
@@ -562,7 +562,7 @@ export default function SettingsScreen() {
                   {locale === "ar" ? "العربية" : "English"}
                 </Text>
               </View>
-              <View style={[styles.menuIconBox, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}>
+              <View style={[styles.menuIconBox, { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }]}>
                 <Ionicons name="language-outline" size={17} color={colors.primary} />
               </View>
             </Pressable>
@@ -573,9 +573,9 @@ export default function SettingsScreen() {
             <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t("settings.aboutTitle")}</Text>
             <View style={[styles.sectionHeaderLine, { backgroundColor: colors.border }]} />
           </View>
-          <View style={[styles.card, { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB" }]}>
+          <View style={[styles.card, { backgroundColor: "#FFFFFF", borderWidth: 0 }]}>
             <View style={[styles.versionRow]}>
-              <View style={[styles.menuIconBox, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}>
+              <View style={[styles.menuIconBox, { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }]}>
                 <Ionicons name="information-circle-outline" size={17} color={colors.secondary} />
               </View>
               <Text style={[styles.menuLabel, { color: colors.onSurface }]}>{t("settings.version")}</Text>
@@ -583,14 +583,14 @@ export default function SettingsScreen() {
             </View>
             <View style={styles.tertiaryBtnRow}>
               <Pressable
-                style={[styles.tertiaryBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}
+                style={({ pressed }) => [styles.tertiaryBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }, pressed && { transform: [{ scale: 0.96 }] }]}
                 onPress={() => { setLegalType("terms"); setLegalVisible(true); }}
               >
                 <Ionicons name="document-text-outline" size={16} color={colors.secondary} />
                 <Text style={[styles.tertiaryBtnText, { color: colors.secondary }]}>{t("settings.termsOfService")}</Text>
               </Pressable>
               <Pressable
-                style={[styles.tertiaryBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}
+                style={({ pressed }) => [styles.tertiaryBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }, pressed && { transform: [{ scale: 0.96 }] }]}
                 onPress={() => { setLegalType("privacy"); setLegalVisible(true); }}
               >
                 <Ionicons name="shield-outline" size={16} color={colors.secondary} />
@@ -599,14 +599,14 @@ export default function SettingsScreen() {
             </View>
             <View style={[styles.tertiaryBtnRow, { paddingTop: 0 }]}>
               <Pressable
-                style={[styles.tertiaryBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}
+                style={({ pressed }) => [styles.tertiaryBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }, pressed && { transform: [{ scale: 0.96 }] }]}
                 onPress={handleContactUs}
               >
                 <Ionicons name="mail-outline" size={16} color={colors.tertiary} />
                 <Text style={[styles.tertiaryBtnText, { color: colors.tertiary }]}>{t("common.support")}</Text>
               </Pressable>
               <Pressable
-                style={[styles.tertiaryBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }]}
+                style={({ pressed }) => [styles.tertiaryBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }, pressed && { transform: [{ scale: 0.96 }] }]}
                 onPress={handleShareProfile}
               >
                 <Ionicons name="share-social-outline" size={16} color={colors.tertiary} />
@@ -616,7 +616,7 @@ export default function SettingsScreen() {
           </View>
 
           <Pressable
-            style={[styles.logoutBtn, { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB" }]}
+            style={({ pressed }) => [styles.logoutBtn, { backgroundColor: "#FFFFFF", borderWidth: 0 }, pressed && { transform: [{ scale: 0.96 }] }]}
             onPress={handleLogout}
           >
             <Ionicons name="log-out-outline" size={20} color={colors.destructive} />
@@ -641,7 +641,7 @@ export default function SettingsScreen() {
               <View style={styles.modalHeaderRow}>
                 <Pressable
                   onPress={() => setEditProfileVisible(false)}
-                  style={[styles.closeBtn, { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB" }]}
+                  style={({ pressed }) => [styles.closeBtn, { backgroundColor: "#FFFFFF", borderWidth: 0 }, pressed && { transform: [{ scale: 0.96 }] }]}
                 >
                   <Ionicons name="close" size={20} color={colors.onSurface} />
                 </Pressable>
@@ -656,7 +656,7 @@ export default function SettingsScreen() {
               keyboardShouldPersistTaps="handled"
             >
               <Pressable onPress={avatarUploading ? undefined : pickAvatar} style={styles.avatarPickerWrap}>
-                <View style={[styles.avatarPickerCircle, { backgroundColor: colors.surfaceContainerHigh, borderWidth: 1, borderColor: "#E5E7EB" }]}>
+                <View style={[styles.avatarPickerCircle, { backgroundColor: colors.surfaceContainerHigh, borderWidth: 0 }]}>
                   {editAvatarUri ? (
                     <Image
                       source={{ uri: editAvatarUri }}
@@ -688,8 +688,8 @@ export default function SettingsScreen() {
                   {
                     backgroundColor: nicknameFocused ? colors.surfaceContainerHigh : colors.surfaceContainerLow,
                     borderRadius: 18,
-                    borderWidth: nicknameFocused ? 1.5 : 1,
-                    borderColor: nicknameFocused ? colors.primary + "60" : "#E5E7EB",
+                    borderWidth: nicknameFocused ? 1.5 : 0,
+                    borderColor: nicknameFocused ? colors.primary + "60" : "transparent",
                   },
                 ]}
               >
@@ -718,7 +718,7 @@ export default function SettingsScreen() {
                         styles.chipPill,
                         selected
                           ? [{ backgroundColor: sport.bg, borderColor: sport.color + "40", borderWidth: 1 }]
-                          : [{ backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }],
+                          : [{ backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }],
                       ]}
                     >
                       <sport.icon
@@ -759,7 +759,7 @@ export default function SettingsScreen() {
                           styles.levelPickerBtn,
                           currentNumericLevel
                             ? [{ backgroundColor: numericLevelColor + "15", borderColor: numericLevelColor + "40", borderWidth: 1 }]
-                            : [{ backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }],
+                            : [{ backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }],
                         ]}
                         onPress={() => setLevelPickerSport(sport)}
                       >
@@ -778,14 +778,14 @@ export default function SettingsScreen() {
                         )}
                       </Pressable>
                     ) : (
-                      <View style={[styles.segmentedControl, { backgroundColor: colors.surfaceContainerHigh, borderWidth: 1, borderColor: "#E5E7EB" }]}>
+                      <View style={[styles.segmentedControl, { backgroundColor: colors.surfaceContainerHigh, borderWidth: 0 }]}>
                         {getLevelsForSegments(t).map((lv) => (
                           <Pressable
                             key={lv}
                             onPress={() => setEditLevels((prev) => ({ ...prev, [sport]: lv }))}
                             style={[
                               styles.segmentBtn,
-                              currentLevel === lv && [{ backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }],
+                              currentLevel === lv && [{ backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }],
                             ]}
                           >
                             <Text style={[styles.segmentBtnText, { color: currentLevel === lv ? sportDef.color : colors.mutedForeground }]}>
@@ -815,7 +815,7 @@ export default function SettingsScreen() {
                                   styles.chipPill,
                                   selected
                                     ? [{ backgroundColor: sportDef.bg, borderColor: sportDef.color + "40", borderWidth: 1.5 }]
-                                    : [{ backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: "#E5E7EB" }],
+                                    : [{ backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }],
                                 ]}
                               >
                                 <Text style={[styles.chipPillText, { color: selected ? sportDef.color : colors.mutedForeground }]}>
@@ -872,7 +872,7 @@ export default function SettingsScreen() {
               <View style={styles.modalHeaderRow}>
                 <Pressable
                   onPress={() => setLegalVisible(false)}
-                  style={[styles.closeBtn, { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB" }]}
+                  style={[styles.closeBtn, { backgroundColor: "#FFFFFF", borderWidth: 0 }]}
                 >
                   <Ionicons name="close" size={20} color={colors.onSurface} />
                 </Pressable>

@@ -181,7 +181,7 @@ router.get("/invite/:token", async (req: Request, res: Response) => {
         <h1>${escapeHtml(group.name)}</h1>
         <span class="badge">${escapeHtml(sportLabel(group.sport))}</span>
         <span class="badge">${members.length} عضو</span>
-        ${admin ? `<p class="meta" style="margin-top:16px">المشرف: ${escapeHtml(admin.name)}</p>` : ""}
+        ${admin ? `<p class="meta" style="margin-top:16px">المشرف: ${escapeHtml(admin.name ?? "")}</p>` : ""}
         ${group.description ? `<p class="meta">${escapeHtml(group.description)}</p>` : ""}
       `;
       res.send(buildPage(`دعوة لمجموعة ${group.name}`, body));
@@ -212,7 +212,7 @@ router.get("/invite/:token", async (req: Request, res: Response) => {
         <p class="meta" style="margin-top:16px">📅 ${escapeHtml(dateStr)} الساعة ${escapeHtml(match.time)}</p>
         <p class="meta">📍 ${escapeHtml(match.venue)}</p>
         <p class="meta">👥 ${players.length}/${match.maxPlayers} لاعب</p>
-        ${organizer ? `<p class="meta">المنظّم: ${escapeHtml(organizer.name)}</p>` : ""}
+        ${organizer ? `<p class="meta">المنظّم: ${escapeHtml(organizer.name ?? "")}</p>` : ""}
       `;
       res.send(buildPage(`دعوة لـ ${match.title}`, body));
       return;
@@ -251,7 +251,7 @@ router.get("/match/:id", async (req: Request, res: Response) => {
       <p class="meta" style="margin-top:16px">📅 ${escapeHtml(dateStr)} الساعة ${escapeHtml(match.time)}</p>
       <p class="meta">📍 ${escapeHtml(match.venue)}</p>
       <p class="meta">👥 ${players.length}/${match.maxPlayers} لاعب</p>
-      ${organizer ? `<p class="meta">المنظّم: ${escapeHtml(organizer.name)}</p>` : ""}
+      ${organizer ? `<p class="meta">المنظّم: ${escapeHtml(organizer.name ?? "")}</p>` : ""}
     `;
     res.send(buildPage(match.title, body));
   } catch {
@@ -280,7 +280,7 @@ router.get("/group/:id", async (req: Request, res: Response) => {
       <h1>${escapeHtml(group.name)}</h1>
       <span class="badge">${escapeHtml(sportLabel(group.sport))}</span>
       <span class="badge">${members.length} عضو</span>
-      ${admin ? `<p class="meta" style="margin-top:16px">المشرف: ${escapeHtml(admin.name)}</p>` : ""}
+      ${admin ? `<p class="meta" style="margin-top:16px">المشرف: ${escapeHtml(admin.name ?? "")}</p>` : ""}
       ${group.description ? `<p class="meta">${escapeHtml(group.description)}</p>` : ""}
     `;
     res.send(buildPage(group.name, body));
@@ -312,7 +312,7 @@ router.get("/profile/:userId", async (req: Request, res: Response) => {
     const reliabilityText = user.reliability !== null ? `${user.reliability}%` : "—";
 
     const body = `
-      <h1>${escapeHtml(user.name)}</h1>
+      <h1>${escapeHtml(user.name ?? "")}</h1>
       ${sportsText ? `<p class="meta" style="margin-top:12px">🏅 ${escapeHtml(sportsText)}</p>` : ""}
       <p class="meta">موثوقية الحضور: ${escapeHtml(reliabilityText)}</p>
     `;

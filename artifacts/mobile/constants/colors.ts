@@ -2,10 +2,10 @@ const colors = {
   light: {
     // ARENA Dark text (High contrast)
     text: "#121212", 
-    tint: "#05B757", // Vibrant Emerald Green (ARENA Primary)
+    tint: "#15803D", // ARENA Primary
     
     // Background: Clean off-white/beige for that premium studio look
-    background: "#F9F9F9", 
+    background: "#F8FAFC", 
     foreground: "#121212",
     
     // Cards & Surfaces: Pure stark white
@@ -13,10 +13,10 @@ const colors = {
     cardForeground: "#121212",
     
     // Primary: Vibrant Emerald Green
-    primary: "#05B757", 
+    primary: "#15803D", 
     primaryForeground: "#FFFFFF",
-    primaryLight: "#D1F5E1", 
-    primaryContainer: "#E6F8ED",
+    primaryLight: "#DCFCE7", 
+    primaryContainer: "#E8F5EE",
     
     // Muted greys for soft backgrounds and placeholders
     secondary: "#737373", 
@@ -30,15 +30,15 @@ const colors = {
     muted: "#F5F5F5", 
     mutedForeground: "#737373",
     
-    accent: "#05B757", 
+    accent: "#22C55E", 
     accentForeground: "#FFFFFF",
     
     // Surface levels (Flattened for ARENA)
     surface: "#FFFFFF",
     surfaceVariant: "#F9F9F9",
-    surfaceContainer: "#F5F5F5", 
+    surfaceContainer: "#F7F7F7", 
     surfaceContainerLow: "#FAFAFA",
-    surfaceContainerHigh: "#E5E5E5",
+    surfaceContainerHigh: "#F0F0F0",
     surfaceContainerHighest: "#D4D4D4",
     surfaceContainerLowest: "#FFFFFF",
     
@@ -53,21 +53,24 @@ const colors = {
     input: "#F5F5F5",
     outline: "#A3A3A3", 
     
-    success: "#05B757",
+    success: "#15803D",
     warning: "#F59E0B",
     
     // Sports Colors
-    soccer: "#05B757",
-    padel: "#1A202C", // Dark Slate for Padel based on elite badge? Or keep bright blue? Let's keep original sport colors but refine
+    soccer: "#15803D",
+    padel: "#0288D1",
     tennis: "#D97706",
 
-    reliabilityElite: "#05B757",
+    reliabilityElite: "#15803D",
     reliabilityLow: "#EF4444",
     
     // Shadows
     neuShadowDark: "rgba(0,0,0,0.05)", 
     neuShadowLight: "#FFFFFF",
-    matteBlack: "#121212",
+    matteBlack: "#0F172A",
+    brandDark: "#101719",
+    brandPrimary: "#15803D",
+    brandSecondary: "#22C55E",
   },
   // ARENA uses more rounded cards (around 24)
   radius: 24, 

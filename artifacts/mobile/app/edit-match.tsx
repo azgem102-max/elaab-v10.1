@@ -84,7 +84,7 @@ function VenueInput({ venue, onChangeVenue, onBlur, hasError, accentColor, color
     <View
       style={[
         softStyles.inputWrap,
-        focused ? { backgroundColor: "#EEF2FF", borderWidth: 1, borderColor: accentColor } : { borderWidth: 1, borderColor: "#E5E7EB" },
+        focused ? { backgroundColor: "#EEF2FF", borderWidth: 1, borderColor: accentColor } : { borderWidth: 1, borderColor: "transparent" },
         { backgroundColor: focused ? colors.surfaceContainerHigh : colors.surfaceContainer ?? colors.surfaceContainerHigh },
         focused && !hasError && { borderBottomColor: accentColor, borderBottomWidth: 2 },
         hasError && { borderBottomColor: colors.destructive, borderBottomWidth: 2 },
@@ -130,7 +130,7 @@ function SoftInput({ value, onChangeText, placeholder, accentColor, multiline, k
       <View
         style={[
           softStyles.inputWrap,
-          focused ? { backgroundColor: "#EEF2FF", borderWidth: 1, borderColor: accentColor } : { borderWidth: 1, borderColor: "#E5E7EB" },
+          focused ? { backgroundColor: "#EEF2FF", borderWidth: 1, borderColor: accentColor } : { borderWidth: 1, borderColor: "transparent" },
           { backgroundColor: focused ? colors.surfaceContainerHigh : colors.surfaceContainer ?? colors.surfaceContainerHigh },
           focused && !error && { borderBottomColor: accentColor, borderBottomWidth: 2 },
           !!error && { borderBottomColor: colors.destructive, borderBottomWidth: 2 },
@@ -368,7 +368,7 @@ export default function EditMatchScreen() {
                       styles.timeChip,
                       selectedTime === t
                         ? { backgroundColor: sc }
-                        : [{ borderWidth: 1, borderColor: "#E5E7EB" }, { backgroundColor: colors.surfaceContainerHigh }],
+                        : [{ borderWidth: 1, borderColor: "transparent" }, { backgroundColor: colors.surfaceContainerHigh }],
                     ]}
                     onPress={() => setSelectedTime(t)}
                   >
@@ -393,7 +393,7 @@ export default function EditMatchScreen() {
                 colors={colors}
               />
               {showVenueSuggestions && (
-                <View style={[styles.suggestions, { borderWidth: 1, borderColor: "#E5E7EB", backgroundColor: colors.surfaceContainerLow, borderRadius: 16 }]}>
+                <View style={[styles.suggestions, { borderWidth: 1, borderColor: "transparent", backgroundColor: colors.surfaceContainerLow, borderRadius: 16 }]}>
                   {VENUES.filter((v) => v.includes(venue)).map((v) => (
                     <Pressable key={v} style={styles.suggestion} onPress={() => { setVenue(v); setShowVenueSuggestions(false); }}>
                       <Ionicons name="location-outline" size={16} color={sc} />
@@ -432,16 +432,16 @@ export default function EditMatchScreen() {
             {match.sport === "football" && (
               <View style={{ gap: 6 }}>
                 <Text style={[softStyles.label, { color: colors.onSurface }]}>عدد اللاعبين</Text>
-                <View style={[styles.counterRow, { backgroundColor: "#EEF2FF", borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 18, padding: 8 }]}>
+                <View style={[styles.counterRow, { backgroundColor: "#EEF2FF", borderWidth: 1, borderColor: "transparent", borderRadius: 18, padding: 8 }]}>
                   <Pressable
-                    style={[styles.counterBtn, { borderWidth: 1, borderColor: "#E5E7EB", backgroundColor: colors.surfaceContainerLow }]}
+                    style={[styles.counterBtn, { borderWidth: 1, borderColor: "transparent", backgroundColor: colors.surfaceContainerLow }]}
                     onPress={() => setMaxPlayers((p) => Math.max(2, p - 2))}
                   >
                     <Ionicons name="remove" size={20} color={colors.onSurface} />
                   </Pressable>
                   <Text style={[styles.counterVal, { color: sc }]}>{maxPlayers}</Text>
                   <Pressable
-                    style={[styles.counterBtn, { borderWidth: 1, borderColor: "#E5E7EB", backgroundColor: colors.surfaceContainerLow }]}
+                    style={[styles.counterBtn, { borderWidth: 1, borderColor: "transparent", backgroundColor: colors.surfaceContainerLow }]}
                     onPress={() => setMaxPlayers((p) => Math.min(22, p + 2))}
                   >
                     <Ionicons name="add" size={20} color={colors.onSurface} />

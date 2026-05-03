@@ -28,7 +28,7 @@ export function OnboardingProgress({ currentStep, totalSteps, color = "#2E7D32" 
 
   return (
     <View style={styles.container}>
-      <View style={[styles.barTrack, { backgroundColor: "#EEF2FF", borderWidth: 1, borderColor: "#E5E7EB" }]}>
+      <View style={[styles.barTrack, { backgroundColor: "#EEF2FF", borderWidth: 0 }]}>
         <Animated.View
           style={[
             styles.barFill,

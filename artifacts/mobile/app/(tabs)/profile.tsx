@@ -62,7 +62,7 @@ function ReliabilityGaugeCard({ relValue, relColor, relLabel, formatted }: {
           bg={relColor + "20"}
         />
         <View style={gaugeStyles.inner}>
-          <Text style={[gaugeStyles.score, { color: relColor }]}>{formatted}</Text>
+          <Text style={[gaugeStyles.score, { color: relColor, fontVariant: ['tabular-nums'] }]}>{formatted}</Text>
           <Text style={[gaugeStyles.scoreLabel, { color: colors.onSurface }]}>{t('profile.reliability')}</Text>
         </View>
       </View>
@@ -128,7 +128,7 @@ function ReliabilityTutorialCard() {
         ))}
       </View>
       <Pressable
-        style={[styles.tutorialCta, { backgroundColor: colors.primary }]}
+        style={({ pressed }) => [styles.tutorialCta, { backgroundColor: colors.primary }, pressed && { transform: [{ scale: 0.96 }] }]}
         onPress={() => router.push("/(tabs)/explore")}
       >
         <Ionicons name="compass-outline" size={16} color={colors.primaryForeground} />
@@ -272,7 +272,15 @@ export default function ProfileScreen() {
     >
       {/* === HERO CARD === */}
       <View
-        style={[styles.heroCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+        style={[styles.heroCard, {
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+          shadowColor: "rgba(0,0,0,0.06)",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 1,
+          shadowRadius: 8,
+          elevation: 2,
+        }]}
       >
         {/* Top row: avatar + name + reliability gauge */}
         <View style={styles.heroTop}>
@@ -346,14 +354,14 @@ export default function ProfileScreen() {
         {/* Quick Actions */}
         <View style={styles.quickActionsRow}>
           <Pressable
-            style={[styles.quickActionLime, { backgroundColor: colors.accent }]}
+            style={({ pressed }) => [styles.quickActionLime, { backgroundColor: colors.accent }, pressed && { transform: [{ scale: 0.96 }] }]}
             onPress={() => router.push({ pathname: "/settings", params: { openEdit: "1" } })}
           >
             <Ionicons name="create-outline" size={15} color={colors.accentForeground} />
             <Text style={[styles.quickActionLimeText, { color: colors.accentForeground }]}>{t('profile.editProfile')}</Text>
           </Pressable>
           <Pressable
-            style={[styles.quickActionGhost, { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.outline }]}
+            style={({ pressed }) => [styles.quickActionGhost, { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.outline }, pressed && { transform: [{ scale: 0.96 }] }]}
             onPress={handleShareProfile}
           >
             <Ionicons name="share-social-outline" size={15} color={colors.onSurface} />
@@ -366,7 +374,7 @@ export default function ProfileScreen() {
       {user.reliability === null && <ReliabilityTutorialCard />}
 
       {/* === STATS CARD === */}
-      <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]}>
+      <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }]}>
         <View style={styles.cardHeaderRow}>
           <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t('profile.stats')}</Text>
           <View style={[styles.cardHeaderIconWrap, { backgroundColor: sportTheme.primary + "12" }]}>
@@ -374,18 +382,18 @@ export default function ProfileScreen() {
           </View>
         </View>
         <View style={styles.statsGrid}>
-          <View style={[styles.statItem, { backgroundColor: sportTheme.primary + "10", borderColor: sportTheme.primary + "20", borderWidth: 1 }]}>
+          <View style={[styles.statItem, { backgroundColor: sportTheme.primary + "10", borderWidth: 0 }]}>
             <View style={[styles.statIconWrap, { backgroundColor: sportTheme.primary + "20" }]}>
               <Ionicons name="football-outline" size={20} color={sportTheme.primary} />
             </View>
-            <Text style={[styles.statNum, { color: colors.onSurface }]}>{user.matchesPlayed}</Text>
+            <Text style={[styles.statNum, { color: colors.onSurface, fontVariant: ['tabular-nums'] }]}>{user.matchesPlayed}</Text>
             <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{t('profile.match')}</Text>
           </View>
-          <View style={[styles.statItem, { backgroundColor: relColor + "10", borderColor: relColor + "20", borderWidth: 1 }]}>
+          <View style={[styles.statItem, { backgroundColor: relColor + "10", borderWidth: 0 }]}>
             <View style={[styles.statIconWrap, { backgroundColor: relColor + "20" }]}>
               <Ionicons name="checkmark-circle-outline" size={20} color={relColor} />
             </View>
-            <Text style={[styles.statNum, { color: colors.onSurface }]}>{relFormatted}</Text>
+            <Text style={[styles.statNum, { color: colors.onSurface, fontVariant: ['tabular-nums'] }]}>{relFormatted}</Text>
             <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{t('profile.attendanceStat')}</Text>
           </View>
         </View>
@@ -393,7 +401,7 @@ export default function ProfileScreen() {
 
       {/* === ORGANIZER STATS === */}
       {totalOrganized > 0 && (
-        <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]}>
+        <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }]}>
           <View style={styles.cardHeaderRow}>
             <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t('profile.asOrganizer')}</Text>
             <View style={[styles.organizerBadge, { backgroundColor: colors.primary + "18" }]}>
@@ -404,12 +412,12 @@ export default function ProfileScreen() {
           <View style={styles.statsGrid}>
             <View style={[styles.statItem, { backgroundColor: colors.surfaceContainerHigh }]}>
               <Ionicons name="calendar-outline" size={22} color={colors.primary} />
-              <Text style={[styles.statNum, { color: colors.onSurface }]}>{totalOrganized}</Text>
+              <Text style={[styles.statNum, { color: colors.onSurface, fontVariant: ['tabular-nums'] }]}>{totalOrganized}</Text>
               <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{t('profile.organized')}</Text>
             </View>
             <View style={[styles.statItem, { backgroundColor: colors.surfaceContainerHigh }]}>
               <Ionicons name="people-outline" size={22} color={colors.secondary} />
-              <Text style={[styles.statNum, { color: colors.onSurface }]}>{avgAttendance > 0 ? `${avgAttendance}%` : "—"}</Text>
+              <Text style={[styles.statNum, { color: colors.onSurface, fontVariant: ['tabular-nums'] }]}>{avgAttendance > 0 ? `${avgAttendance}%` : "—"}</Text>
               <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{t('profile.attendanceStat')}</Text>
             </View>
           </View>
@@ -429,7 +437,7 @@ export default function ProfileScreen() {
       )}
 
       {/* === MENU === */}
-      <View style={[styles.menuSection, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]}>
+      <View style={[styles.menuSection, { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }]}>
         {[
           { icon: "notifications-outline" as const, label: t('profile.notifications'), route: "/notifications", color: colors.secondary, params: undefined },
           { icon: "settings-outline" as const, label: t('profile.settings'), route: "/settings", color: colors.tertiary, params: undefined },
@@ -439,7 +447,7 @@ export default function ProfileScreen() {
             key={i}
             style={({ pressed }) => [
               styles.menuItem,
-              pressed && { backgroundColor: colors.surfaceContainerHigh },
+              pressed && { backgroundColor: colors.surfaceContainerHigh, transform: [{ scale: 0.98 }] },
             ]}
             onPress={() => {
               if (item.params) {

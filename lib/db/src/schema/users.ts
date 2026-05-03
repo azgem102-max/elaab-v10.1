@@ -12,6 +12,8 @@ export const usersTable = pgTable("users", {
   notifMatch: boolean("notif_match").default(true).notNull(),
   notifGroup: boolean("notif_group").default(true).notNull(),
   notifRating: boolean("notif_rating").default(false).notNull(),
+  notifWeekly: boolean("notif_weekly").default(true).notNull(),
+  isAdmin: boolean("is_admin").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, real, boolean, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, real, boolean, unique, index } from "drizzle-orm/pg-core";
 
 export const matchesTable = pgTable("matches", {
   id: text("id").primaryKey(),
@@ -22,7 +22,12 @@ export const matchesTable = pgTable("matches", {
   status: text("status").notNull().default("upcoming"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (t) => [
+  index("matches_organizer_id_idx").on(t.organizerId),
+  index("matches_sport_idx").on(t.sport),
+  index("matches_date_idx").on(t.date),
+  index("matches_status_idx").on(t.status),
+]);
 
 export const matchPlayersTable = pgTable("match_players", {
   id: text("id").primaryKey(),
@@ -35,6 +40,8 @@ export const matchPlayersTable = pgTable("match_players", {
   joinedAt: timestamp("joined_at").defaultNow().notNull(),
 }, (t) => [
   unique("match_players_match_user_unique").on(t.matchId, t.userId),
+  index("match_players_match_id_idx").on(t.matchId),
+  index("match_players_user_id_idx").on(t.userId),
 ]);
 
 export type InsertMatch = typeof matchesTable.$inferInsert;

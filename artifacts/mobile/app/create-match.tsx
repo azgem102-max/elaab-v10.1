@@ -12,6 +12,7 @@ import { SportGradientButton } from "@/components/SportGradientButton";
 import { GlassScreenHeader } from "@/components/glass/GlassScreenHeader";
 import { LiquidProgressBar } from "@/components/glass/LiquidProgressBar";
 import { DatePickerField } from "@/components/DatePickerField";
+import { LevelPickerSheet } from "@/components/LevelPickerSheet";
 import {
   Animated,
   Dimensions,
@@ -50,7 +51,13 @@ const getSportLabels = (t: any): Record<string, string> => ({
   tennis: t("positions.sports.tennis"),
 });
 
-const VENUES = ["ملعب الأمير محمد", "أكاديمية بادل الرياض", "نادي التنس الملكي", "ملعب الهلال الصغير", "مركز الشباب الرياضي"];
+const getVenues = (t: any): string[] => [
+  t("createMatch.venues.v1", "ملعب الأمير محمد"),
+  t("createMatch.venues.v2", "أكاديمية بادل الرياض"),
+  t("createMatch.venues.v3", "نادي التنس الملكي"),
+  t("createMatch.venues.v4", "ملعب الهلال الصغير"),
+  t("createMatch.venues.v5", "مركز الشباب الرياضي")
+];
 const TIMES = ["07:00", "08:00", "09:00", "10:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"];
 
 function todayAtMidnight(): Date {
@@ -241,7 +248,8 @@ export default function CreateMatchScreen() {
   const [matchFormat, setMatchFormat] = useState<"single" | "double">("double");
   const [maxPlayers, setMaxPlayers] = useState(10);
   const [totalCost, setTotalCost] = useState("500");
-  const [skillLevel, setSkillLevel] = useState<"beginner" | "intermediate" | "advanced" | null>(null);
+  const [skillLevelArr, setSkillLevelArr] = useState<string[]>([]);
+  const [showLevelPicker, setShowLevelPicker] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>(initialGroupId);
   const [venueUrlError, setVenueUrlError] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -424,7 +432,7 @@ export default function CreateMatchScreen() {
         status: "upcoming",
         sessionType: "match",
         matchFormat: isPadelOrTennis ? matchFormat : undefined,
-        skillLevel: skillLevel ?? undefined,
+        skillLevel: skillLevelArr.length > 0 ? skillLevelArr.map(String).join(",") : undefined,
         description: description.trim() || undefined,
         invitedGroupId: isPublic ? undefined : selectedGroupId,
       }, matchCoords);
@@ -532,11 +540,12 @@ export default function CreateMatchScreen() {
               <View style={{ gap: 14, marginTop: 16 }}>
                 <Text style={[styles.sectionLabel, { color: colors.onSurface }]}>{t("createMatch.privacyLvl")}</Text>
                 <Pressable
-                  style={[
+                  style={({ pressed }) => [
                     styles.typeCard,
                     isPublic
                       ? { backgroundColor: sportOpt.lightBg, borderWidth: 0 }
                       : { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 },
+                    pressed && { transform: [{ scale: 0.96 }] },
                   ]}
                   onPress={() => { setIsPublic(true); setSelectedGroupId(undefined); Haptics.selectionAsync(); }}
                 >
@@ -551,11 +560,12 @@ export default function CreateMatchScreen() {
                 </Pressable>
 
                 <Pressable
-                  style={[
+                  style={({ pressed }) => [
                     styles.typeCard,
                     !isPublic
                       ? { backgroundColor: sportOpt.lightBg, borderWidth: 0 }
                       : { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 },
+                    pressed && { transform: [{ scale: 0.96 }] },
                   ]}
                   onPress={() => { setIsPublic(false); Haptics.selectionAsync(); }}
                 >
@@ -585,11 +595,12 @@ export default function CreateMatchScreen() {
                   return (
                   <Pressable
                     key={s.key}
-                    style={[
+                    style={({ pressed }) => [
                       styles.sportCard,
                       sport === s.key
                         ? { backgroundColor: s.lightBg, borderWidth: 0 }
                         : { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 },
+                      pressed && { transform: [{ scale: 0.96 }] },
                     ]}
                     onPress={() => handleSportChange(s.key as SportType)}
                   >
@@ -615,10 +626,9 @@ export default function CreateMatchScreen() {
                     <Pressable
                       style={[
                         styles.typeCard,
-                        { borderWidth: 1, borderColor: colors.border },
                         matchFormat === "single"
-                          ? { backgroundColor: sportOpt.lightBg, borderColor: accentColor }
-                          : { backgroundColor: colors.surfaceContainerLow, borderColor: "transparent" },
+                          ? { backgroundColor: sportOpt.lightBg, borderWidth: 0 }
+                          : { backgroundColor: colors.surfaceContainerHigh, borderWidth: 0 },
                       ]}
                       onPress={() => handleFormatChange("single")}
                     >
@@ -710,7 +720,7 @@ export default function CreateMatchScreen() {
               <Text style={[styles.stepSubtitle, { color: colors.mutedForeground }]}>{t("createMatch.timingDesc")}</Text>
 
               <View style={{ gap: 16, marginTop: 8 }}>
-                <View style={[styles.surfaceCard, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]}>
+                <View style={[styles.surfaceCard, { backgroundColor: colors.surfaceContainerHigh, borderWidth: 0 }]}>
                   <View style={[styles.surfaceCardHeader, { borderBottomColor: withAlpha(accentColor, 0.12) }]}>
                     <Ionicons name="calendar-outline" size={18} color={accentColor} />
                     <Text style={[styles.surfaceCardTitle, { color: colors.onSurface }]}>{t("createMatch.date")}</Text>
@@ -724,7 +734,7 @@ export default function CreateMatchScreen() {
                   </View>
                 </View>
 
-                <View style={[styles.surfaceCard, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]}>
+                <View style={[styles.surfaceCard, { backgroundColor: colors.surfaceContainerHigh, borderWidth: 0 }]}>
                   <View style={[styles.surfaceCardHeader, { borderBottomColor: withAlpha(accentColor, 0.12) }]}>
                     <Ionicons name="time-outline" size={18} color={accentColor} />
                     <Text style={[styles.surfaceCardTitle, { color: colors.onSurface }]}>{t("createMatch.time")}</Text>
@@ -733,15 +743,16 @@ export default function CreateMatchScreen() {
                     {TIMES.map((t) => (
                       <Pressable
                         key={t}
-                        style={[
+                        style={({ pressed }) => [
                           styles.timeChip,
                           selectedTime === t
                             ? { backgroundColor: accentColor }
-                            : [{ backgroundColor: colors.surfaceContainerHigh, borderWidth: 1, borderColor: colors.border }],
+                            : { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 },
+                          pressed && { transform: [{ scale: 0.96 }] },
                         ]}
                         onPress={() => setSelectedTime(t)}
                       >
-                        <Text style={[styles.timeText, { color: selectedTime === t ? "#fff" : colors.onSurfaceVariant }]}>{t}</Text>
+                        <Text style={[styles.timeText, { color: selectedTime === t ? "#fff" : colors.onSurfaceVariant, fontVariant: ['tabular-nums'] }]}>{t}</Text>
                       </Pressable>
                     ))}
                   </View>
@@ -763,10 +774,9 @@ export default function CreateMatchScreen() {
                   <View style={[
                     softStyles.inputWrap,
                     {
-                      backgroundColor: errors.venue ? withAlpha(colors.destructive, 0.03) : colors.surface,
-                      borderColor: errors.venue ? colors.destructive : accentColor,
-                      borderWidth: 1,
-                      borderBottomWidth: errors.venue ? 2 : 1,
+                      backgroundColor: errors.venue ? withAlpha(colors.destructive, 0.03) : colors.surfaceContainerHigh,
+                      borderColor: errors.venue ? colors.destructive : "transparent",
+                      borderWidth: errors.venue ? 1 : 0,
                     },
                   ]}>
                     <TextInput
@@ -788,7 +798,7 @@ export default function CreateMatchScreen() {
                   </View>
                   {showVenueSuggestions && (
                     <View style={[styles.suggestions, { backgroundColor: colors.surfaceContainerLow, borderRadius: 16, borderWidth: 1, borderColor: colors.border }]}>
-                      {VENUES.filter((v) => v.includes(venue)).map((v) => (
+                      {getVenues(t).filter((v) => v.includes(venue)).map((v) => (
                         <Pressable key={v} style={styles.suggestion} onPress={() => { setVenue(v); setShowVenueSuggestions(false); }}>
                           <Ionicons name="location-outline" size={16} color={accentColor} />
                           <Text style={[styles.suggestionText, { color: colors.onSurface, fontFamily: typography.body.fontFamily }]}>{v}</Text>
@@ -808,10 +818,9 @@ export default function CreateMatchScreen() {
                   <View style={[
                     softStyles.inputWrap,
                     {
-                      backgroundColor: venueUrlError ? withAlpha(colors.destructive, 0.03) : colors.surface,
-                      borderColor: venueUrlError ? colors.destructive : accentColor,
-                      borderWidth: 1,
-                      borderBottomWidth: venueUrlError ? 2 : 1,
+                      backgroundColor: venueUrlError ? withAlpha(colors.destructive, 0.03) : colors.surfaceContainerHigh,
+                      borderColor: venueUrlError ? colors.destructive : "transparent",
+                      borderWidth: venueUrlError ? 1 : 0,
                     },
                   ]}>
                     <TextInput
@@ -857,25 +866,25 @@ export default function CreateMatchScreen() {
                 <View style={{ gap: 8 }}>
                   <Text style={[styles.sectionLabel, { color: colors.onSurface }]}>{t("createMatch.numberOfPlayers")}</Text>
                   {sport === "football" ? (
-                    <View style={[styles.counterRow, { backgroundColor: colors.surface, borderRadius: 18, padding: 8, borderWidth: 1, borderColor: colors.border }]}>
+                    <View style={[styles.counterRow, { backgroundColor: colors.surfaceContainerHigh, borderRadius: 24, padding: 12, borderWidth: 0 }]}>
                       <Pressable
-                        style={[styles.counterBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]}
+                        style={[styles.counterBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }]}
                         onPress={() => setMaxPlayers((p) => Math.max(2, p - 2))}
                       >
                         <Ionicons name="remove" size={20} color={colors.onSurface} />
                       </Pressable>
-                      <Text style={[styles.counterVal, { color: accentColor }]}>{maxPlayers}</Text>
+                      <Text style={[styles.counterVal, { color: accentColor, fontVariant: ['tabular-nums'] }]}>{maxPlayers}</Text>
                       <Pressable
-                        style={[styles.counterBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }]}
+                        style={[styles.counterBtn, { backgroundColor: colors.surfaceContainerLow, borderWidth: 0 }]}
                         onPress={() => setMaxPlayers((p) => Math.min(22, p + 2))}
                       >
                         <Ionicons name="add" size={20} color={colors.onSurface} />
                       </Pressable>
                     </View>
                   ) : (
-                    <View style={[styles.fixedPlayersBadge, { backgroundColor: colors.surface, borderRadius: 18, borderWidth: 1, borderColor: colors.border }]}>
+                    <View style={[styles.fixedPlayersBadge, { backgroundColor: colors.surfaceContainerHigh, borderRadius: 24, borderWidth: 0 }]}>
                       <View style={[styles.fixedPlayersNum, { backgroundColor: withAlpha(accentColor, 0.1) }]}>
-                        <Text style={[styles.fixedPlayersNumText, { color: accentColor }]}>{effectiveMaxPlayers}</Text>
+                        <Text style={[styles.fixedPlayersNumText, { color: accentColor, fontVariant: ['tabular-nums'] }]}>{effectiveMaxPlayers}</Text>
                       </View>
                       <View style={styles.fixedPlayersInfo}>
                         <Text style={[styles.fixedPlayersTitle, { color: colors.onSurface }]}>
@@ -935,32 +944,70 @@ export default function CreateMatchScreen() {
               <View style={{ gap: 20, marginTop: 8 }}>
                 <View style={{ gap: 8 }}>
                   <Text style={[styles.sectionLabel, { color: colors.onSurface }]}>{t("createMatch.playerLevel")}</Text>
-                  <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-                    {([
-                      { key: null, label: t("createMatch.allLevels"), icon: "🎯" },
-                      { key: "beginner" as const, label: t("createMatch.beginner"), icon: "🌱" },
-                      { key: "intermediate" as const, label: t("createMatch.intermediate"), icon: "⚡" },
-                      { key: "advanced" as const, label: t("createMatch.advanced"), icon: "🏆" },
-                    ] as { key: "beginner" | "intermediate" | "advanced" | null; label: string; icon: string }[]).map((lvl) => {
-                      const isSelected = skillLevel === lvl.key;
-                      return (
-                        <Pressable
-                          key={String(lvl.key)}
-                          style={[
-                            styles.skillChip,
-                            isSelected
-                              ? [{ backgroundColor: withAlpha(accentColor, 0.15), borderColor: accentColor, borderWidth: 1.5 }]
-                              : [{ backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }],
-                          ]}
-                          onPress={() => { setSkillLevel(lvl.key); Haptics.selectionAsync(); }}
-                        >
-                          <Text style={styles.skillChipEmoji}>{lvl.icon}</Text>
-                          <Text style={[styles.skillChipText, { color: isSelected ? accentColor : colors.onSurface }]}>{lvl.label}</Text>
-                          {isSelected && <Ionicons name="checkmark-circle" size={14} color={accentColor} />}
-                        </Pressable>
-                      );
-                    })}
-                  </View>
+                  {sport === "football" || !sport ? (
+                    <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+                      {([
+                        { key: null, label: t("createMatch.allLevels"), icon: "🎯" },
+                        { key: "beginner" as const, label: t("createMatch.beginner"), icon: "🌱" },
+                        { key: "intermediate" as const, label: t("createMatch.intermediate"), icon: "⚡" },
+                        { key: "advanced" as const, label: t("createMatch.advanced"), icon: "🏆" },
+                      ] as { key: "beginner" | "intermediate" | "advanced" | null; label: string; icon: string }[]).map((lvl) => {
+                        const isSelected = lvl.key === null 
+                          ? skillLevelArr.length === 0
+                          : skillLevelArr.includes(lvl.key);
+                        return (
+                          <Pressable
+                            key={String(lvl.key)}
+                            style={[
+                              styles.skillChip,
+                              isSelected
+                                ? { backgroundColor: withAlpha(accentColor, 0.15), borderWidth: 0 }
+                                : { backgroundColor: colors.surfaceContainerHigh, borderWidth: 0 },
+                            ]}
+                            onPress={() => {
+                              if (lvl.key === null) {
+                                setSkillLevelArr([]);
+                              } else {
+                                setSkillLevelArr((prev) => 
+                                  prev.includes(lvl.key as string) ? prev.filter(k => k !== lvl.key) : [...prev, lvl.key as string]
+                                );
+                              }
+                              Haptics.selectionAsync();
+                            }}
+                          >
+                            <Text style={styles.skillChipEmoji}>{lvl.icon}</Text>
+                            <Text style={[styles.skillChipText, { color: isSelected ? accentColor : colors.onSurface }]}>{lvl.label}</Text>
+                            {isSelected && <Ionicons name="checkmark-circle" size={14} color={accentColor} />}
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  ) : (
+                    <View style={{ gap: 12 }}>
+                      <Pressable 
+                        style={[
+                          styles.skillChip, 
+                          { backgroundColor: colors.surfaceContainerHigh, borderWidth: 0, justifyContent: 'space-between', paddingHorizontal: 16 }
+                        ]}
+                        onPress={() => setShowLevelPicker(true)}
+                      >
+                        <Text style={[styles.skillChipText, { color: colors.onSurface, fontSize: 15 }]}>
+                          {skillLevelArr.length > 0 
+                            ? `${t("createMatch.selectedLevels")}: ${skillLevelArr.map(Number).sort((a, b) => a - b).join(", ")}` 
+                            : t("createMatch.allLevels")}
+                        </Text>
+                        <Ionicons name="chevron-down" size={18} color={accentColor} />
+                      </Pressable>
+                      <LevelPickerSheet
+                        visible={showLevelPicker}
+                        sport={sport}
+                        multiSelect={true}
+                        selectedValues={skillLevelArr.map(Number)}
+                        onClose={() => setShowLevelPicker(false)}
+                        onConfirmMulti={(vals) => setSkillLevelArr(vals.map(String))}
+                      />
+                    </View>
+                  )}
                 </View>
 
                 {!isPublic && (
@@ -979,8 +1026,8 @@ export default function CreateMatchScreen() {
                             style={[
                               styles.groupChip,
                               selectedGroupId === g.id
-                                ? [{ backgroundColor: accentBg, borderWidth: 1.5, borderColor: accentColor + "40" }]
-                                : [{ backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.border }],
+                                ? { backgroundColor: accentBg, borderWidth: 0 }
+                                : { backgroundColor: colors.surfaceContainerHigh, borderWidth: 0 },
                             ]}
                             onPress={() => setSelectedGroupId(g.id)}
                           >
@@ -1098,14 +1145,14 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   navHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingBottom: 12 },
   navTitle: { fontSize: 18, fontFamily: typography.headlineSm.fontFamily, lineHeight: 28 },
-  backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
+  backBtn: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
 
   stepperContainer: { flexDirection: "column", alignItems: "stretch", marginBottom: 4, gap: 8 },
   stepProgressTrack: { height: 4, borderRadius: 2, position: "relative", marginHorizontal: 12, marginTop: 12 },
   stepProgressFill: { height: 4, borderRadius: 2, position: "absolute", top: 0, left: 0 },
   stepNode: {
     position: "absolute", top: -9, width: 22, height: 22, borderRadius: 11,
-    alignItems: "center", justifyContent: "center", borderWidth: 2,
+    alignItems: "center", justifyContent: "center", borderWidth: 0,
     marginLeft: -11,
   },
   stepNodeText: { fontSize: 9, fontFamily: typography.headlineSm.fontFamily },
@@ -1116,29 +1163,29 @@ const styles = StyleSheet.create({
 
   scroll: { paddingHorizontal: 20, gap: 0 },
   stepContent: { gap: 0, paddingBottom: 16 },
-  stepTitleAccent: { height: 4, width: 40, borderRadius: 2, alignSelf: "flex-end", marginBottom: 6, marginTop: 8 },
-  stepTitle: { fontSize: 22, fontFamily: typography.headlineSm.fontFamily, textAlign: "right", lineHeight: 36, marginBottom: 4 },
-  stepSubtitle: { fontSize: 14, fontFamily: typography.body.fontFamily, textAlign: "right", lineHeight: 22, marginBottom: 8 },
-  sectionLabel: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily, textAlign: "right" },
+  stepTitleAccent: { height: 5, width: 48, borderRadius: 2.5, alignSelf: "flex-end", marginBottom: 16, marginTop: 16 },
+  stepTitle: { fontSize: 32, fontFamily: typography.displaySm.fontFamily, textAlign: "right", lineHeight: 42, marginBottom: 8, letterSpacing: -1 },
+  stepSubtitle: { fontSize: 16, fontFamily: typography.bodyLg.fontFamily, textAlign: "right", lineHeight: 24, marginBottom: 24 },
+  sectionLabel: { fontSize: 15, fontFamily: typography.headlineSm.fontFamily, textAlign: "right", marginBottom: 6 },
 
-  typeCard: { flexDirection: "row", alignItems: "center", gap: 14, padding: 18, borderRadius: 24, borderWidth: 1.5, borderColor: "transparent" },
+  typeCard: { flexDirection: "row", alignItems: "center", gap: 16, padding: 20, borderRadius: 24, borderWidth: 0 },
   typeCardIcon: { width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center" },
   typeCardInfo: { flex: 1, gap: 2, alignItems: "flex-end" },
-  typeCardTitle: { fontSize: 17, fontFamily: typography.headlineSm.fontFamily },
-  typeCardDesc: { fontSize: 12, fontFamily: typography.body.fontFamily, textAlign: "right", lineHeight: 20 },
+  typeCardTitle: { fontSize: 18, fontFamily: typography.headlineSm.fontFamily },
+  typeCardDesc: { fontSize: 13, fontFamily: typography.body.fontFamily, textAlign: "right", lineHeight: 20 },
 
-  sportCard: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: 20 },
+  sportCard: { flexDirection: "row", alignItems: "center", gap: 16, padding: 20, borderRadius: 24 },
   sportCardBadge: { width: 52, height: 52, borderRadius: 26, alignItems: "center", justifyContent: "center" },
   sportCardInfo: { flex: 1, gap: 2, alignItems: "flex-end" },
-  sportCardTitle: { fontSize: 17, fontFamily: typography.headlineSm.fontFamily },
-  sportCardDesc: { fontSize: 12, fontFamily: typography.body.fontFamily, textAlign: "right" },
+  sportCardTitle: { fontSize: 18, fontFamily: typography.headlineSm.fontFamily },
+  sportCardDesc: { fontSize: 13, fontFamily: typography.body.fontFamily, textAlign: "right" },
 
   surfaceCard: { borderRadius: 20, padding: 16, gap: 12 },
   surfaceCardHeader: { flexDirection: "row", alignItems: "center", gap: 8, paddingBottom: 10, justifyContent: "flex-end" },
   surfaceCardTitle: { fontSize: 14, fontFamily: typography.headlineSm.fontFamily },
 
   timesGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, justifyContent: "flex-end" },
-  timeChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 24 },
+  timeChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 24, minHeight: 44, justifyContent: "center" },
   timeText: { fontSize: 14, fontFamily: typography.bodyLg.fontFamily },
 
   suggestions: { marginTop: 4, overflow: "hidden" },
@@ -1146,7 +1193,7 @@ const styles = StyleSheet.create({
   suggestionText: { fontSize: 14 },
 
   counterRow: { flexDirection: "row", alignItems: "center", gap: 16, justifyContent: "center" },
-  counterBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
+  counterBtn: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
   counterVal: { fontSize: 22, fontFamily: typography.headlineSm.fontFamily, minWidth: 40, textAlign: "center" },
 
   fixedPlayersBadge: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14 },
@@ -1171,16 +1218,17 @@ const styles = StyleSheet.create({
   previewLabel: { fontSize: 12, fontFamily: typography.bodyLg.fontFamily, textAlign: "center" },
 
   previewCard: {
-    borderRadius: 16,
+    borderRadius: 24,
     flexDirection: "row",
     overflow: "hidden",
-    minHeight: 130,
+    minHeight: 140,
     position: "relative",
+    borderWidth: 0,
   },
   previewAccentStripe: {
-    width: 4,
-    borderTopStartRadius: 16,
-    borderBottomStartRadius: 16,
+    width: 6,
+    borderTopStartRadius: 24,
+    borderBottomStartRadius: 24,
   },
   previewContent: {
     flex: 1,

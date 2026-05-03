@@ -929,7 +929,6 @@ components:
           enum: [match, training]
         skillLevel:
           type: string
-          enum: [beginner, intermediate, advanced]
           nullable: true
       required:
         - id
@@ -1100,7 +1099,6 @@ components:
           nullable: true
         skillLevel:
           type: string
-          enum: [beginner, intermediate, advanced, professional]
           nullable: true
         status:
           type: string

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "العب",
+    "name": "ARENA",
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,11 +8,11 @@
     "scheme": "mobile",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "backgroundColor": "#FFFFFF",
+    "backgroundColor": "#101719",
     "splash": {
-      "image": "./assets/images/icon.png",
+      "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FFFFFF"
+      "backgroundColor": "#101719"
     },
     "ios": {
       "supportsTablet": false,
@@ -29,8 +29,8 @@
       "targetSdkVersion": 35,
       "minSdkVersion": 24,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png",
-        "backgroundColor": "#FFFFFF"
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#101719"
       },
       "permissions": [
         "ACCESS_FINE_LOCATION",

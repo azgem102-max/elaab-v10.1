@@ -16,6 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation, Locale } from "@/i18n";
 import { typography } from "@/constants/typography";
 import { useColors } from "@/hooks/useColors";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const { width, height } = Dimensions.get("window");
 
@@ -141,8 +142,8 @@ export default function LanguageScreen() {
             { opacity: logoOpacity, transform: [{ scale: logoScale }] },
           ]}
         >
-          <View style={[styles.logoBg, { backgroundColor: colors.accent + "20" }]}>
-            <Ionicons name="language-outline" size={48} color={colors.accent} />
+          <View style={[styles.logoBg, { backgroundColor: "#101719" }]}>
+            <BrandLogo variant="mark" tone="light" size="lg" />
           </View>
         </Animated.View>
 

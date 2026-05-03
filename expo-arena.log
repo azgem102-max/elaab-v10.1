@@ -1,0 +1,66 @@
+
+> @workspace/mobile@0.0.0 dev:expogo C:\Users\azzam\Desktop\elab-app versions\elaab-v11\elaab-v101-1\artifacts\mobile
+> expo start "--" "--web" "--port" "8082"
+
+env: load .env
+env: export EXPO_PUBLIC_API_URL EXPO_PUBLIC_DOMAIN
+Starting project at C:\Users\azzam\Desktop\elab-app versions\elaab-v11\elaab-v101-1\artifacts\mobile
+React Compiler enabled
+Starting Metro Bundler
+Waiting on http://localhost:8082
+Logs for your project will appear below.
+Web node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 94.7% (1481/1522)
+Web Bundled 3593ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1600 modules)
+ LOG  [web] Logs will appear in the browser console
+Web node_modules\.pnpm\@react-native-async-storage_088e8303e028f6e6ca5c16cc3d46621a\node_modules\@react-native-async-storage\async-storage\lib\module\index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 26ms node_modules\.pnpm\@react-native-async-storage_088e8303e028f6e6ca5c16cc3d46621a\node_modules\@react-native-async-storage\async-storage\lib\module\index.js (1 module)
+Web Bundled 337ms node_modules\.pnpm\react-native-web@0.21.2_rea_bc209cd42e897c26fefdb26aa1c82d39\node_modules\react-native-web\dist\index.js (232 modules)
+Web Bundled 79ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 101ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 68ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 75ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 70ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 76ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 72ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 70ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 70ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 93ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 71ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 78ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 65ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 66ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 70ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 72ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 67ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 73ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 93ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 67ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 119ms node_modules\.pnpm\expo-router@6.0.23_@types+r_abd38177f532ddff11e5834956475527\node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console

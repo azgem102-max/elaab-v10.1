@@ -1,0 +1,211 @@
+[13:37:28.843] [32mINFO[39m (12096): [36mServer listening[39m
+    [35mport[39m: 3000
+[13:37:31.337] [32mINFO[39m (12096): [36mMatch auto-cancelled (under quorum)[39m
+    [35mmatchId[39m: "m_d9ea71725144df02"
+    [35mtitle[39m: "مباراة VIP 🔒⚽"
+    [35mplayerCount[39m: 3
+    [35mquorum[39m: 5
+    [35mmaxPlayers[39m: 10
+[13:37:31.805] [32mINFO[39m (12096): [36mMatch auto-completed[39m
+    [35mmatchId[39m: "m_5a86abe639457e07"
+    [35mtitle[39m: "بادل فردي سريع ⚡"
+    [35mplayers[39m: 2
+    [35mabsentCount[39m: 0
+[13:37:32.984] [32mINFO[39m (12096): [36mMatch auto-cancelled (under quorum)[39m
+    [35mmatchId[39m: "m_ad6f88ebc6f5bd52"
+    [35mtitle[39m: "بادل VIP 🏓🔒"
+    [35mplayerCount[39m: 1
+    [35mquorum[39m: 2
+    [35mmaxPlayers[39m: 4
+[13:37:33.457] [32mINFO[39m (12096): [36mMatch auto-completed[39m
+    [35mmatchId[39m: "m_59fb4052506878ee"
+    [35mtitle[39m: "تنس ثنائي ممتع 🎾"
+    [35mplayers[39m: 4
+    [35mabsentCount[39m: 0
+[13:37:33.928] [32mINFO[39m (12096): [36mMatch auto-completed[39m
+    [35mmatchId[39m: "m_9b50430d6365ae6f"
+    [35mtitle[39m: "تنس النخبة 🎾🔒"
+    [35mplayers[39m: 3
+    [35mabsentCount[39m: 0
+[13:37:35.106] [32mINFO[39m (12096): [36mMatch auto-cancelled (under quorum)[39m
+    [35mmatchId[39m: "m_d7c12b80a17890a7"
+    [35mtitle[39m: "مباراة A 15:00"
+    [35mplayerCount[39m: 2
+    [35mquorum[39m: 5
+    [35mmaxPlayers[39m: 10
+[13:37:36.278] [32mINFO[39m (12096): [36mMatch auto-cancelled (under quorum)[39m
+    [35mmatchId[39m: "m_7dfffb7f27f3481d"
+    [35mtitle[39m: "مباراة B 15:30 (تعارض)"
+    [35mplayerCount[39m: 1
+    [35mquorum[39m: 5
+    [35mmaxPlayers[39m: 10
+[13:37:48.288] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 1,
+      "method": "GET",
+      "url": "/api/healthz"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 5
+[13:42:09.214] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 2,
+      "method": "GET",
+      "url": "/api/healthz"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 1
+[13:42:11.402] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 3,
+      "method": "POST",
+      "url": "/api/groups"
+    }
+    [35mres[39m: {
+      "statusCode": 201
+    }
+    [35mresponseTime[39m: 2180
+[13:42:12.598] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 4,
+      "method": "POST",
+      "url": "/api/groups"
+    }
+    [35mres[39m: {
+      "statusCode": 201
+    }
+    [35mresponseTime[39m: 1194
+[13:42:14.338] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 5,
+      "method": "GET",
+      "url": "/api/groups"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 1738
+[13:42:14.834] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 6,
+      "method": "GET",
+      "url": "/api/groups/g_30eb6d68111eca01"
+    }
+    [35mres[39m: {
+      "statusCode": 403
+    }
+    [35mresponseTime[39m: 494
+[13:42:17.076] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 7,
+      "method": "POST",
+      "url": "/api/groups/g_a64adc0cedeb4b89/join"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 2240
+[13:42:18.772] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 8,
+      "method": "GET",
+      "url": "/api/groups/g_a64adc0cedeb4b89/join-requests"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 1235
+[13:42:20.505] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 9,
+      "method": "POST",
+      "url": "/api/groups/g_30eb6d68111eca01/invite"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 1731
+[13:42:21.007] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 10,
+      "method": "GET",
+      "url": "/api/notifications"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 269
+[13:42:21.502] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 11,
+      "method": "GET",
+      "url": "/api/groups/g_30eb6d68111eca01"
+    }
+    [35mres[39m: {
+      "statusCode": 403
+    }
+    [35mresponseTime[39m: 493
+[13:42:22.500] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 12,
+      "method": "POST",
+      "url": "/api/groups/g_30eb6d68111eca01/invite-link"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 997
+[13:42:23.742] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 13,
+      "method": "POST",
+      "url": "/api/invites/7a7acc381fc3d31b3e71216c7be815a6/accept"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 1240
+[13:42:25.703] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 14,
+      "method": "DELETE",
+      "url": "/api/groups/g_a64adc0cedeb4b89"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 1733
+[13:42:27.182] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 15,
+      "method": "POST",
+      "url": "/api/groups"
+    }
+    [35mres[39m: {
+      "statusCode": 201
+    }
+    [35mresponseTime[39m: 1242
+[13:42:29.172] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 16,
+      "method": "POST",
+      "url": "/api/matches"
+    }
+    [35mres[39m: {
+      "statusCode": 201
+    }
+    [35mresponseTime[39m: 1988
+[13:42:30.895] [32mINFO[39m (12096): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 17,
+      "method": "DELETE",
+      "url": "/api/groups/g_7915189a049f832a"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 1722
